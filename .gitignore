@@ -19,3 +19,6 @@ task_state.json
 # OS files
 .DS_Store
 Thumbs.db
+
+# Exported 3D model outputs
+exported_models/

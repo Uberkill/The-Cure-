@@ -12,6 +12,7 @@ import { ScenarioRegistry } from './scenarios/ScenarioRegistry';
 import { ScreenManager } from './ui/ScreenManager';
 import { UIManager } from './ui/UIManager';
 import { CRTNodePatcher } from './entities/CRTNodePatcher';
+import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
 
 class VaultApp {
   public telemetry: Telemetry;
@@ -151,4 +152,6 @@ window.addEventListener('DOMContentLoaded', () => {
   const app = new VaultApp();
   (window as unknown as { __VAULT_APP__: VaultApp; THREE: typeof THREE }).__VAULT_APP__ = app;
   (window as unknown as { THREE: typeof THREE }).THREE = THREE;
+  (window as unknown as Record<string, unknown>).exportObjectToGLB = exportObjectToGLB;
+  (window as unknown as Record<string, unknown>).downloadGLB = downloadGLB;
 });

@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "tsc --noEmit && node tests/test_3d_and_audio_stress.js && node tests/test_room04_audit_and_360.js",
     "test:360": "node tests/test_room04_audit_and_360.js",
-    "test:all": "tsc --noEmit && node tests/test_3d_and_audio_stress.js && node tests/test_room04_audit_and_360.js && node tests/test_interactions_and_overlays.js && node tests/test_full_descent_e2e.js"
+    "test:all": "tsc --noEmit && node tests/test_3d_and_audio_stress.js && node tests/test_room04_audit_and_360.js && node tests/test_interactions_and_overlays.js && node tests/test_full_descent_e2e.js",
+    "export:glb": "node scripts/export_glb.js"
   },
   "dependencies": {
     "three": "^0.184.0"
