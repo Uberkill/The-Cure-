@@ -1,0 +1,1274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ROOM 04 • The Sterile Chamber (Aesthetic Showcase)</title>
+  
+  <!-- Fonts: Playfair Display (Lynchian Editorial Serif), Outfit (Bauhaus Sans), JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Outfit:wght@200;300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS: LYNCHIAN BRIGHT STERILE HORROR / CLINICAL BAUHAUS
+       ========================================================================== */
+    :root {
+      /* Palette: Over-Exposed Clinical Alabaster & Uncanny Accents */
+      --room-bg: #e6eae4;
+      --chalk-wall: #edf0eb;
+      --floor-terrazzo: #dbe0d9;
+      --sage-clinical: #2d4a3e;
+      --sage-accent: #3d5e50;
+      --crimson-lynch: #8b1e23;
+      --crimson-glow: rgba(139, 30, 35, 0.35);
+      --brass-gold: #c28833;
+      --ink-black: #141a21;
+      --text-muted: #576574;
+      --text-dim: #7f8c8d;
+      
+      /* Glassmorphism: Light Editorial Frosted Glass */
+      --glass-bg: rgba(248, 250, 248, 0.72);
+      --glass-border: rgba(20, 26, 33, 0.08);
+      --glass-hover: rgba(255, 255, 255, 0.92);
+
+      /* Typography */
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: var(--room-bg);
+      font-family: var(--font-sans);
+      color: var(--ink-black);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 3D Canvas Layer */
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* High-Key Clinical Over-Exposure & Soft Vignette */
+    .viewport-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 2;
+      background: radial-gradient(circle at center, transparent 50%, rgba(200, 210, 202, 0.35) 100%);
+      box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.04);
+    }
+
+    /* ==========================================================================
+       EDITORIAL ART-FILM UI (NO CLUNKY BOXES - PURE TYPOGRAPHY AS UI)
+       ========================================================================== */
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 36px 44px;
+    }
+
+    /* Top Left: Cinematic Film Chapter Card */
+    .cinematic-header {
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      max-width: 480px;
+    }
+
+    .act-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--sage-accent);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .act-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--crimson-lynch);
+      box-shadow: 0 0 8px var(--crimson-glow);
+    }
+
+    .film-title {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: var(--ink-black);
+      line-height: 1.15;
+      text-transform: none;
+    }
+
+    .film-subtitle {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Top Right: Minimalist Sound Director */
+    .audio-director {
+      pointer-events: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+
+    .audio-header {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .audio-pills-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pill-btn {
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--ink-black);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .pill-btn:hover {
+      background: var(--glass-hover);
+      border-color: rgba(20, 26, 33, 0.2);
+      transform: translateY(-1px);
+    }
+
+    .pill-btn.active {
+      background: var(--sage-clinical);
+      color: #ffffff;
+      border-color: var(--sage-clinical);
+      box-shadow: 0 4px 12px rgba(45, 74, 62, 0.25);
+    }
+
+    /* Center Crosshair (Golden Ratio Fine Reticle) */
+    .center-reticle-wrap {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .reticle-fine {
+      width: 28px;
+      height: 28px;
+      position: relative;
+    }
+
+    .reticle-fine::before,
+    .reticle-fine::after {
+      content: '';
+      position: absolute;
+      background: rgba(20, 26, 33, 0.35);
+    }
+
+    .reticle-fine::before {
+      top: 13px;
+      left: 0;
+      width: 28px;
+      height: 1px;
+    }
+
+    .reticle-fine::after {
+      top: 0;
+      left: 13px;
+      width: 1px;
+      height: 28px;
+    }
+
+    .reticle-dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: var(--crimson-lynch);
+      position: absolute;
+      top: 12px;
+      left: 12px;
+    }
+
+    /* Lynchian Observation Subtitle at Bottom Center */
+    .observation-subtitle {
+      position: absolute;
+      bottom: 115px;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      text-align: center;
+      max-width: 620px;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 15px;
+      letter-spacing: 0.02em;
+      color: var(--ink-black);
+      background: rgba(246, 248, 246, 0.88);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      padding: 8px 24px;
+      border-radius: 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* Bottom Shelf: Minimalist Camera Scenarios & Palette Guide */
+    .bottom-shelf {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      width: 100%;
+    }
+
+    /* Swatches: Discrete Editorial Tags */
+    .palette-strip {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .swatch-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .swatch-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      border: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    /* Bottom Center: Camera Scenario Presets */
+    .scenario-dock {
+      pointer-events: auto;
+      display: flex;
+      gap: 8px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(16px);
+      padding: 6px 10px;
+      border-radius: 24px;
+      border: 1px solid var(--glass-border);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    .scenario-btn {
+      background: transparent;
+      border: none;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      padding: 6px 16px;
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .scenario-btn:hover {
+      color: var(--ink-black);
+      background: rgba(0, 0, 0, 0.04);
+    }
+
+    .scenario-btn.active {
+      background: #ffffff;
+      color: var(--ink-black);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      font-weight: 600;
+    }
+
+    /* 3D Object Examination Mode Overlay Modal */
+    .inspect-modal {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(235, 239, 235, 0.94);
+      backdrop-filter: blur(24px);
+      z-index: 50;
+      display: none;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 44px;
+      pointer-events: auto;
+    }
+
+    .inspect-modal.open {
+      display: flex;
+    }
+
+    .inspect-meta-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .inspect-cat {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--sage-accent);
+    }
+
+    .inspect-name {
+      font-family: var(--font-serif);
+      font-size: 34px;
+      font-weight: 400;
+      color: var(--ink-black);
+      margin-top: 4px;
+    }
+
+    .inspect-guidance {
+      position: absolute;
+      bottom: 44px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      background: #ffffff;
+      padding: 8px 24px;
+      border-radius: 20px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+    }
+  </style>
+
+  <!-- Offline Vendored Three.js & Controls -->
+  <script src="./libs/three.min.js"></script>
+  <script src="./libs/OrbitControls.js"></script>
+  <script src="./libs/tween.umd.js"></script>
+</head>
+<body>
+
+  <!-- 3D WebGL Canvas Layer -->
+  <div id="canvas-container"></div>
+
+  <!-- High-Key Clinical Over-Exposure Layer -->
+  <div class="viewport-overlay"></div>
+
+  <!-- Editorial Cinematic UI Overlay -->
+  <div class="ui-layer">
+    
+    <!-- Top-Left: Cinematic Film Chapter Card -->
+    <div class="cinematic-header">
+      <div class="act-tag">
+        <span class="act-dot"></span>
+        <span>ACT I • THE RECEPTION</span>
+      </div>
+      <h1 class="film-title">The Sterile Chamber</h1>
+      <div class="film-subtitle">Room 04 • Sanatorium of Cognitive Alignment</div>
+    </div>
+
+    <!-- Top-Right: Sound Director (David Lynch Signature Room Tones) -->
+    <div class="audio-director">
+      <div class="audio-header">Acoustic Atmosphere</div>
+      <div class="audio-pills-row">
+        <button class="pill-btn" id="btn-drone">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
+          Lynchian Drone (45Hz)
+        </button>
+        <button class="pill-btn" id="btn-flicker">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          Fluorescent Ballast
+        </button>
+        <button class="pill-btn" id="btn-phone">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          Rotary Phone Tone
+        </button>
+      </div>
+    </div>
+
+    <!-- Center Reticle -->
+    <div class="center-reticle-wrap">
+      <div class="reticle-fine">
+        <div class="reticle-dot"></div>
+      </div>
+    </div>
+
+    <!-- Lynchian Observation Subtitle (Dynamic Text) -->
+    <div class="observation-subtitle" id="observation-text">
+      The room is illuminated by motionless white ceiling light. There are no shadows to hide in.
+    </div>
+
+    <!-- Bottom Shelf -->
+    <div class="bottom-shelf">
+      
+      <!-- Palette Swatch Tags -->
+      <div class="palette-strip">
+        <div class="swatch-item"><span class="swatch-color" style="background: #edf0eb;"></span>Alabaster</div>
+        <div class="swatch-item"><span class="swatch-color" style="background: #2d4a3e;"></span>Clinical Sage</div>
+        <div class="swatch-item"><span class="swatch-color" style="background: #8b1e23;"></span>Crimson</div>
+        <div class="swatch-item"><span class="swatch-color" style="background: #c28833;"></span>Brass</div>
+      </div>
+
+      <!-- Cinematic Camera Scenario Presets -->
+      <div class="scenario-dock">
+        <button class="scenario-btn active" data-preset="overview">I. Overview</button>
+        <button class="scenario-btn" data-preset="apparatus">II. The Vault</button>
+        <button class="scenario-btn" data-preset="telephone">III. The Telephone</button>
+        <button class="scenario-btn" data-preset="envelope">IV. The Envelope</button>
+        <button class="scenario-btn" data-preset="door">V. The Door</button>
+        <button class="scenario-btn" id="btn-inspect-3d">Examine Key</button>
+      </div>
+
+      <div style="font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.15em;">
+        ST. JUDE NO. 04
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- 3D Object Examination Mode Overlay Modal -->
+  <div class="inspect-modal" id="inspect-modal">
+    <div class="inspect-meta-header">
+      <div>
+        <div class="inspect-cat">SPECIMEN ARTIFACT • RECOVERED FROM BELL JAR</div>
+        <div class="inspect-name">The Brass Tuning Key</div>
+      </div>
+      <button class="pill-btn" id="btn-close-inspect">Return to Chamber</button>
+    </div>
+    
+    <!-- 3D Examination Turntable Canvas -->
+    <div style="flex: 1; width: 100%; position: relative; display: flex; align-items: center; justify-content: center;">
+      <canvas id="inspect-canvas" style="width: 100%; height: 100%; cursor: grab;"></canvas>
+    </div>
+
+    <div class="inspect-guidance">
+      DRAG TO ROTATE 360° IN HANDS • EXAMINE THE NOTCH
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       THREE.JS BRIGHT CLINICAL LYNCHIAN SCENE
+       ========================================================================== -->
+  <script>
+    /* --------------------------------------------------------------------------
+       1. SCENE SETUP, ATMOSPHERIC CONTRAST & MOODY LIGHTING
+       -------------------------------------------------------------------------- */
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xa2aea4); // Moody clinical sage-gray
+    scene.fog = new THREE.FogExp2(0xa2aea4, 0.038);
+
+    const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(4.6, 2.9, 5.0);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 0.98; // Balanced exposure with rich contrast
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    container.appendChild(renderer.domElement);
+
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.target.set(0, 0.85, 0);
+    controls.maxPolarAngle = Math.PI / 2.06;
+    controls.minDistance = 1.4;
+    controls.maxDistance = 9.5;
+
+    // Atmospheric Diffused Ambient Fill (Low intensity to allow deep shadows!)
+    const ambientLight = new THREE.AmbientLight(0xcfd8cf, 0.52);
+    scene.add(ambientLight);
+
+    // Warm Surgical Task Spotlight over central desk (Casts deep, crisp contact shadows!)
+    const deskSpot = new THREE.SpotLight(0xfff6eb, 3.6, 14, Math.PI / 3.4, 0.45, 1.2);
+    deskSpot.position.set(1.8, 5.8, 2.6);
+    deskSpot.castShadow = true;
+    deskSpot.shadow.mapSize.width = 2048;
+    deskSpot.shadow.mapSize.height = 2048;
+    deskSpot.shadow.bias = -0.0001;
+    scene.add(deskSpot);
+
+    // Directional Key Light from Upper Left (Shadow definition)
+    const directionalKey = new THREE.DirectionalLight(0xe4eee4, 1.4);
+    directionalKey.position.set(-3.5, 6.0, 3.5);
+    directionalKey.castShadow = true;
+    directionalKey.shadow.mapSize.width = 2048;
+    directionalKey.shadow.mapSize.height = 2048;
+    directionalKey.shadow.bias = -0.0001;
+    scene.add(directionalKey);
+
+    /* --------------------------------------------------------------------------
+       2. PROCEDURAL 3D TEXTURE GENERATION (Real Ceramic Green Tiles & Terrazzo)
+       -------------------------------------------------------------------------- */
+    // Generates high-res glazed ceramic clinical sage green tiles
+    function createCeramicGreenTileTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 512;
+      const ctx = c.getContext('2d');
+
+      // Dark clinical grout line
+      ctx.fillStyle = '#182b22';
+      ctx.fillRect(0, 0, 512, 512);
+
+      const tileSize = 64;
+      const gap = 3;
+      for (let y = 0; y < 512; y += tileSize) {
+        for (let x = 0; x < 512; x += tileSize) {
+          // Subtle organic variation between glazed tiles
+          const shade = Math.floor(Math.random() * 12 - 6);
+          ctx.fillStyle = `rgb(${43 + shade}, ${74 + shade}, ${60 + shade})`;
+          ctx.fillRect(x + gap, y + gap, tileSize - gap * 2, tileSize - gap * 2);
+
+          // Top/Left glazed bevel highlight
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+          ctx.fillRect(x + gap, y + gap, tileSize - gap * 2, 2);
+          ctx.fillRect(x + gap, y + gap, 2, tileSize - gap * 2);
+
+          // Bottom/Right bevel shade
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+          ctx.fillRect(x + gap, y + tileSize - gap - 2, tileSize - gap * 2, 2);
+          ctx.fillRect(x + tileSize - gap - 2, y + gap, 2, tileSize - gap * 2);
+        }
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    // Generates bump map for physical tile depth
+    function createTileBumpMap() {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 512;
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#111111'; // recessed grout
+      ctx.fillRect(0, 0, 512, 512);
+
+      const tileSize = 64;
+      const gap = 3;
+      for (let y = 0; y < 512; y += tileSize) {
+        for (let x = 0; x < 512; x += tileSize) {
+          ctx.fillStyle = '#dddddd'; // raised tile face
+          ctx.fillRect(x + gap, y + gap, tileSize - gap * 2, tileSize - gap * 2);
+        }
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    // Generates clinical terrazzo floor texture with marble aggregate
+    function createTerrazzoFloorTexture() {
+      const c = document.createElement('canvas');
+      c.width = 512;
+      c.height = 512;
+      const ctx = c.getContext('2d');
+
+      ctx.fillStyle = '#c5cdc2'; // pale clinical terrazzo base
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Symmetrical brass grout dividers
+      ctx.strokeStyle = '#9ea89b';
+      ctx.lineWidth = 2;
+      for (let i = 0; i <= 512; i += 128) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 512); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(512, i); ctx.stroke();
+      }
+
+      // Terrazzo aggregate chips
+      for (let i = 0; i < 450; i++) {
+        const x = Math.random() * 512;
+        const y = Math.random() * 512;
+        const r = Math.random() * 2.5 + 0.6;
+        const color = Math.random() > 0.5 
+          ? 'rgba(45, 74, 62, 0.45)' 
+          : (Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.75)' : 'rgba(30, 42, 35, 0.4)');
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping;
+      tex.wrapT = THREE.RepeatWrapping;
+      return tex;
+    }
+
+    const greenTileTex = createCeramicGreenTileTexture();
+    greenTileTex.repeat.set(12, 3.5);
+    const tileBumpTex = createTileBumpMap();
+    tileBumpTex.repeat.set(12, 3.5);
+
+    const terrazzoTex = createTerrazzoFloorTexture();
+    terrazzoTex.repeat.set(7, 7);
+
+    /* --------------------------------------------------------------------------
+       3. MATERIALS: TACTILE 3D CERAMIC TILES, TERRAZZO & CONTRAST ACCENTS
+       -------------------------------------------------------------------------- */
+    const mat = {
+      terrazzoFloor: new THREE.MeshStandardMaterial({
+        map: terrazzoTex,
+        roughness: 0.22,
+        metalness: 0.05,
+      }),
+      ceramicGreenTiles: new THREE.MeshStandardMaterial({
+        map: greenTileTex,
+        bumpMap: tileBumpTex,
+        bumpScale: 0.04,
+        roughness: 0.25, // glazed reflective tile sheen
+        metalness: 0.12,
+      }),
+      chalkUpperWall: new THREE.MeshStandardMaterial({
+        color: 0xe2e6e0,
+        roughness: 0.85,
+        metalness: 0.02,
+      }),
+      darkTeakWood: new THREE.MeshStandardMaterial({
+        color: 0x1f1a18,
+        roughness: 0.5,
+        metalness: 0.05,
+      }),
+      brushedChrome: new THREE.MeshStandardMaterial({
+        color: 0xd4d8db,
+        roughness: 0.22,
+        metalness: 0.9,
+      }),
+      brassGold: new THREE.MeshStandardMaterial({
+        color: 0xc28833,
+        roughness: 0.28,
+        metalness: 0.85,
+      }),
+      crimsonEnvelope: new THREE.MeshStandardMaterial({
+        color: 0x8b1e23, // Lynchian Red
+        roughness: 0.45,
+        metalness: 0.05,
+      }),
+      vintageCream: new THREE.MeshStandardMaterial({
+        color: 0xe8e4d8,
+        roughness: 0.35,
+        metalness: 0.05,
+      }),
+      smokedGlass: new THREE.MeshPhysicalMaterial({
+        color: 0xffffff,
+        transmission: 0.9,
+        opacity: 1,
+        transparent: true,
+        roughness: 0.08,
+        ior: 1.5,
+      })
+    };
+
+    /* --------------------------------------------------------------------------
+       4. ROOM ARCHITECTURE (Physical 3D Ceramic Tile Wainscot Wall)
+       -------------------------------------------------------------------------- */
+    // Floor
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), mat.terrazzoFloor);
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    // Back Wall: Lower 3D Ceramic Green Tiles Wainscoting
+    const backWallGroup = new THREE.Group();
+    const greenTileWainscot = new THREE.Mesh(new THREE.BoxGeometry(14, 2.2, 0.22), mat.ceramicGreenTiles);
+    greenTileWainscot.position.set(0, 1.1, -6.78);
+    greenTileWainscot.receiveShadow = true;
+    backWallGroup.add(greenTileWainscot);
+
+    // Back Wall: Upper Chalk Plaster
+    const upperWall = new THREE.Mesh(new THREE.BoxGeometry(14, 3.3, 0.2), mat.chalkUpperWall);
+    upperWall.position.set(0, 3.85, -6.8);
+    upperWall.receiveShadow = true;
+    backWallGroup.add(upperWall);
+
+    // Brass Architectural Dado Rail between tile and plaster
+    const dadoRail = new THREE.Mesh(new THREE.BoxGeometry(14, 0.05, 0.26), mat.brassGold);
+    dadoRail.position.set(0, 2.22, -6.77);
+    backWallGroup.add(dadoRail);
+    // The Ominous Blank Door at Back-Right
+    const doorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.6, 3.2, 0.24), mat.chalkUpperWall);
+    doorFrame.position.set(3.2, 1.6, -6.76);
+    doorFrame.name = "door";
+    backWallGroup.add(doorFrame);
+
+    const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.4, 3.0, 0.26), mat.chalkUpperWall);
+    doorPanel.position.set(3.2, 1.6, -6.75);
+    doorPanel.name = "door";
+    backWallGroup.add(doorPanel);
+
+    // Brass Peephole on Door
+    const peephole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.28, 16), mat.brassGold);
+    peephole.rotation.x = Math.PI / 2;
+    peephole.position.set(3.2, 2.2, -6.74);
+    backWallGroup.add(peephole);
+
+    // Amber LED above door (Locked State)
+    const doorLed = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), new THREE.MeshBasicMaterial({ color: 0x8b1e23 }));
+    doorLed.position.set(3.2, 3.25, -6.74);
+    backWallGroup.add(doorLed);
+
+    scene.add(backWallGroup);
+
+    // Left Wall with Matching 3D Ceramic Green Tile Wainscot
+    const leftWallGroup = new THREE.Group();
+    const leftTileWainscot = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.2, 14), mat.ceramicGreenTiles);
+    leftTileWainscot.position.set(-6.78, 1.1, 0);
+    leftTileWainscot.receiveShadow = true;
+    leftWallGroup.add(leftTileWainscot);
+
+    const leftUpperWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 3.3, 14), mat.chalkUpperWall);
+    leftUpperWall.position.set(-6.8, 3.85, 0);
+    leftUpperWall.receiveShadow = true;
+    leftWallGroup.add(leftUpperWall);
+
+    const leftDadoRail = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.05, 14), mat.brassGold);
+    leftDadoRail.position.set(-6.77, 2.22, 0);
+    leftWallGroup.add(leftDadoRail);
+    scene.add(leftWallGroup);
+
+    /* --------------------------------------------------------------------------
+       4. THE CENTRAL DESK & UNCANNY PROPS
+       -------------------------------------------------------------------------- */
+    const deskGroup = new THREE.Group();
+    deskGroup.name = "desk_ensemble";
+
+    // Monolithic Dark Teak Desk Top
+    const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.3), mat.darkTeakWood);
+    deskTop.position.set(0, 0.8, 0);
+    deskTop.castShadow = true;
+    deskTop.receiveShadow = true;
+    deskGroup.add(deskTop);
+
+    // Tubular Chrome Bauhaus Legs
+    const legL = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.8, 16), mat.brushedChrome);
+    legL.position.set(-1.15, 0.4, 0.5);
+    legL.castShadow = true;
+    deskGroup.add(legL);
+    const legL2 = legL.clone();
+    legL2.position.z = -0.5;
+    deskGroup.add(legL2);
+
+    const legR = legL.clone();
+    legR.position.x = 1.15;
+    deskGroup.add(legR);
+    const legR2 = legL2.clone();
+    legR2.position.x = 1.15;
+    deskGroup.add(legR2);
+
+    // Bauhaus Tubular Chair (Marcel Breuer Cesca style)
+    const chair = new THREE.Group();
+    chair.position.set(0, 0, -0.65);
+    const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.04, 0.48), mat.sageAccent);
+    chairSeat.position.set(0, 0.52, 0);
+    chairSeat.castShadow = true;
+    chair.add(chairSeat);
+
+    const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.3, 0.03), mat.sageAccent);
+    chairBack.position.set(0, 0.8, -0.22);
+    chairBack.castShadow = true;
+    chair.add(chairBack);
+
+    const chairTube = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.52, 12), mat.brushedChrome);
+    chairTube.position.set(-0.25, 0.26, 0);
+    chairTube.castShadow = true;
+    chair.add(chairTube);
+    const chairTubeR = chairTube.clone();
+    chairTubeR.position.x = 0.25;
+    chair.add(chairTubeR);
+    deskGroup.add(chair);
+
+    // The Titanium Vault Casing (Central Monolith)
+    const vault = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.52, 0.75), mat.brushedChrome);
+    vault.position.set(0, 1.12, 0);
+    vault.castShadow = true;
+    vault.receiveShadow = true;
+    vault.name = "vault";
+    deskGroup.add(vault);
+
+    // Front Sliding Panel on Vault (Clinical Sage)
+    const vaultPanel = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.38, 0.04), mat.sageAccent);
+    vaultPanel.position.set(0, 1.12, 0.39);
+    vaultPanel.castShadow = true;
+    vaultPanel.name = "vault";
+    deskGroup.add(vaultPanel);
+
+    // Rotary Brass Dial on Vault
+    const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.075, 0.04, 24), mat.brassGold);
+    dial.rotation.x = Math.PI / 2;
+    dial.position.set(-0.22, 1.12, 0.42);
+    dial.castShadow = true;
+    dial.name = "dial";
+    deskGroup.add(dial);
+
+    // Glass Cylinder atop Vault
+    const glassDome = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.4, 24), mat.smokedGlass);
+    glassDome.position.set(0, 1.55, 0);
+    glassDome.castShadow = true;
+    deskGroup.add(glassDome);
+
+    // Inner Glowing Specimen Core
+    const core = new THREE.Mesh(
+      new THREE.OctahedronGeometry(0.08, 0),
+      new THREE.MeshStandardMaterial({
+        color: 0x3d5e50,
+        emissive: 0x2d4a3e,
+        emissiveIntensity: 0.6,
+        roughness: 0.1
+      })
+    );
+    core.position.set(0, 1.55, 0);
+    deskGroup.add(core);
+
+    // [LYNCHIAN CLUE 1]: The Solitary Deep Crimson Envelope (Stark contrast against white)
+    const envelope = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.015, 0.32), mat.crimsonEnvelope);
+    envelope.position.set(-0.7, 0.86, 0.25);
+    envelope.rotation.y = 0.28;
+    envelope.castShadow = true;
+    envelope.name = "envelope";
+    deskGroup.add(envelope);
+
+    // [LYNCHIAN CLUE 2]: Vintage Cream Rotary Telephone
+    const phoneGroup = new THREE.Group();
+    phoneGroup.position.set(0.72, 0.86, 0.22);
+    phoneGroup.rotation.y = -0.3;
+    phoneGroup.name = "telephone";
+
+    const phoneBase = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.22), mat.vintageCream);
+    phoneBase.castShadow = true;
+    phoneGroup.add(phoneBase);
+
+    const phoneDial = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 20), mat.brushedChrome);
+    phoneDial.rotation.x = 0.3;
+    phoneDial.position.set(0, 0.05, 0.02);
+    phoneGroup.add(phoneDial);
+
+    const handset = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.26, 12), mat.vintageCream);
+    handset.rotation.z = Math.PI / 2;
+    handset.position.set(0, 0.09, -0.04);
+    handset.castShadow = true;
+    phoneGroup.add(handset);
+    deskGroup.add(phoneGroup);
+
+    // Glass Bell Jar covering the Brass Key (Front-Right of desk)
+    const bellJar = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.22, 20), mat.smokedGlass);
+    bellJar.position.set(0.68, 0.96, -0.25);
+    bellJar.name = "bell_jar";
+    deskGroup.add(bellJar);
+
+    const brassKey = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.14, 12), mat.brassGold);
+    brassKey.position.set(0.68, 0.9, -0.25);
+    brassKey.rotation.z = Math.PI / 2;
+    brassKey.name = "brass_key";
+    deskGroup.add(brassKey);
+
+    // Minimalist Potted Sansevieria Plant
+    const plantGroup = new THREE.Group();
+    const planter = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.18, 0.5, 24), mat.chalkWall);
+    planter.position.set(2.2, 0.25, -0.2);
+    planter.castShadow = true;
+    plantGroup.add(planter);
+
+    for (let i = 0; i < 5; i++) {
+      const leaf = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.75, 4), mat.sageAccent);
+      leaf.position.set(2.2 + (Math.random() - 0.5) * 0.1, 0.75, -0.2 + (Math.random() - 0.5) * 0.1);
+      leaf.rotation.z = (Math.random() - 0.5) * 0.2;
+      leaf.castShadow = true;
+      plantGroup.add(leaf);
+    }
+    scene.add(plantGroup);
+
+    scene.add(deskGroup);
+
+    /* --------------------------------------------------------------------------
+       5. DAVID LYNCH SIGNATURE PROCEDURAL SOUND DESIGN (Web Audio API)
+       -------------------------------------------------------------------------- */
+    let audioCtx = null;
+    let lynchDroneOsc1 = null;
+    let lynchDroneOsc2 = null;
+    let isDronePlaying = false;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    // Sound 1: Signature David Lynch 45Hz Room Drone (Deep, Resonant, Warm)
+    function toggleLynchDrone() {
+      initAudio();
+      const btn = document.getElementById('btn-drone');
+      if (isDronePlaying) {
+        if (lynchDroneOsc1) lynchDroneOsc1.stop();
+        if (lynchDroneOsc2) lynchDroneOsc2.stop();
+        isDronePlaying = false;
+        btn.classList.remove('active');
+        return;
+      }
+
+      // Fundamental 45Hz
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const filter = audioCtx.createBiquadFilter();
+      const gain = audioCtx.createGain();
+
+      osc1.type = 'sawtooth';
+      osc1.frequency.value = 45; // 45Hz low chest drone
+
+      osc2.type = 'sine';
+      osc2.frequency.value = 45.4; // slight detune creates hypnotic beating
+
+      filter.type = 'lowpass';
+      filter.frequency.value = 140;
+
+      gain.gain.value = 0.06;
+
+      osc1.connect(filter);
+      osc2.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start();
+      osc2.start();
+      lynchDroneOsc1 = osc1;
+      lynchDroneOsc2 = osc2;
+      isDronePlaying = true;
+      btn.classList.add('active');
+    }
+
+    // Sound 2: Fluorescent Ballast Hum & Micro-Spark
+    function playFlickerSound() {
+      initAudio();
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.type = 'square';
+      osc.frequency.setValueAtTime(120, t);
+      osc.frequency.setValueAtTime(60, t + 0.05);
+
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.15);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.16);
+    }
+
+    // Sound 3: Rotary Telephone Ring / Dial Tone
+    function playPhoneTone() {
+      initAudio();
+      const t = audioCtx.currentTime;
+      const osc1 = audioCtx.createOscillator();
+      const osc2 = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc1.frequency.value = 350;
+      osc2.frequency.value = 440;
+
+      gain.gain.setValueAtTime(0.08, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+
+      osc1.connect(gain);
+      osc2.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc1.start(t);
+      osc2.start(t);
+      osc1.stop(t + 0.65);
+      osc2.stop(t + 0.65);
+    }
+
+    document.getElementById('btn-drone').addEventListener('click', toggleLynchDrone);
+    document.getElementById('btn-flicker').addEventListener('click', playFlickerSound);
+    document.getElementById('btn-phone').addEventListener('click', playPhoneTone);
+
+    /* --------------------------------------------------------------------------
+       6. CINEMATIC CAMERA SCENARIO PRESETS
+       -------------------------------------------------------------------------- */
+    const presets = {
+      overview: {
+        pos: new THREE.Vector3(4.6, 2.9, 5.0),
+        target: new THREE.Vector3(0, 0.85, 0),
+        text: "The room is illuminated by motionless white ceiling light. There are no shadows to hide in."
+      },
+      apparatus: {
+        pos: new THREE.Vector3(0.0, 1.45, 1.8),
+        target: new THREE.Vector3(0, 1.15, 0),
+        text: "Unit 04: The titanium casing is cold. A sealed frequency dial waits for alignment."
+      },
+      telephone: {
+        pos: new THREE.Vector3(0.72, 1.25, 0.75),
+        target: new THREE.Vector3(0.72, 0.86, 0.22),
+        text: "The cream rotary telephone has no cord to the wall. Yet a faint tone hums from the receiver."
+      },
+      envelope: {
+        pos: new THREE.Vector3(-0.7, 1.35, 0.65),
+        target: new THREE.Vector3(-0.7, 0.86, 0.25),
+        text: "The crimson envelope. Sealed with wax. Addressed to: 'Subject 104 - DO NOT UNSEAL'."
+      },
+      door: {
+        pos: new THREE.Vector3(2.4, 1.9, -3.8),
+        target: new THREE.Vector3(3.2, 1.6, -6.75),
+        text: "The exit is flush against the plaster. There is no handle. The indicator light is red."
+      }
+    };
+
+    function transitionScenario(key) {
+      const p = presets[key];
+      if (!p) return;
+
+      controls.enabled = false;
+      new TWEEN.Tween(camera.position)
+        .to({ x: p.pos.x, y: p.pos.y, z: p.pos.z }, 1300)
+        .easing(TWEEN.Easing.Cubic.InOut)
+        .start();
+
+      new TWEEN.Tween(controls.target)
+        .to({ x: p.target.x, y: p.target.y, z: p.target.z }, 1300)
+        .easing(TWEEN.Easing.Cubic.InOut)
+        .onComplete(() => { controls.enabled = true; })
+        .start();
+
+      const subtitleEl = document.getElementById('observation-text');
+      subtitleEl.style.opacity = 0;
+      setTimeout(() => {
+        subtitleEl.textContent = p.text;
+        subtitleEl.style.opacity = 1;
+      }, 350);
+    }
+
+    document.querySelectorAll('.scenario-btn[data-preset]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        transitionScenario(btn.dataset.preset);
+        playFlickerSound();
+      });
+    });
+
+    /* --------------------------------------------------------------------------
+       7. DEDICATED 3D EXAMINATION TURNTABLE MODAL
+       -------------------------------------------------------------------------- */
+    const inspectModal = document.getElementById('inspect-modal');
+    const inspectCanvas = document.getElementById('inspect-canvas');
+    let inspectRenderer = null, inspectScene = null, inspectCamera = null, inspectKeyGroup = null;
+    let isDraggingInspect = false, prevMouse = { x: 0, y: 0 };
+
+    function initInspectTurntable() {
+      if (inspectRenderer) return;
+
+      inspectScene = new THREE.Scene();
+      inspectCamera = new THREE.PerspectiveCamera(36, inspectCanvas.clientWidth / inspectCanvas.clientHeight, 0.1, 20);
+      inspectCamera.position.set(0, 0, 1.85);
+
+      inspectRenderer = new THREE.WebGLRenderer({ canvas: inspectCanvas, alpha: true, antialias: true });
+      inspectRenderer.setSize(inspectCanvas.clientWidth, inspectCanvas.clientHeight);
+      inspectRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+      // Crisp directional studio light for examination
+      const keyLight = new THREE.DirectionalLight(0xfffaea, 2.6);
+      keyLight.position.set(2, 3, 3);
+      inspectScene.add(keyLight);
+
+      const fillLight = new THREE.DirectionalLight(0xdbe6e0, 1.4);
+      fillLight.position.set(-2, -2, -1);
+      inspectScene.add(fillLight);
+
+      inspectScene.add(new THREE.AmbientLight(0xffffff, 1.4));
+
+      // Build Intricate Bauhaus Brass Cipher Key
+      inspectKeyGroup = new THREE.Group();
+      
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.65, 24), mat.brassGold);
+      inspectKeyGroup.add(stem);
+
+      const circularGrip = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.022, 16, 32), mat.brassGold);
+      circularGrip.position.y = 0.38;
+      inspectKeyGroup.add(circularGrip);
+
+      const squareBlock = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.045, 0.18), mat.brushedChrome);
+      squareBlock.position.y = 0.14;
+      inspectKeyGroup.add(squareBlock);
+
+      const pin = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.16, 12), mat.brassGold);
+      pin.rotation.z = Math.PI / 2;
+      pin.position.set(0.065, -0.16, 0);
+      inspectKeyGroup.add(pin);
+
+      inspectKeyGroup.rotation.x = 0.25;
+      inspectKeyGroup.rotation.y = 0.6;
+      inspectScene.add(inspectKeyGroup);
+
+      inspectCanvas.addEventListener('mousedown', (e) => {
+        isDraggingInspect = true;
+        prevMouse = { x: e.clientX, y: e.clientY };
+        inspectCanvas.style.cursor = 'grabbing';
+      });
+
+      window.addEventListener('mouseup', () => {
+        isDraggingInspect = false;
+        if (inspectCanvas) inspectCanvas.style.cursor = 'grab';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingInspect || !inspectKeyGroup) return;
+        const dx = e.clientX - prevMouse.x;
+        const dy = e.clientY - prevMouse.y;
+        inspectKeyGroup.rotation.y += dx * 0.01;
+        inspectKeyGroup.rotation.x += dy * 0.01;
+        prevMouse = { x: e.clientX, y: e.clientY };
+      });
+    }
+
+    function renderInspectLoop() {
+      if (inspectRenderer && inspectModal.classList.contains('open')) {
+        requestAnimationFrame(renderInspectLoop);
+        if (!isDraggingInspect && inspectKeyGroup) {
+          inspectKeyGroup.rotation.y += 0.003;
+        }
+        inspectRenderer.render(inspectScene, inspectCamera);
+      }
+    }
+
+    document.getElementById('btn-inspect-3d').addEventListener('click', () => {
+      inspectModal.classList.add('open');
+      playFlickerSound();
+      setTimeout(() => {
+        initInspectTurntable();
+        inspectCamera.aspect = inspectCanvas.clientWidth / inspectCanvas.clientHeight;
+        inspectCamera.updateProjectionMatrix();
+        inspectRenderer.setSize(inspectCanvas.clientWidth, inspectCanvas.clientHeight);
+        renderInspectLoop();
+      }, 50);
+    });
+
+    document.getElementById('btn-close-inspect').addEventListener('click', () => {
+      inspectModal.classList.remove('open');
+      playFlickerSound();
+    });
+
+    /* --------------------------------------------------------------------------
+       8. RETICLE HOVER DETECTIONS & DYNAMIC LYNCHIAN HINTS
+       -------------------------------------------------------------------------- */
+    const raycaster = new THREE.Raycaster();
+    const mouse = new THREE.Vector2();
+    window.addEventListener('mousemove', (e) => {
+      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouse, camera);
+
+      const intersects = raycaster.intersectObjects(deskGroup.children, true);
+      const subtitle = document.getElementById('observation-text');
+
+      if (intersects.length > 0) {
+        const hit = intersects[0].object;
+        if (hit.name === 'envelope') {
+          subtitle.textContent = "The crimson envelope. It smells faintly of almond oil. Marked: 'DO NOT UNSEAL'.";
+        } else if (hit.name === 'telephone') {
+          subtitle.textContent = "The rotary telephone. The handset is slightly off its cradle.";
+        } else if (hit.name === 'vault' || hit.name === 'dial') {
+          subtitle.textContent = "The titanium vault. A circular brass dial awaits a harmonic carrier.";
+        } else if (hit.name === 'bell_jar' || hit.name === 'brass_key') {
+          subtitle.textContent = "The inverted specimen bell. The brass tuning key is held in stasis.";
+        } else if (hit.name === 'door') {
+          subtitle.textContent = "The sealed firedoor. The indicator above remains blood-red.";
+        }
+      }
+    });
+
+    /* --------------------------------------------------------------------------
+       9. MAIN RENDER LOOP
+       -------------------------------------------------------------------------- */
+    function animate(time) {
+      requestAnimationFrame(animate);
+      TWEEN.update(time);
+      controls.update();
+
+      // Subtle levitation of specimen core inside vault
+      core.rotation.y += 0.008;
+      core.position.y = 1.55 + Math.sin(time * 0.002) * 0.015;
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>

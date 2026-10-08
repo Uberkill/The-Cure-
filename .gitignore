@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+
+# Production build outputs
+dist/
+
+# Graphify generated artifacts
+graphify-out/
+
+# Playwright and test screenshots
+screenshots/
+*.png
+
+# Runtime logs and locks
+*.log
+TASK_LEDGER.lock
+task_state.json
+
+# OS files
+.DS_Store
+Thumbs.db
