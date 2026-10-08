@@ -19,6 +19,10 @@ export class DevTransformGizmo {
   private raycaster: THREE.Raycaster = new THREE.Raycaster();
   private mouse: THREE.Vector2 = new THREE.Vector2();
 
+  public onTransformChange?: (object: THREE.Object3D) => void;
+  public onSelectionChange?: (object: THREE.Object3D | null) => void;
+  public onToggle?: (enabled: boolean) => void;
+
   private keyListener: (e: KeyboardEvent) => void;
   private pointerListener: (e: PointerEvent) => void;
 
@@ -43,6 +47,13 @@ export class DevTransformGizmo {
     this.helper.visible = false;
     this.scene.add(this.helper);
 
+    // Real-time micro-drag synchronization
+    this.transformControls.addEventListener('objectChange', () => {
+      if (this.selectedObject && this.onTransformChange) {
+        this.onTransformChange(this.selectedObject);
+      }
+    });
+
     // Disables OrbitControls and Raycasting while dragging gizmo handles
     this.transformControls.addEventListener('dragging-changed', (event) => {
       const isDragging = !!event.value;
@@ -51,6 +62,9 @@ export class DevTransformGizmo {
 
       if (!isDragging && this.selectedObject) {
         this.logTransform(this.selectedObject);
+        if (this.onTransformChange) {
+          this.onTransformChange(this.selectedObject);
+        }
       }
     });
 
@@ -73,6 +87,10 @@ export class DevTransformGizmo {
       this.detach();
     }
 
+    if (this.onToggle) {
+      this.onToggle(enabled);
+    }
+
     const statusText = enabled ? 'ENABLED (Press W: Move, E: Rotate, R: Scale, Esc: Deselect)' : 'DISABLED';
     this.telemetry.record('info', `[DevTransformGizmo] Mode ${statusText}`);
     this.showToast(`3D Dev Gizmo ${statusText}`);
@@ -88,11 +106,35 @@ export class DevTransformGizmo {
     this.transformControls.attach(object);
     this.telemetry.record('info', `[DevTransformGizmo] Attached to ${object.name || 'unnamed object'}`);
     this.logTransform(object);
+    if (this.onSelectionChange) {
+      this.onSelectionChange(object);
+    }
   }
 
   public detach(): void {
     this.selectedObject = null;
     this.transformControls.detach();
+    if (this.onSelectionChange) {
+      this.onSelectionChange(null);
+    }
+  }
+
+  public setMode(mode: 'translate' | 'rotate' | 'scale'): void {
+    this.transformControls.setMode(mode);
+  }
+
+  public getMode(): string {
+    return this.transformControls.getMode();
+  }
+
+  public getSelectedObject(): THREE.Object3D | null {
+    return this.selectedObject;
+  }
+
+  public syncTransform(): void {
+    if (this.selectedObject) {
+      this.selectedObject.updateMatrixWorld(true);
+    }
   }
 
   private handleKeyDown(e: KeyboardEvent): void {
@@ -110,13 +152,13 @@ export class DevTransformGizmo {
     if (!this.isEnabled) return;
 
     if (e.key === 'w' || e.key === 'W') {
-      this.transformControls.setMode('translate');
+      this.setMode('translate');
       this.showToast('Gizmo Mode: Translate (Move)');
     } else if (e.key === 'e' || e.key === 'E') {
-      this.transformControls.setMode('rotate');
+      this.setMode('rotate');
       this.showToast('Gizmo Mode: Rotate');
     } else if (e.key === 'r' || e.key === 'R') {
-      this.transformControls.setMode('scale');
+      this.setMode('scale');
       this.showToast('Gizmo Mode: Scale');
     } else if (e.key === 'Escape') {
       this.detach();
@@ -140,15 +182,15 @@ export class DevTransformGizmo {
     for (const hit of intersects) {
       let target: THREE.Object3D | null = hit.object;
 
-      // Climb to top-level named prop group
+      // Climb to top-level named prop or door or named component
       while (target && target.parent && target.parent !== this.scene) {
-        if (target.name && target.name.startsWith('prop_')) {
+        if (target.name && (target.name.startsWith('prop_') || target.name.startsWith('door_') || target.name === 'faceplate' || target.name === 'rotaryDial' || target.name === 'knifeSwitch')) {
           break;
         }
         target = target.parent;
       }
 
-      if (target && target.name && target.name.startsWith('prop_')) {
+      if (target && target.name && target.name !== 'Room04_Root') {
         this.attach(target);
         return;
       }

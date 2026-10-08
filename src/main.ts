@@ -14,6 +14,7 @@ import { UIManager } from './ui/UIManager';
 import { CRTNodePatcher } from './entities/CRTNodePatcher';
 import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
 import { DevTransformGizmo } from './interaction/DevTransformGizmo';
+import { Dev3DEditorPanel } from './ui/Dev3DEditorPanel';
 
 class VaultApp {
   public telemetry: Telemetry;
@@ -27,6 +28,7 @@ class VaultApp {
   public raycastManager: RaycastManager;
   public inspectionManager: InspectionManager;
   public devGizmo: DevTransformGizmo;
+  public devEditorPanel: Dev3DEditorPanel;
 
   public scenarioRegistry: ScenarioRegistry;
   public crtNodePatcher: CRTNodePatcher;
@@ -60,6 +62,15 @@ class VaultApp {
       this.cameraDirector.controls,
       this.raycastManager
     );
+    this.devEditorPanel = new Dev3DEditorPanel(
+      this.sceneManager.scene,
+      this.cameraDirector,
+      this.devGizmo
+    );
+    this.devGizmo.onToggle = (enabled) => {
+      if (enabled) this.devEditorPanel.show();
+      else this.devEditorPanel.hide();
+    };
 
     this.scenarioRegistry = ScenarioRegistry.getInstance();
     this.crtNodePatcher = CRTNodePatcher.getInstance();
@@ -82,6 +93,7 @@ class VaultApp {
 
         // Load new room meshes into scene
         await this.scenarioRegistry.loadScenario(nextScenario, this.sceneManager.scene);
+        this.devEditorPanel.populateAssetDropdown();
 
         // Reset camera anchor
         const defaultPreset = nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset;
@@ -124,6 +136,7 @@ class VaultApp {
       const hubScenario = this.scenarioRegistry.getScenario('room_04');
       if (hubScenario) {
         await this.scenarioRegistry.loadScenario(hubScenario, this.sceneManager.scene);
+        this.devEditorPanel.populateAssetDropdown();
       }
       this.telemetry.record('info', 'Central Hub loaded successfully');
 

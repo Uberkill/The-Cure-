@@ -23,6 +23,7 @@
 | **TASK-011** | `interaction` | In-Engine 3D Dev Transform Gizmo & Interactive Prop Tweak | `[COMPLETED]` | HIGH |
 | **TASK-012** | `rendering` | Non-Coplanar Geometry Offsets & Z-Fighting Elimination | `[COMPLETED]` | HIGH |
 | **TASK-013** | `assets` | Hybrid Hero Prop Override Pipeline & Clinical Gallery Painting | `[COMPLETED]` | HIGH |
+| **TASK-014** | `editor` | Dev3DEditorPanel Real-Time Bi-Directional Asset Selector & Batch Launcher | `[COMPLETED]` | HIGH |
 
 ---
 
@@ -41,3 +42,4 @@
 - [x] **TASK-011**: In-Engine 3D Dev Transform Gizmo & Interactive Prop Tweak
 - [x] **TASK-012**: Non-Coplanar Geometry Offsets & Z-Fighting Elimination
 - [x] **TASK-013**: Hybrid Hero Prop Override Pipeline & Clinical Gallery Painting
+- [x] **TASK-014**: Dev3DEditorPanel Real-Time Bi-Directional Asset Selector & Batch Launcher
