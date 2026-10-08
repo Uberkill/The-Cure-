@@ -200,16 +200,25 @@ export class Dev3DEditorPanel {
       if (this.isUpdatingFromUI) return;
       const objs = this.devGizmo.getSelectedObjects();
       if (objs.length === 1 && this.posXInput && this.posYInput && this.posZInput) {
-        objs[0].position.set(
-          parseFloat(this.posXInput.value),
-          parseFloat(this.posYInput.value),
-          parseFloat(this.posZInput.value)
-        );
+        const px = parseFloat(this.posXInput.value);
+        const py = parseFloat(this.posYInput.value);
+        const pz = parseFloat(this.posZInput.value);
+        
+        if (!isNaN(px) && !isNaN(py) && !isNaN(pz)) {
+          objs[0].position.set(px, py, pz);
+        }
+        
         if (rotXInput && rotYInput && rotZInput) {
-          const rx = parseFloat(rotXInput.value) * (Math.PI / 180);
-          const ry = parseFloat(rotYInput.value) * (Math.PI / 180);
-          const rz = parseFloat(rotZInput.value) * (Math.PI / 180);
-          objs[0].rotation.set(rx, ry, rz);
+          const rxRaw = parseFloat(rotXInput.value);
+          const ryRaw = parseFloat(rotYInput.value);
+          const rzRaw = parseFloat(rotZInput.value);
+          
+          if (!isNaN(rxRaw) && !isNaN(ryRaw) && !isNaN(rzRaw)) {
+            const rx = rxRaw * (Math.PI / 180);
+            const ry = ryRaw * (Math.PI / 180);
+            const rz = rzRaw * (Math.PI / 180);
+            objs[0].rotation.set(rx, ry, rz);
+          }
           
           document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
           document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
@@ -259,6 +268,9 @@ export class Dev3DEditorPanel {
       const start = parseFloat(startInput.value);
       const end = parseFloat(endInput.value);
       const progress = parseFloat(scrubInput.value) / 100;
+      
+      if (isNaN(start) || isNaN(end) || isNaN(progress)) return;
+      
       const current = start + (end - start) * progress;
       
       const type = typeSelect.value;

@@ -265,8 +265,9 @@ export class Room04_SterileChamber implements RoomScenario {
   private animateKnifeSwitch(): void {
     if (!this.entities) return;
     const knife = this.entities.knifeSwitch;
-    const startRot = knife.rotation.x;
-    const targetRot = startRot - 0.95;
+    const startRot = knife.userData.animStart !== undefined ? knife.userData.animStart : knife.rotation.x;
+    const targetRot = knife.userData.animEnd !== undefined ? knife.userData.animEnd : startRot - 0.95;
+    knife.rotation.x = startRot;
     const startTime = performance.now();
 
     const switchAnim = () => {
