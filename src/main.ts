@@ -13,6 +13,7 @@ import { ScreenManager } from './ui/ScreenManager';
 import { UIManager } from './ui/UIManager';
 import { CRTNodePatcher } from './entities/CRTNodePatcher';
 import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
+import { DevTransformGizmo } from './interaction/DevTransformGizmo';
 
 class VaultApp {
   public telemetry: Telemetry;
@@ -25,6 +26,7 @@ class VaultApp {
   public cameraDirector: CameraDirector;
   public raycastManager: RaycastManager;
   public inspectionManager: InspectionManager;
+  public devGizmo: DevTransformGizmo;
 
   public scenarioRegistry: ScenarioRegistry;
   public crtNodePatcher: CRTNodePatcher;
@@ -51,6 +53,13 @@ class VaultApp {
       this.sceneManager.renderer.domElement
     );
     this.inspectionManager = new InspectionManager();
+    this.devGizmo = new DevTransformGizmo(
+      this.sceneManager.scene,
+      this.cameraDirector.camera,
+      this.sceneManager.renderer.domElement,
+      this.cameraDirector.controls,
+      this.raycastManager
+    );
 
     this.scenarioRegistry = ScenarioRegistry.getInstance();
     this.crtNodePatcher = CRTNodePatcher.getInstance();

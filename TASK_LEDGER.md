@@ -20,6 +20,9 @@
 | **TASK-008** | `audio` | Web Audio Node Leak Disconnects & Background Tab Synchronization | `[COMPLETED]` | HIGH |
 | **TASK-009** | `entities` | ProceduralRoom04 Modularization into Room04 Sub-Factories | `[COMPLETED]` | HIGH |
 | **TASK-010** | `graphify` | AST Noise Filtering & Knowledge Graph Update | `[COMPLETED]` | MEDIUM |
+| **TASK-011** | `interaction` | In-Engine 3D Dev Transform Gizmo & Interactive Prop Tweak | `[COMPLETED]` | HIGH |
+| **TASK-012** | `rendering` | Non-Coplanar Geometry Offsets & Z-Fighting Elimination | `[COMPLETED]` | HIGH |
+| **TASK-013** | `assets` | Hybrid Hero Prop Override Pipeline & Clinical Gallery Painting | `[COMPLETED]` | HIGH |
 
 ---
 
@@ -35,3 +38,6 @@
 - [x] **TASK-008**: Web Audio Node Leak Disconnects & Background Tab Synchronization
 - [x] **TASK-009**: ProceduralRoom04 Modularization into Room04 Sub-Factories
 - [x] **TASK-010**: AST Noise Filtering & Knowledge Graph Update
+- [x] **TASK-011**: In-Engine 3D Dev Transform Gizmo & Interactive Prop Tweak
+- [x] **TASK-012**: Non-Coplanar Geometry Offsets & Z-Fighting Elimination
+- [x] **TASK-013**: Hybrid Hero Prop Override Pipeline & Clinical Gallery Painting

@@ -30,7 +30,7 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
 
   // Left Console Faceplate (Chalk Accent)
   const faceplate = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.44, 0.02), mat.chalkUpperWall);
-  faceplate.position.set(-0.25, 0.27, 0.385);
+  faceplate.position.set(-0.25, 0.27, 0.392);
   faceplate.castShadow = true;
   faceplate.name = 'prop_vault';
   vaultGroup.add(faceplate);
@@ -39,19 +39,19 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   const dialGeo = new THREE.CylinderGeometry(0.075, 0.075, 0.03, 32);
   const rotaryDial = new THREE.Mesh(dialGeo, mat.brassGold);
   rotaryDial.rotation.x = Math.PI / 2;
-  rotaryDial.position.set(-0.25, 0.33, 0.405);
+  rotaryDial.position.set(-0.25, 0.33, 0.418);
   rotaryDial.castShadow = true;
   rotaryDial.name = 'prop_vault';
   vaultGroup.add(rotaryDial);
 
   const dialIndicator = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.015, 12), mat.brassGold);
   dialIndicator.rotation.x = Math.PI / 2;
-  dialIndicator.position.set(-0.25, 0.42, 0.40);
+  dialIndicator.position.set(-0.25, 0.42, 0.418);
   vaultGroup.add(dialIndicator);
 
   // Knife Switch Relay on Left Faceplate
   const knifeSwitch = new THREE.Group();
-  knifeSwitch.position.set(-0.25, 0.16, 0.40);
+  knifeSwitch.position.set(-0.25, 0.16, 0.404);
   const switchBase = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.02), mat.brassGold);
   switchBase.position.set(0, 0, 0.01);
   knifeSwitch.add(switchBase);
@@ -64,11 +64,11 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
 
   // Right Console CRT Display Bezel & Screen
   const crtBezel = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.44, 0.02), mat.titaniumChassis);
-  crtBezel.position.set(0.25, 0.27, 0.385);
+  crtBezel.position.set(0.25, 0.27, 0.392);
   vaultGroup.add(crtBezel);
 
   const crt = new THREE.Mesh(new THREE.PlaneGeometry(0.40, 0.38), mat.crtScreen);
-  crt.position.set(0.25, 0.27, 0.398);
+  crt.position.set(0.25, 0.27, 0.404);
   vaultGroup.add(crt);
 
   // Top Containment Glass Dome & Specimen Core

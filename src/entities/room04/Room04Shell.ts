@@ -138,17 +138,17 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   leftWallGroup.add(leftUpperFront);
 
   const exitDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.24, 1.64), mat.chalkUpperWall);
-  exitDoorFrame.position.set(-6.74, 1.6, -3.0);
+  exitDoorFrame.position.set(-6.75, 1.6, -3.0);
   exitDoorFrame.receiveShadow = false;
   leftWallGroup.add(exitDoorFrame);
 
-  const exitArchReveal = new THREE.Mesh(new THREE.BoxGeometry(0.22, 3.08, 1.52), mat.brassGold);
-  exitArchReveal.position.set(-6.73, 1.54, -3.0);
+  const exitArchReveal = new THREE.Mesh(new THREE.BoxGeometry(0.20, 3.08, 1.52), mat.brassGold);
+  exitArchReveal.position.set(-6.71, 1.54, -3.0);
   exitArchReveal.receiveShadow = false;
   leftWallGroup.add(exitArchReveal);
 
-  const exitDoorPanel = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.96, 1.40), mat.titaniumChassis);
-  exitDoorPanel.position.set(-6.72, 1.48, -3.0);
+  const exitDoorPanel = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.96, 1.40), mat.titaniumChassis);
+  exitDoorPanel.position.set(-6.73, 1.48, -3.0);
   exitDoorPanel.name = 'prop_door';
   exitDoorPanel.receiveShadow = false;
   leftWallGroup.add(exitDoorPanel);
@@ -205,6 +205,22 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
     rightWallGroup.add(slat);
   }
 
+  // Clinical Blueprint / Gallery Painting on Right Wall
+  const paintingGroup = new THREE.Group();
+  paintingGroup.name = 'prop_painting';
+  paintingGroup.position.set(6.67, 3.4, 3.2);
+
+  const paintingFrame = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.4, 1.8), mat.smokedTeak);
+  paintingFrame.castShadow = true;
+  paintingGroup.add(paintingFrame);
+
+  const paintingCanvas = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 1.28), mat.chalkUpperWall);
+  paintingCanvas.rotation.y = -Math.PI / 2;
+  paintingCanvas.position.x = -0.022;
+  paintingGroup.add(paintingCanvas);
+
+  rightWallGroup.add(paintingGroup);
+
   // 5. Front Wall with Tile Wainscot & Intake Observation Window
   const frontWallGroup = new THREE.Group();
   const frontTile = new THREE.Mesh(new THREE.BoxGeometry(14, 2.2, 0.22), mat.ceramicGreenTiles);
@@ -223,12 +239,12 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   frontDado.position.set(0, 2.22, 6.77);
   frontWallGroup.add(frontDado);
 
-  const obsFrame = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.0, 0.24), mat.titaniumChassis);
-  obsFrame.position.set(0, 3.2, 6.75);
+  const obsFrame = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.0, 0.18), mat.titaniumChassis);
+  obsFrame.position.set(0, 3.2, 6.66);
   frontWallGroup.add(obsFrame);
 
-  const obsGlass = new THREE.Mesh(new THREE.BoxGeometry(3.3, 1.8, 0.06), mat.vintageCream);
-  obsGlass.position.set(0, 3.2, 6.74);
+  const obsGlass = new THREE.Mesh(new THREE.BoxGeometry(3.3, 1.8, 0.02), mat.vintageCream);
+  obsGlass.position.set(0, 3.2, 6.67);
   frontWallGroup.add(obsGlass);
 
   // 6. Architectural Ceiling & Cove Frame (y = 5.5)

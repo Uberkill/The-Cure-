@@ -5,6 +5,7 @@ import { EventBus } from '../core/EventBus';
 import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
 import { HubDecayManager } from '../entities/HubDecayManager';
+import { ModelLoader } from '../loaders/ModelLoader';
 
 export class Room04_SterileChamber implements RoomScenario {
   public id = 'room_04';
@@ -114,6 +115,19 @@ export class Room04_SterileChamber implements RoomScenario {
     }
     if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
       (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
+    }
+
+    // Optional override for self-contained hero props if custom Blender .glb models are present in /assets/models/
+    try {
+      const loader = ModelLoader.getInstance();
+      const customPhone = await loader.loadProp('prop_telephone', () => this.entities!.telephone);
+      if (customPhone !== this.entities.telephone) {
+        this.entities.group.remove(this.entities.telephone);
+        customPhone.name = 'prop_telephone';
+        this.entities.group.add(customPhone);
+      }
+    } catch {
+      // Procedural fallback already active
     }
 
     return this.entities.group;
