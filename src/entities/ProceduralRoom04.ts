@@ -17,6 +17,9 @@ export interface Room04Entities {
   cipherKey: THREE.Group;
   crimsonEnvelope: THREE.Mesh;
   telephone: THREE.Group;
+  desk: THREE.Group;
+  chair: THREE.Group;
+  planter: THREE.Group;
   doorLed: THREE.Mesh;
   exitDoorPanel: THREE.Mesh;
   corridorDoor: THREE.Mesh;
@@ -65,6 +68,9 @@ export class ProceduralRoom04 {
       cipherKey: props.cipherKey,
       crimsonEnvelope: props.crimsonEnvelope,
       telephone: props.telephone,
+      desk: furniture.deskGroup,
+      chair: furniture.chairGroup,
+      planter: furniture.planterGroup,
       doorLed: shell.doorLed,
       exitDoorPanel: shell.exitDoorPanel,
       corridorDoor: shell.corridorDoor,

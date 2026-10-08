@@ -61,6 +61,7 @@ export function buildRoom04Furniture(mat: Room04MaterialPalette): Room04Furnitur
 
   // Brutalist Planter Beside Desk
   const planterGroup = new THREE.Group();
+  planterGroup.name = 'prop_planter';
   planterGroup.position.set(2.2, 0, -0.2);
 
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.18, 0.5, 24), mat.chalkUpperWall);

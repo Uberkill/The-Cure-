@@ -122,11 +122,23 @@ export class Room04_SterileChamber implements RoomScenario {
     // Optional override for self-contained hero props if custom Blender .glb models are present in /assets/models/
     try {
       const loader = ModelLoader.getInstance();
-      const customPhone = await loader.loadProp('prop_telephone', () => this.entities!.telephone);
-      if (customPhone !== this.entities.telephone) {
-        this.entities.group.remove(this.entities.telephone);
-        customPhone.name = 'prop_telephone';
-        this.entities.group.add(customPhone);
+      
+      const propsToLoad = [
+        { name: 'prop_telephone', fallback: this.entities.telephone },
+        { name: 'prop_desk', fallback: this.entities.desk },
+        { name: 'prop_chair', fallback: this.entities.chair },
+        { name: 'prop_planter', fallback: this.entities.planter },
+        { name: 'prop_key', fallback: this.entities.cipherKey }
+      ];
+
+      for (const p of propsToLoad) {
+        if (!p.fallback) continue;
+        const custom = await loader.loadProp(p.name, () => p.fallback as THREE.Group);
+        if (custom !== p.fallback) {
+          this.entities.group.remove(p.fallback);
+          custom.name = p.name;
+          this.entities.group.add(custom);
+        }
       }
     } catch {
       // Procedural fallback already active

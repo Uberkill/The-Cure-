@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox.js';
 import { RaycastManager } from './RaycastManager';
 
 export class DevTransformGizmo {
@@ -23,12 +24,19 @@ export class DevTransformGizmo {
   private pivotStartScale = new THREE.Vector3();
   private objectStartStates: Map<THREE.Object3D, { pos: THREE.Vector3, quat: THREE.Quaternion, scale: THREE.Vector3 }> = new Map();
 
+  private selectionBox: SelectionBox;
+  private marqueeDiv: HTMLDivElement;
+  private isMarqueeDragging: boolean = false;
+  private marqueeStartPoint = new THREE.Vector2();
+  
   public onTransformChange?: (objects: THREE.Object3D[]) => void;
   public onSelectionChange?: (objects: THREE.Object3D[]) => void;
   public onToggle?: (enabled: boolean) => void;
 
   private keyListener: (e: KeyboardEvent) => void;
   private pointerListener: (e: PointerEvent) => void;
+  private pointerMoveListener: (e: PointerEvent) => void;
+  private pointerUpListener: (e: PointerEvent) => void;
 
   constructor(
     scene: THREE.Scene,
@@ -51,6 +59,29 @@ export class DevTransformGizmo {
     this.helper = this.transformControls.getHelper();
     this.helper.visible = false;
     this.scene.add(this.helper);
+
+    this.selectionBox = new SelectionBox(this.camera, this.scene);
+    
+    // Inject CSS for marquee box
+    if (!document.getElementById('gizmo-marquee-style')) {
+      const style = document.createElement('style');
+      style.id = 'gizmo-marquee-style';
+      style.textContent = `
+        .selectBox {
+          border: 1px solid rgba(255, 255, 255, 0.8);
+          background-color: rgba(255, 255, 255, 0.1);
+          position: fixed;
+          pointer-events: none;
+          z-index: 9999;
+          display: none;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+    
+    this.marqueeDiv = document.createElement('div');
+    this.marqueeDiv.classList.add('selectBox');
+    this.domElement.parentElement?.appendChild(this.marqueeDiv);
 
     // Apply delta transforms to all selected objects
     this.transformControls.addEventListener('objectChange', () => {
@@ -98,9 +129,13 @@ export class DevTransformGizmo {
 
     this.keyListener = this.handleKeyDown.bind(this);
     this.pointerListener = this.handlePointerDown.bind(this);
+    this.pointerMoveListener = this.handlePointerMove.bind(this);
+    this.pointerUpListener = this.handlePointerUp.bind(this);
 
     window.addEventListener('keydown', this.keyListener);
     this.domElement.addEventListener('pointerdown', this.pointerListener);
+    this.domElement.addEventListener('pointermove', this.pointerMoveListener);
+    window.addEventListener('pointerup', this.pointerUpListener); // window so it fires even if dragged outside
   }
 
   public setEnabled(enabled: boolean): void {
@@ -198,6 +233,8 @@ export class DevTransformGizmo {
     }
   }
 
+  private clipboard: THREE.Object3D[] = [];
+
   private handleKeyDown(e: KeyboardEvent): void {
     // Input guard: ignore hotkeys if typing in input, textarea, or contentEditable
     const active = document.activeElement;
@@ -211,6 +248,47 @@ export class DevTransformGizmo {
     }
 
     if (!this.isEnabled) return;
+
+    if (e.ctrlKey || e.metaKey) {
+      if (e.key === 'c' || e.key === 'C') {
+        if (this.selectedObjects.length > 0) {
+          this.clipboard = this.selectedObjects.map(obj => obj.clone());
+          this.showToast(`Copied ${this.clipboard.length} object(s)`);
+        }
+        return;
+      }
+      if (e.key === 'v' || e.key === 'V') {
+        if (this.clipboard.length > 0) {
+          const pasted: THREE.Object3D[] = [];
+          for (const clip of this.clipboard) {
+            const clone = clip.clone();
+            const id = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+              const r = Math.random() * 16 | 0;
+              return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+            });
+            
+            // Re-name and setup userData for prefabs
+            const baseName = clone.name.split('_')[1] || clone.name;
+            clone.name = `prefab_${baseName}_${id.split('-')[0]}`;
+            clone.userData = { ...clone.userData, isPrefab: true, prefabType: baseName, prefabId: id };
+            
+            // Offset to prevent z-fighting
+            clone.position.add(new THREE.Vector3(0.1, 0, 0.1));
+            
+            this.scene.add(clone);
+            pasted.push(clone);
+          }
+          this.attachMultiple(pasted);
+          this.showToast(`Pasted ${pasted.length} object(s)`);
+          
+          // Trigger save via change event
+          if (this.onTransformChange) {
+            this.onTransformChange(this.selectedObjects);
+          }
+        }
+        return;
+      }
+    }
 
     if (e.key === 'w' || e.key === 'W') {
       this.setMode('translate');
@@ -267,9 +345,90 @@ export class DevTransformGizmo {
       }
     }
     
-    // If clicked empty space without shift, deselect
+    // If clicked empty space
     if (!e.shiftKey) {
       this.detach();
+    }
+    
+    // Only allow marquee drag on left click
+    if (e.button === 0) {
+      this.isMarqueeDragging = true;
+      this.marqueeStartPoint.set(e.clientX, e.clientY);
+      this.marqueeDiv.style.left = e.clientX + 'px';
+      this.marqueeDiv.style.top = e.clientY + 'px';
+      this.marqueeDiv.style.width = '0px';
+      this.marqueeDiv.style.height = '0px';
+      this.marqueeDiv.style.display = 'block';
+      this.orbitControls.enabled = false;
+    }
+  }
+
+  private handlePointerMove(e: PointerEvent): void {
+    if (!this.isMarqueeDragging) return;
+
+    const currentX = e.clientX;
+    const currentY = e.clientY;
+
+    const left = Math.min(this.marqueeStartPoint.x, currentX);
+    const top = Math.min(this.marqueeStartPoint.y, currentY);
+    const width = Math.max(this.marqueeStartPoint.x, currentX) - left;
+    const height = Math.max(this.marqueeStartPoint.y, currentY) - top;
+
+    this.marqueeDiv.style.left = left + 'px';
+    this.marqueeDiv.style.top = top + 'px';
+    this.marqueeDiv.style.width = width + 'px';
+    this.marqueeDiv.style.height = height + 'px';
+  }
+
+  private handlePointerUp(e: PointerEvent): void {
+    if (!this.isMarqueeDragging) return;
+
+    this.isMarqueeDragging = false;
+    this.marqueeDiv.style.display = 'none';
+    this.orbitControls.enabled = true;
+
+    // Check if it was actually a drag (not just a click)
+    const dx = Math.abs(e.clientX - this.marqueeStartPoint.x);
+    const dy = Math.abs(e.clientY - this.marqueeStartPoint.y);
+    if (dx < 5 && dy < 5) return;
+
+    // Use SelectionBox to find objects
+    const rect = this.domElement.getBoundingClientRect();
+    const startPoint = new THREE.Vector3(
+      ((this.marqueeStartPoint.x - rect.left) / rect.width) * 2 - 1,
+      -((this.marqueeStartPoint.y - rect.top) / rect.height) * 2 + 1,
+      0.5
+    );
+    const endPoint = new THREE.Vector3(
+      ((e.clientX - rect.left) / rect.width) * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1,
+      0.5
+    );
+
+    const collection = this.selectionBox.select(startPoint, endPoint);
+
+    // Filter to valid parents (similar to raycaster logic)
+    const newSelection = new Set<THREE.Object3D>([...this.selectedObjects]);
+
+    for (const obj of collection) {
+      if (obj.name === 'Editor_Helpers_Group' || obj.userData.isHelper) continue;
+
+      let target: THREE.Object3D | null = obj;
+      while (target && target.parent && target.parent !== this.scene) {
+        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_') || target.name === 'faceplate' || target.name === 'rotaryDial' || target.name === 'knifeSwitch') {
+          break;
+        }
+        target = target.parent;
+      }
+
+      if (target && target.name && target.name !== 'Room04_Root') {
+        newSelection.add(target);
+      }
+    }
+
+    this.attachMultiple(Array.from(newSelection));
+    if (newSelection.size > 0) {
+      this.showToast(`Selected ${newSelection.size} object(s)`);
     }
   }
 
@@ -304,7 +463,10 @@ export class DevTransformGizmo {
   public dispose(): void {
     window.removeEventListener('keydown', this.keyListener);
     this.domElement.removeEventListener('pointerdown', this.pointerListener);
+    this.domElement.removeEventListener('pointermove', this.pointerMoveListener);
+    window.removeEventListener('pointerup', this.pointerUpListener);
     this.transformControls.dispose();
     this.scene.remove(this.helper);
+    this.marqueeDiv.remove();
   }
 }
