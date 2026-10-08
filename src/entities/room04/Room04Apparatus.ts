@@ -32,7 +32,7 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   const faceplate = new THREE.Mesh(new THREE.BoxGeometry(0.48, 0.44, 0.02), mat.chalkUpperWall);
   faceplate.position.set(-0.25, 0.27, 0.392);
   faceplate.castShadow = true;
-  faceplate.name = 'prop_vault';
+  faceplate.name = 'vault_faceplate';
   vaultGroup.add(faceplate);
 
   // Rotary Brass Dial on Left Faceplate
@@ -41,17 +41,19 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   rotaryDial.rotation.x = Math.PI / 2;
   rotaryDial.position.set(-0.25, 0.33, 0.418);
   rotaryDial.castShadow = true;
-  rotaryDial.name = 'prop_vault';
+  rotaryDial.name = 'vault_dial';
   vaultGroup.add(rotaryDial);
 
   const dialIndicator = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.015, 12), mat.brassGold);
   dialIndicator.rotation.x = Math.PI / 2;
   dialIndicator.position.set(-0.25, 0.42, 0.418);
+  dialIndicator.name = 'vault_dial_indicator';
   vaultGroup.add(dialIndicator);
 
   // Knife Switch Relay on Left Faceplate
   const knifeSwitch = new THREE.Group();
   knifeSwitch.position.set(-0.25, 0.16, 0.404);
+  knifeSwitch.name = 'vault_knife_switch';
   const switchBase = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.14, 0.02), mat.brassGold);
   switchBase.position.set(0, 0, 0.01);
   knifeSwitch.add(switchBase);
@@ -65,10 +67,12 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   // Right Console CRT Display Bezel & Screen
   const crtBezel = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.44, 0.02), mat.titaniumChassis);
   crtBezel.position.set(0.25, 0.27, 0.392);
+  crtBezel.name = 'vault_crt_bezel';
   vaultGroup.add(crtBezel);
 
   const crt = new THREE.Mesh(new THREE.PlaneGeometry(0.40, 0.38), mat.crtScreen);
   crt.position.set(0.25, 0.27, 0.404);
+  crt.name = 'vault_crt_screen';
   vaultGroup.add(crt);
 
   // Top Containment Glass Dome & Specimen Core
@@ -76,6 +80,7 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   containmentBell.position.set(0, 0.72, 0);
   containmentBell.castShadow = true;
   containmentBell.renderOrder = 10;
+  containmentBell.name = 'containment_bell';
   vaultGroup.add(containmentBell);
 
   const coreGeo = new THREE.OctahedronGeometry(0.09, 0);
@@ -88,6 +93,7 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   const specimenCore = new THREE.Mesh(coreGeo, coreMat);
   specimenCore.position.set(0, 0.72, 0);
   specimenCore.renderOrder = 0;
+  specimenCore.name = 'specimen_core';
   vaultGroup.add(specimenCore);
 
   return {

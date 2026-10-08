@@ -148,7 +148,9 @@ export class AudioEngine {
       try {
         this.sweepTracker.osc.stop();
         this.sweepTracker.osc.disconnect();
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
       this.sweepTracker.osc = null;
       this.sweepTracker.gain = null;
     }
@@ -326,7 +328,9 @@ export class AudioEngine {
           osc1.disconnect();
           osc2.disconnect();
           gain.disconnect();
-        } catch {}
+        } catch (err: unknown) {
+          void err;
+        }
       };
     };
 
@@ -385,7 +389,9 @@ export class AudioEngine {
           try {
             osc.disconnect();
             gain.disconnect();
-          } catch {}
+          } catch (err: unknown) {
+            void err;
+          }
         };
       });
     };
@@ -456,7 +462,9 @@ export class AudioEngine {
       try {
         osc.disconnect();
         gain.disconnect();
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
     };
   }
 }

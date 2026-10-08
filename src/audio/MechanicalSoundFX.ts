@@ -25,7 +25,9 @@ export class MechanicalSoundFX {
       try {
         osc.disconnect();
         gain.disconnect();
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
     };
   }
 
@@ -65,7 +67,9 @@ export class MechanicalSoundFX {
         noise.disconnect();
         filter.disconnect();
         gain.disconnect();
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
     };
   }
 
@@ -91,7 +95,9 @@ export class MechanicalSoundFX {
       try {
         osc.disconnect();
         gain.disconnect();
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
     };
   }
 
@@ -109,7 +115,9 @@ export class MechanicalSoundFX {
         sweepTracker.gain.gain.setValueAtTime(sweepTracker.gain.gain.value, now);
         sweepTracker.gain.gain.linearRampToValueAtTime(0.0001, now + 0.02);
         sweepTracker.osc.stop(now + 0.025);
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
     }
 
     const osc = ctx.createOscillator();
@@ -134,7 +142,9 @@ export class MechanicalSoundFX {
       try {
         osc.disconnect();
         gain.disconnect();
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
       if (sweepTracker.osc === osc) {
         sweepTracker.osc = null;
         sweepTracker.gain = null;
@@ -163,7 +173,9 @@ export class MechanicalSoundFX {
       try {
         osc.disconnect();
         gain.disconnect();
-      } catch {}
+      } catch (err: unknown) {
+        void err;
+      }
     };
   }
 }

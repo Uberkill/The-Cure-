@@ -85,14 +85,17 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   // Decorative Brass Arch Reveal Liners
   const revealLeft = new THREE.Mesh(new THREE.BoxGeometry(0.03, 3.02, 0.24), mat.brassGold);
   revealLeft.position.set(-0.84, 1.51, -6.75);
+  revealLeft.name = 'corridor_reveal_left';
   backWallGroup.add(revealLeft);
 
   const revealRight = new THREE.Mesh(new THREE.BoxGeometry(0.03, 3.02, 0.24), mat.brassGold);
   revealRight.position.set(0.84, 1.51, -6.75);
+  revealRight.name = 'corridor_reveal_right';
   backWallGroup.add(revealRight);
 
   const revealTop = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.03, 0.24), mat.brassGold);
   revealTop.position.set(0, 3.01, -6.75);
+  revealTop.name = 'corridor_reveal_top';
   backWallGroup.add(revealTop);
 
   // Recessed Corridor Passage Void (extends back to z = -7.8)
@@ -214,14 +217,17 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   // Decorative Brass Arch Reveal Liners for Exit
   const exitRevealBack = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.02, 0.03), mat.brassGold);
   exitRevealBack.position.set(-6.75, 1.51, -3.64);
+  exitRevealBack.name = 'exit_reveal_back';
   leftWallGroup.add(exitRevealBack);
 
   const exitRevealFront = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.02, 0.03), mat.brassGold);
   exitRevealFront.position.set(-6.75, 1.51, -2.36);
+  exitRevealFront.name = 'exit_reveal_front';
   leftWallGroup.add(exitRevealFront);
 
   const exitRevealTop = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 1.28), mat.brassGold);
   exitRevealTop.position.set(-6.75, 3.01, -3.0);
+  exitRevealTop.name = 'exit_reveal_top';
   leftWallGroup.add(exitRevealTop);
 
   // Recessed Airlock Exit Passage Void (extends back to x = -7.8)
@@ -351,10 +357,12 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
 
   const obsFrame = new THREE.Mesh(new THREE.BoxGeometry(3.6, 2.0, 0.18), mat.titaniumChassis);
   obsFrame.position.set(0, 3.2, 6.66);
+  obsFrame.name = 'obs_frame';
   frontWallGroup.add(obsFrame);
 
   const obsGlass = new THREE.Mesh(new THREE.BoxGeometry(3.3, 1.8, 0.02), mat.vintageCream);
   obsGlass.position.set(0, 3.2, 6.67);
+  obsGlass.name = 'obs_glass';
   frontWallGroup.add(obsGlass);
 
   // 6. Architectural Ceiling & Cove Frame (y = 5.5)
