@@ -16,6 +16,10 @@
 | **TASK-004** | `docs` | Graphify Knowledge Graph & Onboarding Documentation | `[COMPLETED]` | MEDIUM |
 | **TASK-005** | `testing` | Audio Cascading Prevention & 3D Stress Testing Suite | `[COMPLETED]` | HIGH |
 | **TASK-006** | `architecture` | Room 04 Door Layout, Z-Fighting Elimination & Audio Settings UI | `[COMPLETED]` | HIGH |
+| **TASK-007** | `hygiene` | Root Directory Cleanup, Git Initialization & Screenshot Isolation | `[COMPLETED]` | HIGH |
+| **TASK-008** | `audio` | Web Audio Node Leak Disconnects & Background Tab Synchronization | `[COMPLETED]` | HIGH |
+| **TASK-009** | `entities` | ProceduralRoom04 Modularization into Room04 Sub-Factories | `[COMPLETED]` | HIGH |
+| **TASK-010** | `graphify` | AST Noise Filtering & Knowledge Graph Update | `[COMPLETED]` | MEDIUM |
 
 ---
 
@@ -27,3 +31,7 @@
 - [x] **TASK-004**: Graphify Knowledge Graph & Onboarding Documentation
 - [x] **TASK-005**: Audio Cascading Prevention & 3D Stress Testing Suite
 - [x] **TASK-006**: Room 04 Door Layout, Z-Fighting Elimination & Audio Settings UI
+- [x] **TASK-007**: Root Directory Cleanup, Git Initialization & Screenshot Isolation
+- [x] **TASK-008**: Web Audio Node Leak Disconnects & Background Tab Synchronization
+- [x] **TASK-009**: ProceduralRoom04 Modularization into Room04 Sub-Factories
+- [x] **TASK-010**: AST Noise Filtering & Knowledge Graph Update
