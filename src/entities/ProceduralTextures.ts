@@ -13,11 +13,11 @@ export class ProceduralTextures {
     bumpCanvas.height = size;
     const bumpCtx = bumpCanvas.getContext('2d')!;
 
-    // Recessed dark grout base
-    ctx.fillStyle = '#1c2822';
+    // Recessed clinical dark green grout base
+    ctx.fillStyle = '#22352b';
     ctx.fillRect(0, 0, size, size);
 
-    bumpCtx.fillStyle = '#111111';
+    bumpCtx.fillStyle = '#181818';
     bumpCtx.fillRect(0, 0, size, size);
 
     const tileSize = 64;
@@ -25,23 +25,26 @@ export class ProceduralTextures {
 
     for (let y = 0; y < size; y += tileSize) {
       for (let x = 0; x < size; x += tileSize) {
-        // Subtle organic variation between glazed tiles
-        const shade = Math.floor(Math.random() * 12 - 6);
-        ctx.fillStyle = `rgb(${43 + shade}, ${74 + shade}, ${60 + shade})`;
+        // Organic tile variation calibrated for sRGB-to-Linear pipeline (matches style_showcase reflectance)
+        const shade = Math.floor(Math.random() * 14 - 7);
+        const r = Math.min(255, Math.max(0, 108 + shade));
+        const g = Math.min(255, Math.max(0, 146 + Math.floor(shade * 1.2)));
+        const b = Math.min(255, Math.max(0, 130 + shade));
+        ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
         ctx.fillRect(x + gap, y + gap, tileSize - gap * 2, tileSize - gap * 2);
 
-        // Top/Left glazed bevel highlight
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.16)';
+        // Crisp glazed bevel highlight
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.42)';
         ctx.fillRect(x + gap, y + gap, tileSize - gap * 2, 2);
         ctx.fillRect(x + gap, y + gap, 2, tileSize - gap * 2);
 
         // Bottom/Right bevel shade
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.35)';
+        ctx.fillStyle = 'rgba(20, 35, 28, 0.38)';
         ctx.fillRect(x + gap, y + tileSize - gap - 2, tileSize - gap * 2, 2);
         ctx.fillRect(x + tileSize - gap - 2, y + gap, 2, tileSize - gap * 2);
 
-        // Bump map: raised tile face
-        bumpCtx.fillStyle = '#dddddd';
+        // Bump map: raised tile face with crisp edges
+        bumpCtx.fillStyle = '#e8e8e8';
         bumpCtx.fillRect(x + gap, y + gap, tileSize - gap * 2, tileSize - gap * 2);
       }
     }
@@ -67,12 +70,12 @@ export class ProceduralTextures {
     canvas.height = size;
     const ctx = canvas.getContext('2d')!;
 
-    // Pale clinical terrazzo base
-    ctx.fillStyle = '#c5cdc2';
+    // Pale clinical alabaster terrazzo base (matches style_showcase #dbe0d9)
+    ctx.fillStyle = '#dce2da';
     ctx.fillRect(0, 0, size, size);
 
     // Symmetrical brass grout dividers
-    ctx.strokeStyle = '#9ea89b';
+    ctx.strokeStyle = '#b29d7c';
     ctx.lineWidth = 2;
     for (let i = 0; i <= size; i += 128) {
       ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, size); ctx.stroke();
@@ -80,13 +83,14 @@ export class ProceduralTextures {
     }
 
     // Terrazzo aggregate chips
-    for (let i = 0; i < 450; i++) {
+    for (let i = 0; i < 480; i++) {
       const x = Math.random() * size;
       const y = Math.random() * size;
       const r = Math.random() * 2.5 + 0.6;
-      const color = Math.random() > 0.5
-        ? 'rgba(45, 74, 62, 0.45)'
-        : (Math.random() > 0.5 ? 'rgba(255, 255, 255, 0.75)' : 'rgba(30, 42, 35, 0.4)');
+      const rand = Math.random();
+      const color = rand > 0.65
+        ? 'rgba(45, 74, 62, 0.50)'
+        : (rand > 0.30 ? 'rgba(255, 255, 255, 0.85)' : 'rgba(40, 50, 44, 0.35)');
       ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);

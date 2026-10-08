@@ -22,7 +22,7 @@ export class SceneManager {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 0.98;
+    this.renderer.toneMappingExposure = 1.05;
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
 
@@ -33,29 +33,32 @@ export class SceneManager {
   }
 
   private setupLighting(): void {
-    // 1. Ambient Fill (low intensity allows deep shadows)
-    const ambientLight = new THREE.AmbientLight(0xcfd8cf, 0.52);
+    // 1. High-Key Clinical Ambient Fill (bright sterile daylight base)
+    const ambientLight = new THREE.AmbientLight(0xd4ded6, 0.65);
     this.scene.add(ambientLight);
 
-    // 2. Focused Surgical Task Spotlight over central desk
-    const deskSpot = new THREE.SpotLight(0xfff6eb, 3.6, 14, Math.PI / 3.4, 0.45, 1.2);
-    deskSpot.position.set(1.8, 5.8, 2.6);
+    // 2. Focused Surgical Task Spotlight aligned with ceiling luminaire diffuser
+    const deskSpot = new THREE.SpotLight(0xfff7ee, 4.0, 14, Math.PI / 3.3, 0.45, 1.2);
+    deskSpot.position.set(0.1, 5.36, 0.3);
+    deskSpot.target.position.set(0, 0.8, 0);
+    this.scene.add(deskSpot.target);
+
     deskSpot.castShadow = true;
     deskSpot.shadow.mapSize.width = 2048;
     deskSpot.shadow.mapSize.height = 2048;
-    deskSpot.shadow.bias = -0.00002;
-    deskSpot.shadow.normalBias = 0.04;
+    deskSpot.shadow.bias = -0.0001;
+    deskSpot.shadow.normalBias = 0.02;
     this.scene.add(deskSpot);
 
-    // 3. Directional Key Light from Ceiling (diffuse fill, no grazing wall shadows)
-    const keyLight = new THREE.DirectionalLight(0xfff5ea, 1.4);
-    keyLight.position.set(3.5, 6.0, 3.0);
+    // 3. Directional Key Light from High Upper Angle (diffuse high-key fill, no shadow pass overhead)
+    const keyLight = new THREE.DirectionalLight(0xf2f7f2, 1.6);
+    keyLight.position.set(-3.2, 7.0, 3.5);
     keyLight.castShadow = false;
     this.scene.add(keyLight);
 
-    // 4. Cool Rim Light from Upper Left Cove
-    const coolRimLight = new THREE.DirectionalLight(0xbad2c8, 0.85);
-    coolRimLight.position.set(-4, 5, -2);
+    // 4. Cool Rim Light for Architectural Aperture Highlights
+    const coolRimLight = new THREE.DirectionalLight(0xc0d8cc, 0.75);
+    coolRimLight.position.set(-4.5, 4.8, -2.5);
     this.scene.add(coolRimLight);
   }
 

@@ -14,6 +14,8 @@ export interface Room04MaterialPalette {
   sageAccent: THREE.MeshStandardMaterial;
   glass: THREE.MeshPhysicalMaterial;
   crtScreen: THREE.MeshBasicMaterial;
+  luminaireHousing: THREE.MeshStandardMaterial;
+  luminaireDiffuser: THREE.MeshBasicMaterial;
 }
 
 export interface Room04MaterialResult {
@@ -28,19 +30,19 @@ export function createRoom04Materials(): Room04MaterialResult {
 
   const materials: Room04MaterialPalette = {
     chalkUpperWall: new THREE.MeshStandardMaterial({
-      color: 0xe2e6e0,
-      roughness: 0.85,
+      color: 0xedf0eb,
+      roughness: 0.82,
       metalness: 0.02
     }),
     ceramicGreenTiles: new THREE.MeshStandardMaterial({
-      roughness: 0.25,
+      roughness: 0.22,
       metalness: 0.12,
       map: tileMap,
       bumpMap: tileBump,
       bumpScale: 0.04
     }),
     terrazzoFloor: new THREE.MeshStandardMaterial({
-      roughness: 0.22,
+      roughness: 0.20,
       metalness: 0.05,
       map: terrazzoMap
     }),
@@ -94,6 +96,14 @@ export function createRoom04Materials(): Room04MaterialResult {
       polygonOffset: true,
       polygonOffsetFactor: -1,
       polygonOffsetUnits: -1
+    }),
+    luminaireHousing: new THREE.MeshStandardMaterial({
+      color: 0xc28833,
+      roughness: 0.28,
+      metalness: 0.85
+    }),
+    luminaireDiffuser: new THREE.MeshBasicMaterial({
+      color: 0xffffff
     })
   };
 

@@ -30,6 +30,7 @@
 | **TASK-018** | `performance` | Frame rate stability, WebGL draw call & triangle budgets, zero VRAM leak disposal, and DOM telemetry throttling | `[COMPLETED]` | HIGH |
 | **TASK-019** | `ui` | Reticle hover prompt matrix, frequency resonance tuning, settings modal accessibility, and terminal blackout view verification | `[COMPLETED]` | HIGH |
 | **TASK-020** | `reliability` | Elimination of swallowed exceptions in audio engine and mechanical sound FX, passing Wiggum AST audit with 0 findings | `[COMPLETED]` | HIGH |
+| **TASK-021** | `aesthetic` | Ceramic green tile sRGB color calibration, alabaster terrazzo, physical ceiling luminaire, and surgical lighting alignment matching style_showcase reference | `[COMPLETED]` | HIGH |
 
 ---
 
@@ -55,3 +56,4 @@
 - [x] **TASK-018**: Frame rate stability, WebGL draw call & triangle budgets, zero VRAM leak disposal
 - [x] **TASK-019**: Reticle hover prompt matrix, frequency resonance tuning, settings modal accessibility
 - [x] **TASK-020**: Elimination of swallowed exceptions, Wiggum AST audit 0 findings
+- [x] **TASK-021**: Ceramic green tile sRGB calibration, ceiling luminaire, and surgical lighting restoration

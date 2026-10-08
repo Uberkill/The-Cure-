@@ -382,6 +382,18 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   coveAccent.position.set(0, 5.44, 0);
   ceilingGroup.add(coveAccent);
 
+  // Motionless White Surgical Ceiling Luminaire (Physical Light Source directly above central apparatus desk)
+  const luminaireHousing = new THREE.Mesh(new THREE.BoxGeometry(3.0, 0.06, 1.8), mat.luminaireHousing);
+  luminaireHousing.position.set(0, 5.42, 0.2);
+  luminaireHousing.name = 'luminaire_housing';
+  ceilingGroup.add(luminaireHousing);
+
+  const luminaireDiffuser = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 1.6), mat.luminaireDiffuser);
+  luminaireDiffuser.rotation.x = Math.PI / 2;
+  luminaireDiffuser.position.set(0, 5.385, 0.2);
+  luminaireDiffuser.name = 'luminaire_diffuser';
+  ceilingGroup.add(luminaireDiffuser);
+
   return {
     floor,
     backWallGroup,
