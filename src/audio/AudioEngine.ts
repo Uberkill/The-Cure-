@@ -1,5 +1,6 @@
 import { EventBus } from '../core/EventBus';
 import { Telemetry } from '../core/Telemetry';
+import { MechanicalSoundFX, SweepTracker } from './MechanicalSoundFX';
 
 export class AudioEngine {
   private static instance: AudioEngine;
@@ -28,9 +29,8 @@ export class AudioEngine {
   // Master DynamicsCompressor to prevent digital clipping / sound cascading
   private compressor: DynamicsCompressorNode | null = null;
 
-  // Active sweep tracking to prevent oscillator pileup during rapid frequency changes
-  private activeSweepOsc: OscillatorNode | null = null;
-  private activeSweepGain: GainNode | null = null;
+  // Sweep tracker for tone alignment frequency sweeps
+  private sweepTracker: SweepTracker = { osc: null, gain: null };
 
   private constructor() {
     this.telemetry = Telemetry.getInstance();
@@ -144,13 +144,13 @@ export class AudioEngine {
       this.jazzInterval = null;
     }
 
-    if (this.activeSweepOsc) {
+    if (this.sweepTracker.osc) {
       try {
-        this.activeSweepOsc.stop();
-        this.activeSweepOsc.disconnect();
+        this.sweepTracker.osc.stop();
+        this.sweepTracker.osc.disconnect();
       } catch {}
-      this.activeSweepOsc = null;
-      this.activeSweepGain = null;
+      this.sweepTracker.osc = null;
+      this.sweepTracker.gain = null;
     }
 
     for (const node of this.activeNodes) {
@@ -273,136 +273,22 @@ export class AudioEngine {
 
   public playTumblerClick(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    const now = this.ctx.currentTime;
-
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'triangle';
-    osc.frequency.setValueAtTime(1400, now);
-    osc.frequency.exponentialRampToValueAtTime(220, now + 0.04);
-
-    gain.gain.setValueAtTime(0.25, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start(now);
-    osc.stop(now + 0.05);
-
-    osc.onended = () => {
-      try { gain.disconnect(); } catch {}
-    };
+    MechanicalSoundFX.playTumblerClick(this.ctx, this.masterGain);
   }
 
   public playPneumaticHiss(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    const now = this.ctx.currentTime;
-    const bufferSize = this.ctx.sampleRate * 1.5;
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-
-    for (let i = 0; i < bufferSize; i++) {
-      data[i] = Math.random() * 2 - 1;
-    }
-
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.frequency.setValueAtTime(1200, now);
-    filter.frequency.exponentialRampToValueAtTime(300, now + 1.4);
-    filter.Q.setValueAtTime(3.0, now);
-
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.exponentialRampToValueAtTime(0.3, now + 0.15);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 1.5);
-
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.masterGain);
-
-    noise.start(now);
-    noise.stop(now + 1.5);
-
-    noise.onended = () => {
-      try {
-        filter.disconnect();
-        gain.disconnect();
-      } catch {}
-    };
+    MechanicalSoundFX.playPneumaticHiss(this.ctx, this.masterGain);
   }
-
-  // --- Specific Chamber Soundscapes ---
 
   public playWaterDrip(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    const now = this.ctx.currentTime;
-
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'sine';
-    const baseFreq = 800 + Math.random() * 600;
-    osc.frequency.setValueAtTime(baseFreq, now);
-    osc.frequency.exponentialRampToValueAtTime(baseFreq + 350, now + 0.06);
-
-    gain.gain.setValueAtTime(0.12, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start(now);
-    osc.stop(now + 0.09);
-
-    osc.onended = () => {
-      try { gain.disconnect(); } catch {}
-    };
+    MechanicalSoundFX.playWaterDrip(this.ctx, this.masterGain);
   }
 
   public playToneAlignmentSweep(freq: number): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    const now = this.ctx.currentTime;
-
-    // Gracefully cut previous sweep to avoid voice cascading during rapid dial/slider manipulation
-    if (this.activeSweepOsc && this.activeSweepGain) {
-      try {
-        this.activeSweepGain.gain.cancelScheduledValues(now);
-        this.activeSweepGain.gain.setValueAtTime(this.activeSweepGain.gain.value, now);
-        this.activeSweepGain.gain.linearRampToValueAtTime(0.0001, now + 0.02);
-        this.activeSweepOsc.stop(now + 0.025);
-      } catch {
-        // Already stopped
-      }
-    }
-
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(freq, now);
-
-    gain.gain.setValueAtTime(0.001, now);
-    gain.gain.linearRampToValueAtTime(0.08, now + 0.02);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.25);
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start(now);
-    osc.stop(now + 0.26);
-
-    this.activeSweepOsc = osc;
-    this.activeSweepGain = gain;
-
-    osc.onended = () => {
-      try { gain.disconnect(); } catch {}
-      if (this.activeSweepOsc === osc) {
-        this.activeSweepOsc = null;
-        this.activeSweepGain = null;
-      }
-    };
+    MechanicalSoundFX.playToneAlignmentSweep(this.ctx, this.masterGain, freq, this.sweepTracker);
   }
 
   public playPayphoneMechanicalRing(): void {
@@ -434,6 +320,14 @@ export class AudioEngine {
       osc2.start(now);
       osc1.stop(now + 1.25);
       osc2.stop(now + 1.25);
+
+      osc1.onended = () => {
+        try {
+          osc1.disconnect();
+          osc2.disconnect();
+          gain.disconnect();
+        } catch {}
+      };
     };
 
     ringBurst();
@@ -449,26 +343,7 @@ export class AudioEngine {
 
   public playHandsetClick(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    const now = this.ctx.currentTime;
-
-    const osc = this.ctx.createOscillator();
-    const gain = this.ctx.createGain();
-
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(300, now);
-    osc.frequency.exponentialRampToValueAtTime(80, now + 0.08);
-
-    gain.gain.setValueAtTime(0.4, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
-
-    osc.connect(gain);
-    gain.connect(this.masterGain);
-    osc.start(now);
-    osc.stop(now + 0.1);
-
-    osc.onended = () => {
-      try { gain.disconnect(); } catch {}
-    };
+    MechanicalSoundFX.playHandsetClick(this.ctx, this.masterGain);
   }
 
   public playLoungeJazzTheme(): void {
@@ -505,6 +380,13 @@ export class AudioEngine {
 
         osc.start(now);
         osc.stop(now + 3.0);
+
+        osc.onended = () => {
+          try {
+            osc.disconnect();
+            gain.disconnect();
+          } catch {}
+        };
       });
     };
 
@@ -569,5 +451,12 @@ export class AudioEngine {
 
     osc.start(now);
     osc.stop(now + durationSeconds);
+
+    osc.onended = () => {
+      try {
+        osc.disconnect();
+        gain.disconnect();
+      } catch {}
+    };
   }
 }
