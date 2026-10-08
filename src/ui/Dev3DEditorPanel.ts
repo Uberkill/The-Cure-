@@ -199,6 +199,10 @@ export class Dev3DEditorPanel {
       
       this.scene.add(prefab);
       this.devGizmo.attachMultiple([prefab]);
+      
+      import('../core/EventBus').then(({ EventBus }) => {
+        EventBus.getInstance().emit('editor:rebuild_visualizers', {});
+      });
     });
 
     // Scenario Jump

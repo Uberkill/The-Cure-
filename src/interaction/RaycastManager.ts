@@ -209,7 +209,7 @@ export class RaycastManager {
         let isHelper = false;
         let curr: THREE.Object3D | null = intersect.object;
         while (curr) {
-          if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers') {
+          if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers_node') {
             isHelper = true;
             break;
           }
@@ -258,7 +258,7 @@ export class RaycastManager {
         let isHelper = false;
         let curr: THREE.Object3D | null = intersect.object;
         while (curr) {
-          if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers') {
+          if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers_node') {
             isHelper = true;
             break;
           }

@@ -2,14 +2,11 @@ import * as THREE from 'three';
 
 export class EditorVisualizers {
   private scene: THREE.Scene;
-  private visualizerGroup: THREE.Group;
+  private visualizerNodes: THREE.Group[] = [];
   private isEnabled: boolean = false;
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
-    this.visualizerGroup = new THREE.Group();
-    this.visualizerGroup.name = 'dev_visualizers';
-    this.scene.add(this.visualizerGroup);
   }
 
   public enable(): void {
@@ -35,28 +32,47 @@ export class EditorVisualizers {
 
     this.scene.traverse((child) => {
       // Don't recurse into our own visualizers
-      if (child === this.visualizerGroup) return;
+      if (child.name === 'dev_visualizers_node') return;
 
-      if (child.name && (child.name.startsWith('prop_') || child.name.startsWith('door_') || child.name.startsWith('crystal_'))) {
+      if (child.name && (child.name.startsWith('prop_') || child.name.startsWith('door_') || child.name.startsWith('crystal_') || child.name.startsWith('prefab_'))) {
         
-        // Calculate the bounding box of the interactive group/mesh
-        const box = new THREE.Box3().setFromObject(child);
-        if (box.isEmpty()) return;
+        // Temporarily reset transform to get pristine local bounding box
+        const oldPos = child.position.clone();
+        const oldRot = child.rotation.clone();
+        const oldScale = child.scale.clone();
+        
+        child.position.set(0, 0, 0);
+        child.rotation.set(0, 0, 0);
+        child.scale.set(1, 1, 1);
+        child.updateMatrixWorld(true);
+        
+        const localBox = new THREE.Box3().setFromObject(child);
+        
+        // Restore transform
+        child.position.copy(oldPos);
+        child.rotation.copy(oldRot);
+        child.scale.copy(oldScale);
+        child.updateMatrixWorld(true);
+
+        if (localBox.isEmpty()) return;
 
         const size = new THREE.Vector3();
-        box.getSize(size);
+        localBox.getSize(size);
         const center = new THREE.Vector3();
-        box.getCenter(center);
+        localBox.getCenter(center);
+
+        const vizNode = new THREE.Group();
+        vizNode.name = 'dev_visualizers_node';
+        vizNode.userData.isHelper = true;
 
         const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
         const edges = new THREE.EdgesGeometry(boxGeo);
         const line = new THREE.LineSegments(edges, wireframeMat);
         
         line.position.copy(center);
-        line.renderOrder = 999; // Render on top of everything
-        this.visualizerGroup.add(line);
+        line.renderOrder = 999;
+        vizNode.add(line);
 
-        // Add floating text sprite for the name
         const canvas = document.createElement('canvas');
         canvas.width = 256;
         canvas.height = 64;
@@ -70,26 +86,38 @@ export class EditorVisualizers {
           const tex = new THREE.CanvasTexture(canvas);
           const spriteMat = new THREE.SpriteMaterial({ map: tex, depthTest: false });
           const sprite = new THREE.Sprite(spriteMat);
+          
           sprite.position.copy(center);
-          sprite.position.y += size.y / 2 + 0.1; // Hover slightly above
-          sprite.scale.set(0.5, 0.125, 1);
+          
+          // Inverse scale to maintain text readability when object is scaled
+          const scaleAvg = (oldScale.x + oldScale.y + oldScale.z) / 3;
+          sprite.position.y += (size.y / 2) + (0.1 / scaleAvg);
+          sprite.scale.set(0.5 / oldScale.x, 0.125 / oldScale.y, 1 / oldScale.z);
           sprite.renderOrder = 1000;
-          this.visualizerGroup.add(sprite);
+          vizNode.add(sprite);
         }
+
+        child.add(vizNode);
+        this.visualizerNodes.push(vizNode);
       }
     });
   }
 
   private clear(): void {
-    while (this.visualizerGroup.children.length > 0) {
-      const child = this.visualizerGroup.children[0];
-      if (child instanceof THREE.LineSegments) {
-        child.geometry.dispose();
-      } else if (child instanceof THREE.Sprite) {
-        child.material.map?.dispose();
-        child.material.dispose();
+    for (const vizNode of this.visualizerNodes) {
+      if (vizNode.parent) {
+        vizNode.parent.remove(vizNode);
       }
-      this.visualizerGroup.remove(child);
+      
+      vizNode.traverse((child) => {
+        if (child instanceof THREE.LineSegments) {
+          child.geometry.dispose();
+        } else if (child instanceof THREE.Sprite) {
+          child.material.map?.dispose();
+          child.material.dispose();
+        }
+      });
     }
+    this.visualizerNodes = [];
   }
 }

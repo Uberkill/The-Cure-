@@ -89,6 +89,12 @@ class VaultApp {
       devBtn?.classList.toggle('active', enabled);
     };
 
+    this.eventBus.on('editor:rebuild_visualizers', () => {
+      if (this.editorVisualizers) {
+        this.editorVisualizers.rebuild();
+      }
+    });
+
     this.scenarioRegistry = ScenarioRegistry.getInstance();
     this.crtNodePatcher = CRTNodePatcher.getInstance();
 

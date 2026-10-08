@@ -107,6 +107,7 @@ export interface EventPayloadMap {
   'audio:toggle_synth': { type: 'drone' | 'ballast' | 'phone'; active: boolean };
   'settings:updated': Partial<GameSettings>;
   'telemetry:log': TelemetryRecord;
+  'editor:rebuild_visualizers': Record<string, never>;
 }
 
 export type EventKey = keyof EventPayloadMap;
