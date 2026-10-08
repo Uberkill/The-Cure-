@@ -256,7 +256,7 @@ export class Dev3DEditorPanel {
   }
 
   public hide(): void {
-    if (!this.panelContainer) return;
+    if (!this.panelContainer || !this.isVisible) return;
     this.panelContainer.style.display = 'none';
     this.isVisible = false;
     this.devGizmo.setEnabled(false);

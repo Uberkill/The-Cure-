@@ -33,31 +33,49 @@ export function buildRoom04Furniture(mat: Room04MaterialPalette): Room04Furnitur
     deskGroup.add(leg);
   }
 
-  // Bauhaus Cantilever Chair (Marcel Breuer Cesca style, tucked behind desk at z = -0.65)
+  // Standard 4-Leg Office Chair
   const chairGroup = new THREE.Group();
   chairGroup.name = 'prop_chair';
   chairGroup.position.set(0, 0, -0.65);
 
-  const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.04, 0.48), mat.sageAccent);
-  chairSeat.position.set(0, 0.52, 0);
+  // Seat
+  const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.05, 0.5), mat.sageAccent);
+  chairSeat.position.set(0, 0.5, 0);
   chairSeat.castShadow = true;
   chairGroup.add(chairSeat);
 
-  const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.3, 0.03), mat.sageAccent);
-  chairBack.position.set(0, 0.8, -0.22);
+  // Backrest
+  const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.25, 0.05), mat.sageAccent);
+  chairBack.position.set(0, 0.85, -0.22);
   chairBack.castShadow = true;
   chairGroup.add(chairBack);
 
-  const chairTubeGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.52, 12);
-  const chairTubeL = new THREE.Mesh(chairTubeGeo, mat.brushedChrome);
-  chairTubeL.position.set(-0.25, 0.26, 0);
-  chairTubeL.castShadow = true;
-  chairGroup.add(chairTubeL);
+  // 4 Legs
+  const chairLegGeo = new THREE.CylinderGeometry(0.02, 0.015, 0.5, 12);
+  const chairLegPositions: [number, number][] = [
+    [-0.24, 0.2],  // Front Left
+    [0.24, 0.2],   // Front Right
+    [-0.24, -0.2], // Back Left
+    [0.24, -0.2]   // Back Right
+  ];
+  for (const pos of chairLegPositions) {
+    const leg = new THREE.Mesh(chairLegGeo, mat.brushedChrome);
+    leg.position.set(pos[0], 0.25, pos[1]);
+    leg.castShadow = true;
+    chairGroup.add(leg);
+  }
 
-  const chairTubeR = new THREE.Mesh(chairTubeGeo, mat.brushedChrome);
-  chairTubeR.position.set(0.25, 0.26, 0);
-  chairTubeR.castShadow = true;
-  chairGroup.add(chairTubeR);
+  // Backrest supports (extending from back legs)
+  const backSupportGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.4, 12);
+  const supportL = new THREE.Mesh(backSupportGeo, mat.brushedChrome);
+  supportL.position.set(-0.24, 0.7, -0.2);
+  supportL.castShadow = true;
+  chairGroup.add(supportL);
+
+  const supportR = new THREE.Mesh(backSupportGeo, mat.brushedChrome);
+  supportR.position.set(0.24, 0.7, -0.2);
+  supportR.castShadow = true;
+  chairGroup.add(supportR);
 
   // Brutalist Planter Beside Desk
   const planterGroup = new THREE.Group();

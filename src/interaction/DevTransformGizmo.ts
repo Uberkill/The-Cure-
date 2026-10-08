@@ -139,6 +139,7 @@ export class DevTransformGizmo {
   }
 
   public setEnabled(enabled: boolean): void {
+    if (this.isEnabled === enabled) return;
     this.isEnabled = enabled;
     this.transformControls.enabled = enabled;
     this.helper.visible = enabled;
@@ -210,6 +211,8 @@ export class DevTransformGizmo {
     this.transformControls.detach();
     this.selectedObjects = [];
     this.objectStartStates.clear();
+    this.isMarqueeDragging = false;
+    this.marqueeDiv.style.display = 'none';
     if (this.onSelectionChange) {
       this.onSelectionChange([]);
     }
@@ -336,7 +339,16 @@ export class DevTransformGizmo {
       let target: THREE.Object3D | null = hit.object;
       
       // Ignore helpers
-      if (target.name === 'Editor_Helpers_Group' || target.userData.isHelper) continue;
+      let isHelper = false;
+      let curr: THREE.Object3D | null = target;
+      while (curr) {
+        if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers') {
+          isHelper = true;
+          break;
+        }
+        curr = curr.parent;
+      }
+      if (isHelper) continue;
 
       while (target && target.parent && target.parent !== this.scene) {
         if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_') || target.name === 'faceplate' || target.name === 'rotaryDial' || target.name === 'knifeSwitch') {
@@ -427,7 +439,17 @@ export class DevTransformGizmo {
     const newSelection = new Set<THREE.Object3D>([...this.selectedObjects]);
 
     for (const obj of collection) {
-      if (obj.name === 'Editor_Helpers_Group' || obj.userData.isHelper) continue;
+      // Ignore Editor helpers and visualizers
+      let isHelper = false;
+      let curr: THREE.Object3D | null = obj;
+      while (curr) {
+        if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers') {
+          isHelper = true;
+          break;
+        }
+        curr = curr.parent;
+      }
+      if (isHelper) continue;
 
       let target: THREE.Object3D | null = obj;
       while (target && target.parent && target.parent !== this.scene) {
