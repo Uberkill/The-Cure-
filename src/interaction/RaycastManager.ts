@@ -205,6 +205,18 @@ export class RaycastManager {
 
     if (intersects.length > 0) {
       for (const intersect of intersects) {
+        // Ignore Editor helpers and visualizers
+        let isHelper = false;
+        let curr: THREE.Object3D | null = intersect.object;
+        while (curr) {
+          if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers') {
+            isHelper = true;
+            break;
+          }
+          curr = curr.parent;
+        }
+        if (isHelper) continue;
+
         const target = this.findInteractiveParent(intersect.object);
         if (target) {
           this.domElement.style.cursor = 'pointer';
@@ -242,6 +254,18 @@ export class RaycastManager {
 
     if (intersects.length > 0) {
       for (const intersect of intersects) {
+        // Ignore Editor helpers and visualizers
+        let isHelper = false;
+        let curr: THREE.Object3D | null = intersect.object;
+        while (curr) {
+          if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers') {
+            isHelper = true;
+            break;
+          }
+          curr = curr.parent;
+        }
+        if (isHelper) continue;
+
         const target = this.findInteractiveParent(intersect.object);
         if (target) {
           this.eventBus.emit('input:object_clicked', {

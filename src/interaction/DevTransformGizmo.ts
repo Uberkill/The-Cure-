@@ -299,6 +299,22 @@ export class DevTransformGizmo {
     } else if (e.key === 'r' || e.key === 'R') {
       this.setMode('scale');
       this.showToast('Gizmo Mode: Scale');
+    } else if (e.key === 'Delete' || e.key === 'Backspace') {
+      if (this.selectedObjects.length > 0) {
+        const deletedCount = this.selectedObjects.length;
+        for (const obj of this.selectedObjects) {
+          if (obj.parent) {
+            obj.parent.remove(obj);
+          }
+        }
+        this.detach();
+        this.showToast(`Deleted ${deletedCount} object(s)`);
+        
+        // Trigger save via change event
+        if (this.onTransformChange) {
+          this.onTransformChange([]);
+        }
+      }
     } else if (e.key === 'Escape') {
       this.detach();
       this.showToast('Deselected object');
