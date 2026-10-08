@@ -116,7 +116,7 @@ export class Room04_SterileChamber implements RoomScenario {
     }
     if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
       (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
-      this.entities.corridorDoor.position.x = 1.35;
+      this.entities.corridorDoor.rotation.y = -Math.PI / 2.2;
     }
 
     // Optional override for self-contained hero props if custom Blender .glb models are present in /assets/models/

@@ -80,7 +80,24 @@ export class Dev3DEditorPanel {
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position Y</span> <input type="number" id="dev-pos-y" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position Z</span> <input type="number" id="dev-pos-z" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
         </div>
-
+        <div style="margin-bottom: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+          <label style="display: block; margin-bottom: 6px; color: #88928b;">Rotation (Scrub & Animate)</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="width: 20px;">X</span>
+            <input type="range" id="dev-rot-x" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
+            <span id="dev-rot-x-val" style="width: 35px; text-align: right;">0°</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="width: 20px;">Y</span>
+            <input type="range" id="dev-rot-y" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
+            <span id="dev-rot-y-val" style="width: 35px; text-align: right;">0°</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span style="width: 20px;">Z</span>
+            <input type="range" id="dev-rot-z" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
+            <span id="dev-rot-z-val" style="width: 35px; text-align: right;">0°</span>
+          </div>
+        </div>
         <button id="dev-btn-save-server" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Save to Server (room_layout.json)</button>
         <button id="dev-btn-export" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); color: #bad2c8; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;">Export Clipboard</button>
       </div>
@@ -124,6 +141,10 @@ export class Dev3DEditorPanel {
     this.posXInput = document.getElementById('dev-pos-x') as HTMLInputElement;
     this.posYInput = document.getElementById('dev-pos-y') as HTMLInputElement;
     this.posZInput = document.getElementById('dev-pos-z') as HTMLInputElement;
+    
+    const rotXInput = document.getElementById('dev-rot-x') as HTMLInputElement;
+    const rotYInput = document.getElementById('dev-rot-y') as HTMLInputElement;
+    const rotZInput = document.getElementById('dev-rot-z') as HTMLInputElement;
 
     const applyTransform = () => {
       if (this.isUpdatingFromUI) return;
@@ -134,6 +155,16 @@ export class Dev3DEditorPanel {
           parseFloat(this.posYInput.value),
           parseFloat(this.posZInput.value)
         );
+        if (rotXInput && rotYInput && rotZInput) {
+          const rx = parseFloat(rotXInput.value) * (Math.PI / 180);
+          const ry = parseFloat(rotYInput.value) * (Math.PI / 180);
+          const rz = parseFloat(rotZInput.value) * (Math.PI / 180);
+          objs[0].rotation.set(rx, ry, rz);
+          
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
+        }
         this.devGizmo.syncTransform();
       }
     };
@@ -141,6 +172,9 @@ export class Dev3DEditorPanel {
     this.posXInput?.addEventListener('input', applyTransform);
     this.posYInput?.addEventListener('input', applyTransform);
     this.posZInput?.addEventListener('input', applyTransform);
+    rotXInput?.addEventListener('input', applyTransform);
+    rotYInput?.addEventListener('input', applyTransform);
+    rotZInput?.addEventListener('input', applyTransform);
 
     document.getElementById('dev-btn-close')?.addEventListener('click', () => this.hide());
     
@@ -247,6 +281,18 @@ export class Dev3DEditorPanel {
         this.posXInput.value = obj.position.x.toFixed(3);
         this.posYInput.value = obj.position.y.toFixed(3);
         this.posZInput.value = obj.position.z.toFixed(3);
+
+        const rotXInput = document.getElementById('dev-rot-x') as HTMLInputElement;
+        const rotYInput = document.getElementById('dev-rot-y') as HTMLInputElement;
+        const rotZInput = document.getElementById('dev-rot-z') as HTMLInputElement;
+        if (rotXInput && rotYInput && rotZInput) {
+          rotXInput.value = (obj.rotation.x * (180 / Math.PI)).toFixed(1);
+          rotYInput.value = (obj.rotation.y * (180 / Math.PI)).toFixed(1);
+          rotZInput.value = (obj.rotation.z * (180 / Math.PI)).toFixed(1);
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
+        }
       }
       this.isUpdatingFromUI = false;
     };
@@ -259,6 +305,18 @@ export class Dev3DEditorPanel {
         this.posXInput.value = obj.position.x.toFixed(3);
         this.posYInput.value = obj.position.y.toFixed(3);
         this.posZInput.value = obj.position.z.toFixed(3);
+        
+        const rotXInput = document.getElementById('dev-rot-x') as HTMLInputElement;
+        const rotYInput = document.getElementById('dev-rot-y') as HTMLInputElement;
+        const rotZInput = document.getElementById('dev-rot-z') as HTMLInputElement;
+        if (rotXInput && rotYInput && rotZInput) {
+          rotXInput.value = (obj.rotation.x * (180 / Math.PI)).toFixed(1);
+          rotYInput.value = (obj.rotation.y * (180 / Math.PI)).toFixed(1);
+          rotZInput.value = (obj.rotation.z * (180 / Math.PI)).toFixed(1);
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
+        }
         this.isUpdatingFromUI = false;
       }
     };
