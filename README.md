@@ -41,19 +41,19 @@ npm run dev
 
 ```powershell
 # 1. 3D Bounds, Audio Burst Limiting, VRAM Leak Check, Aspect Ratio & Visibility
-node test_3d_and_audio_stress.js
+node tests/test_3d_and_audio_stress.js
 
 # 2. Room 04 360 Enclosure, Persistent Header HUD & Audio Startup State Audit
-node test_room04_audit_and_360.js
+node tests/test_room04_audit_and_360.js
 
 # 3. Capture and verify visual 3D screenshots (WebGL Angle)
-node verify_room04_visuals.js
+node tests/verify_room04_visuals.js
 
 # 4. Audit modal overlays, close X buttons, 3D key turntable, and click/drag thresholds
-node test_interactions_and_overlays.js
+node tests/test_interactions_and_overlays.js
 
 # 5. Test full 8-Act narrative descent from Hub to Velvet Lounge
-node test_full_descent_e2e.js
+node tests/test_full_descent_e2e.js
 ```
 
 ---
@@ -61,7 +61,7 @@ node test_full_descent_e2e.js
 ## Knowledge Graph (Graphify)
 
 The codebase has been indexed into a persistent, queryable knowledge graph in `graphify-out/`:
-- `graphify-out/graph.json` - Unified graph (1,831 nodes, 3,881 edges)
+- `graphify-out/graph.json` - Unified graph (325 nodes, 671 edges)
 - `graphify-out/GRAPH_REPORT.md` - Community detection architecture report
 - `graphify-out/graph.html` - Interactive force-directed visualization
 - `graphify-out/GRAPH_TREE.html` - Collapsible D3 hierarchy tree
