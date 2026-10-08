@@ -31,6 +31,9 @@ def main():
     code_files = []
     for f in code_files_raw:
         p = Path(f)
+        # Exclude third-party vendor bundles, generated build artifacts, and screenshots
+        if {'libs', 'node_modules', 'dist', 'screenshots'} & set(p.parts):
+            continue
         code_files.extend(collect_files(p) if p.is_dir() else [p])
 
     if code_files:
@@ -95,6 +98,7 @@ def main():
     questions = suggest_questions(G, communities, labels)
 
     # 8. Export graph.json and report
+    (out_dir / 'graph.json').unlink(missing_ok=True)
     wrote = to_json(G, communities, str(out_dir / 'graph.json'))
     if not wrote:
         print("[graphify] Warning: refused to shrink graph.json")

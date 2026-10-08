@@ -6,7 +6,9 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const distDir = path.resolve(__dirname, 'dist');
+const distDir = path.resolve(__dirname, '../dist');
+const SCREENSHOTS_DIR = path.resolve(__dirname, '../screenshots');
+if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
 // Static file server for dist/
 const server = http.createServer((req, res) => {
@@ -66,12 +68,12 @@ server.listen(PORT, async () => {
   try {
     console.log('--- Step 1: Loading Application ---');
     await page.goto(`http://localhost:${PORT}`, { waitUntil: 'networkidle' });
-    await page.screenshot({ path: 'screenshot_step1_intro.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step1_intro.png') });
 
     console.log('--- Step 2: Beginning Cognitive Intake ---');
     await page.click('#btn-begin-intake');
     await page.waitForTimeout(600);
-    await page.screenshot({ path: 'screenshot_step2_hub.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step2_hub.png') });
 
     console.log('--- Step 3: Verifying Settings Gear ---');
     await page.click('#btn-settings-toggle');
@@ -102,7 +104,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: 'screenshot_step5_sleep_ward.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step5_sleep_ward.png') });
 
     console.log('--- Step 6: Solving Sleep Ward 3-Digit Rotary Lock (1-0-4) ---');
     await page.evaluate(() => {
@@ -133,7 +135,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: 'screenshot_step8_hydrotherapy.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step8_hydrotherapy.png') });
 
     console.log('--- Step 9: Balancing Hydrotherapy Valves & Recovering Bronze Crystal ---');
     await page.evaluate(() => {
@@ -163,7 +165,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: 'screenshot_step11_audiology.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step11_audiology.png') });
 
     console.log('--- Step 12: Tuning Amplifier to 741 Hz & Recovering Amethyst Crystal ---');
     await page.evaluate(() => {
@@ -192,7 +194,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: 'screenshot_step14_archive.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step14_archive.png') });
 
     console.log('--- Step 15: Searching Drawer 104 & Recovering Obsidian Crystal ---');
     await page.evaluate(() => {
@@ -220,7 +222,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: 'screenshot_step17_directors_office.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step17_directors_office.png') });
 
     console.log('--- Step 18: Listening to Breathing Phone & Recovering Celadon Crystal ---');
     await page.evaluate(() => {
@@ -243,14 +245,14 @@ server.listen(PORT, async () => {
     // Wait for the 3s blackout and exit door blowout
     console.log('Act VII Blackout holding for 3.2s...');
     await page.waitForTimeout(3500);
-    await page.screenshot({ path: 'screenshot_step19_hub_blackout.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step19_hub_blackout.png') });
 
     console.log('--- Step 20: Stepping through the Blown Exit Door into Act VIII (The Velvet Lounge) ---');
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_door' });
     });
     await page.waitForTimeout(1000);
-    await page.screenshot({ path: 'screenshot_step20_velvet_lounge.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step20_velvet_lounge.png') });
 
     console.log('--- Step 21: Inspecting Gilded Bar Mirror ---');
     await page.evaluate(() => {
@@ -264,7 +266,7 @@ server.listen(PORT, async () => {
     });
     // Wait for voice message (3.6s), 528 Hz blast, and cut to blackout screen (800ms)
     await page.waitForTimeout(5200);
-    await page.screenshot({ path: 'screenshot_step22_terminal_deployed.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step22_terminal_deployed.png') });
 
     const blackoutVisible = await page.isVisible('#view-terminal-blackout');
     console.log(`Terminal Blackout View Visible: ${blackoutVisible}`);

@@ -2,9 +2,15 @@ import { chromium } from 'playwright';
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SCREENSHOTS_DIR = path.resolve(__dirname, '../screenshots');
+if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
 const PORT = 4199;
-const DIST_DIR = path.resolve('dist');
+const DIST_DIR = path.resolve(__dirname, '../dist');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -48,13 +54,13 @@ server.listen(PORT, async () => {
     await page.waitForTimeout(1000);
 
     // 1. Overview of Room 04 showing clean screen with NO floating audio pills and NO frequency slider
-    await page.screenshot({ path: 'screenshot_room04_clean_overview.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_room04_clean_overview.png') });
     console.log('Saved screenshot_room04_clean_overview.png');
 
     // 2. Settings modal showing audio toggles neatly tucked inside
     await page.click('#btn-settings-toggle');
     await page.waitForTimeout(500);
-    await page.screenshot({ path: 'screenshot_room04_settings_audio_pills.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_room04_settings_audio_pills.png') });
     console.log('Saved screenshot_room04_settings_audio_pills.png');
     await page.click('#btn-close-settings');
     await page.waitForTimeout(500);
@@ -64,7 +70,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(1200);
-    await page.screenshot({ path: 'screenshot_room04_vault_focus_freq_console.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_room04_vault_focus_freq_console.png') });
     console.log('Saved screenshot_room04_vault_focus_freq_console.png');
 
     // 4. View facing back wall forward observation corridor door (0 Z-fighting)
@@ -72,7 +78,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
     });
     await page.waitForTimeout(1400);
-    await page.screenshot({ path: 'screenshot_room04_corridor_door_centered.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_room04_corridor_door_centered.png') });
     console.log('Saved screenshot_room04_corridor_door_centered.png');
 
     // 5. View facing left wall exit blastdoor
@@ -80,7 +86,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'door' });
     });
     await page.waitForTimeout(1400);
-    await page.screenshot({ path: 'screenshot_room04_left_blastdoor.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_room04_left_blastdoor.png') });
     console.log('Saved screenshot_room04_left_blastdoor.png');
 
     console.log('All screenshots captured successfully.');

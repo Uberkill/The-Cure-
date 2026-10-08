@@ -2,9 +2,15 @@ import { chromium } from 'playwright';
 import http from 'http';
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const SCREENSHOTS_DIR = path.resolve(__dirname, '../screenshots');
+if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
 const PORT = 4175;
-const DIST_DIR = path.resolve('dist');
+const DIST_DIR = path.resolve(__dirname, '../dist');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -79,7 +85,7 @@ server.listen(PORT, async () => {
       throw new Error(`Overlay is still blinding white: ${overlayBg}`);
     }
 
-    await page.screenshot({ path: 'screenshot_audit_dossier_dark.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_audit_dossier_dark.png') });
 
     // Click Close X button
     console.log('Testing Dossier Close X button...');
@@ -107,7 +113,7 @@ server.listen(PORT, async () => {
     await page.waitForTimeout(300);
     const isSettingsVisible = await page.isVisible('#modal-settings');
     console.log(`Settings Modal Visible: ${isSettingsVisible}`);
-    await page.screenshot({ path: 'screenshot_audit_settings_dark.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_audit_settings_dark.png') });
 
     // Press Escape key
     await page.keyboard.press('Escape');
@@ -135,7 +141,7 @@ server.listen(PORT, async () => {
       throw new Error(`Inspect modal still has CSS backdropFilter blurring canvas: ${inspectFilter}`);
     }
 
-    await page.screenshot({ path: 'screenshot_audit_key_inspect_sharp.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_audit_key_inspect_sharp.png') });
 
     // Test pin extension via togglePins
     await page.evaluate(() => {
@@ -167,7 +173,7 @@ server.listen(PORT, async () => {
       throw new Error('Camera drag erroneously triggered an object click');
     }
 
-    await page.screenshot({ path: 'screenshot_audit_room_overview.png' });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_audit_room_overview.png') });
 
     console.log('--- Step 7: Checking Errors ---');
     console.log(`Console Errors: ${consoleErrors.length}`);

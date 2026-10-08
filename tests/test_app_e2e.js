@@ -6,7 +6,9 @@ import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const distDir = path.resolve(__dirname, 'dist');
+const distDir = path.resolve(__dirname, '../dist');
+const SCREENSHOTS_DIR = path.resolve(__dirname, '../screenshots');
+if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
 // Simple static file server for dist/
 const server = http.createServer((req, res) => {
@@ -66,7 +68,7 @@ server.listen(4173, async () => {
     await page.waitForTimeout(1000);
 
     // 1. Intake screen
-    await page.screenshot({ path: path.resolve(__dirname, 'screenshot_app_intro.png') });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_intro.png') });
     console.log('Captured screenshot_app_intro.png');
 
     // Click Begin Intake
@@ -74,13 +76,13 @@ server.listen(4173, async () => {
     await page.waitForTimeout(1200);
 
     // 2. Chamber Overview
-    await page.screenshot({ path: path.resolve(__dirname, 'screenshot_app_overview.png') });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_overview.png') });
     console.log('Captured screenshot_app_overview.png');
 
     // 3. Navigate to Vault Hotspot
     await page.click('button[data-preset="vault"]');
     await page.waitForTimeout(1400);
-    await page.screenshot({ path: path.resolve(__dirname, 'screenshot_app_vault.png') });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_vault.png') });
     console.log('Captured screenshot_app_vault.png');
 
     // 4. Navigate to Envelope & Inspect Dossier
@@ -92,7 +94,7 @@ server.listen(4173, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_envelope' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: path.resolve(__dirname, 'screenshot_app_dossier.png') });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_dossier.png') });
     console.log('Captured screenshot_app_dossier.png');
 
     // Close dossier
@@ -108,7 +110,7 @@ server.listen(4173, async () => {
     // 6. Test 3D Examination Mode
     await page.click('#btn-inspect-3d');
     await page.waitForTimeout(1000);
-    await page.screenshot({ path: path.resolve(__dirname, 'screenshot_app_inspect_key.png') });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_inspect_key.png') });
     console.log('Captured screenshot_app_inspect_key.png');
 
     // Extend pins in inspection mode
@@ -138,7 +140,7 @@ server.listen(4173, async () => {
       }
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: path.resolve(__dirname, 'screenshot_app_freq_lock.png') });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_freq_lock.png') });
     console.log('Captured screenshot_app_freq_lock.png');
 
     // 9. Throw Relay Switch
@@ -152,7 +154,7 @@ server.listen(4173, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_door' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: path.resolve(__dirname, 'screenshot_app_debrief.png') });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_debrief.png') });
     console.log('Captured screenshot_app_debrief.png');
 
     console.log('E2E Test completed successfully!');
