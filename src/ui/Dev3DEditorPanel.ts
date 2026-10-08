@@ -65,6 +65,7 @@ export class Dev3DEditorPanel {
       <!-- TABS -->
       <div style="display: flex; gap: 4px; margin-bottom: 12px; font-size: 11px;">
         <button class="editor-tab active" data-tab="transforms" style="flex:1; padding: 4px; background: #3b4c42; border: 1px solid #5a7566; color: #fff; cursor: pointer; border-radius: 3px;">Trans</button>
+        <button class="editor-tab" data-tab="anim" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Anim</button>
         <button class="editor-tab" data-tab="spawner" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Spawn</button>
         <button class="editor-tab" data-tab="scenarios" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Scen</button>
         <button class="editor-tab" data-tab="telemetry" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Telem</button>
@@ -81,7 +82,7 @@ export class Dev3DEditorPanel {
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position Z</span> <input type="number" id="dev-pos-z" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
         </div>
         <div style="margin-bottom: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-          <label style="display: block; margin-bottom: 6px; color: #88928b;">Rotation (Scrub & Animate)</label>
+          <label style="display: block; margin-bottom: 6px; color: #88928b;">Rotation (Degrees)</label>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">X</span>
             <input type="range" id="dev-rot-x" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
@@ -100,6 +101,55 @@ export class Dev3DEditorPanel {
         </div>
         <button id="dev-btn-save-server" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Save to Server (room_layout.json)</button>
         <button id="dev-btn-export" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); color: #bad2c8; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;">Export Clipboard</button>
+      </div>
+
+      <!-- TAB CONTENT: ANIMATION -->
+      <div id="tab-anim" class="editor-tab-content" style="display: none;">
+        <label style="display: block; margin-bottom: 6px; color: #88928b;">Animation Definition</label>
+        <div id="dev-anim-controls" style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>Property</span>
+            <select id="dev-anim-type" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px; width: 100px;">
+              <option value="rotation">Rotation</option>
+              <option value="position">Position</option>
+            </select>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>Axis</span>
+            <select id="dev-anim-axis" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px; width: 100px;">
+              <option value="x">X</option>
+              <option value="y">Y</option>
+              <option value="z">Z</option>
+            </select>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+            <span>Start Value</span>
+            <div style="display: flex; gap: 4px;">
+              <button id="dev-anim-set-start" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #bad2c8; cursor: pointer; padding: 2px 6px; border-radius: 2px;">Set from Gizmo</button>
+              <input type="number" id="dev-anim-start" step="0.05" value="0" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
+            </div>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span>End Value</span>
+            <div style="display: flex; gap: 4px;">
+              <button id="dev-anim-set-end" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #bad2c8; cursor: pointer; padding: 2px 6px; border-radius: 2px;">Set from Gizmo</button>
+              <input type="number" id="dev-anim-end" step="0.05" value="0" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
+            </div>
+          </div>
+          
+          <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 6px; color: #00ff88; font-weight: bold;">Scrub Animation Time</label>
+            <input type="range" id="dev-anim-scrub" min="0" max="100" value="0" style="width:100%; accent-color: #00ff88;">
+            <div style="display: flex; justify-content: space-between; font-size: 9px; color: #88928b;">
+              <span>0% (Start)</span>
+              <span>100% (End)</span>
+            </div>
+          </div>
+          
+          <button id="dev-btn-anim-save" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer;">Save Animation to Server</button>
+        </div>
       </div>
 
       <!-- TAB CONTENT: SPAWNER -->
@@ -194,6 +244,68 @@ export class Dev3DEditorPanel {
       });
     });
 
+    // Animation Designer
+    const typeSelect = document.getElementById('dev-anim-type') as HTMLSelectElement;
+    const axisSelect = document.getElementById('dev-anim-axis') as HTMLSelectElement;
+    const startInput = document.getElementById('dev-anim-start') as HTMLInputElement;
+    const endInput = document.getElementById('dev-anim-end') as HTMLInputElement;
+    const scrubInput = document.getElementById('dev-anim-scrub') as HTMLInputElement;
+
+    const applyAnimScrub = () => {
+      const objs = this.devGizmo.getSelectedObjects();
+      if (objs.length !== 1) return;
+      const obj = objs[0];
+      
+      const start = parseFloat(startInput.value);
+      const end = parseFloat(endInput.value);
+      const progress = parseFloat(scrubInput.value) / 100;
+      const current = start + (end - start) * progress;
+      
+      const type = typeSelect.value;
+      const axis = axisSelect.value as 'x'|'y'|'z';
+      
+      if (type === 'rotation') {
+        obj.rotation[axis] = current;
+      } else {
+        obj.position[axis] = current;
+      }
+      
+      obj.userData.animType = type;
+      obj.userData.animAxis = axis;
+      obj.userData.animStart = start;
+      obj.userData.animEnd = end;
+      
+      this.devGizmo.syncTransform();
+    };
+
+    scrubInput?.addEventListener('input', applyAnimScrub);
+    typeSelect?.addEventListener('change', applyAnimScrub);
+    axisSelect?.addEventListener('change', applyAnimScrub);
+    startInput?.addEventListener('change', applyAnimScrub);
+    endInput?.addEventListener('change', applyAnimScrub);
+
+    document.getElementById('dev-anim-set-start')?.addEventListener('click', () => {
+      const objs = this.devGizmo.getSelectedObjects();
+      if (objs.length !== 1) return;
+      const type = typeSelect.value;
+      const axis = axisSelect.value as 'x'|'y'|'z';
+      startInput.value = type === 'rotation' ? String(objs[0].rotation[axis]) : String(objs[0].position[axis]);
+      applyAnimScrub();
+    });
+
+    document.getElementById('dev-anim-set-end')?.addEventListener('click', () => {
+      const objs = this.devGizmo.getSelectedObjects();
+      if (objs.length !== 1) return;
+      const type = typeSelect.value;
+      const axis = axisSelect.value as 'x'|'y'|'z';
+      endInput.value = type === 'rotation' ? String(objs[0].rotation[axis]) : String(objs[0].position[axis]);
+      applyAnimScrub();
+    });
+
+    document.getElementById('dev-btn-anim-save')?.addEventListener('click', () => {
+      document.getElementById('dev-btn-save-server')?.click(); // trigger the main save logic
+    });
+
     // Save to Server
     document.getElementById('dev-btn-save-server')?.addEventListener('click', async () => {
       const data: any = { prefabs: [] };
@@ -201,22 +313,28 @@ export class Dev3DEditorPanel {
       const objs = this.devGizmo.getSelectedObjects();
       if (objs.length === 1) {
         const obj = objs[0];
+        const layoutEntry: any = {
+          x: obj.position.x, y: obj.position.y, z: obj.position.z,
+          rx: obj.rotation.x, ry: obj.rotation.y, rz: obj.rotation.z,
+          sx: obj.scale.x, sy: obj.scale.y, sz: obj.scale.z
+        };
+        if (obj.userData.animType) {
+          layoutEntry.animation = {
+            type: obj.userData.animType,
+            axis: obj.userData.animAxis,
+            start: obj.userData.animStart,
+            end: obj.userData.animEnd
+          };
+        }
+
         if (obj.userData.isPrefab) {
           data.prefabs.push({
             id: obj.userData.prefabId,
             type: obj.userData.prefabType,
-            transform: {
-              x: obj.position.x, y: obj.position.y, z: obj.position.z,
-              rx: obj.rotation.x, ry: obj.rotation.y, rz: obj.rotation.z,
-              sx: obj.scale.x, sy: obj.scale.y, sz: obj.scale.z
-            }
+            transform: layoutEntry
           });
         } else {
-          data[obj.name] = {
-            x: obj.position.x, y: obj.position.y, z: obj.position.z,
-            rx: obj.rotation.x, ry: obj.rotation.y, rz: obj.rotation.z,
-            sx: obj.scale.x, sy: obj.scale.y, sz: obj.scale.z
-          };
+          data[obj.name] = layoutEntry;
         }
       }
       const success = await EditorServerSync.saveLayout(data);
@@ -292,6 +410,27 @@ export class Dev3DEditorPanel {
           document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
           document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
           document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
+        }
+
+        const typeSelect = document.getElementById('dev-anim-type') as HTMLSelectElement;
+        const axisSelect = document.getElementById('dev-anim-axis') as HTMLSelectElement;
+        const startInput = document.getElementById('dev-anim-start') as HTMLInputElement;
+        const endInput = document.getElementById('dev-anim-end') as HTMLInputElement;
+        const scrubInput = document.getElementById('dev-anim-scrub') as HTMLInputElement;
+        if (typeSelect && axisSelect && startInput && endInput && scrubInput) {
+          if (obj.userData.animType) {
+            typeSelect.value = obj.userData.animType;
+            axisSelect.value = obj.userData.animAxis || 'y';
+            startInput.value = obj.userData.animStart !== undefined ? obj.userData.animStart : 0;
+            endInput.value = obj.userData.animEnd !== undefined ? obj.userData.animEnd : 0;
+            scrubInput.value = '0';
+          } else {
+            typeSelect.value = 'rotation';
+            axisSelect.value = 'y';
+            startInput.value = '0';
+            endInput.value = '0';
+            scrubInput.value = '0';
+          }
         }
       }
       this.isUpdatingFromUI = false;

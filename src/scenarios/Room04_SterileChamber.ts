@@ -109,14 +109,19 @@ export class Room04_SterileChamber implements RoomScenario {
     else if (stage >= GameStage.ACT_2_PATCH_1_COMPLETE) decayLevel = 1;
     this.decayManager.setDecayLevel(decayLevel, this.entities.group);
 
+    // Dev layout overrides MUST be applied BEFORE stage-specific overrides
+    await this.applyDevLayoutOverridesAsync();
+
     if (stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
       this.exitBlownOpen = true;
       (this.entities.doorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
-      this.entities.exitDoorPanel.position.z = -4.35;
+      const exitDoor = this.entities.exitDoorPanel;
+      exitDoor.position.z = exitDoor.userData.animEnd !== undefined ? exitDoor.userData.animEnd : -4.35;
     }
     if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
       (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
-      this.entities.corridorDoor.rotation.y = -Math.PI / 2.2;
+      const door = this.entities.corridorDoor;
+      door.rotation.y = door.userData.animEnd !== undefined ? door.userData.animEnd : -Math.PI / 2.2;
     }
 
     // Optional override for self-contained hero props if custom Blender .glb models are present in /assets/models/
@@ -144,41 +149,49 @@ export class Room04_SterileChamber implements RoomScenario {
       // Procedural fallback already active
     }
 
-    this.applyDevLayoutOverrides();
-
     return this.entities.group;
   }
 
-  private applyDevLayoutOverrides(): void {
+  private async applyDevLayoutOverridesAsync(): Promise<void> {
     if (!this.entities) return;
     
     // Dynamic import to avoid circular dependencies
-    import('../editor/EditorServerSync').then(({ EditorServerSync }) => {
-      const layout = EditorServerSync.getFallbackLayout();
-      
-      this.entities!.group.traverse((child) => {
-        const meshLayout = layout[child.name] as any;
-        if (meshLayout && meshLayout.x !== undefined) {
-          child.position.set(meshLayout.x, meshLayout.y, meshLayout.z);
-          child.rotation.set(meshLayout.rx, meshLayout.ry, meshLayout.rz);
-          child.scale.set(meshLayout.sx, meshLayout.sy, meshLayout.sz);
-          child.updateMatrixWorld();
+    const { EditorServerSync } = await import('../editor/EditorServerSync');
+    const layout = EditorServerSync.getFallbackLayout();
+    
+    this.entities!.group.traverse((child) => {
+      const meshLayout = layout[child.name] as any;
+      if (meshLayout && meshLayout.x !== undefined) {
+        child.position.set(meshLayout.x, meshLayout.y, meshLayout.z);
+        child.rotation.set(meshLayout.rx, meshLayout.ry, meshLayout.rz);
+        child.scale.set(meshLayout.sx, meshLayout.sy, meshLayout.sz);
+        if (meshLayout.animation) {
+          child.userData.animType = meshLayout.animation.type;
+          child.userData.animAxis = meshLayout.animation.axis;
+          child.userData.animStart = meshLayout.animation.start;
+          child.userData.animEnd = meshLayout.animation.end;
         }
-      });
-      
-      import('../editor/EditorPrefabs').then(({ EditorPrefabs }) => {
-        if (layout.prefabs && Array.isArray(layout.prefabs)) {
-          for (const p of layout.prefabs) {
-            const prefab = EditorPrefabs.spawn(p.type);
-            prefab.userData.prefabId = p.id;
-            prefab.position.set(p.transform.x, p.transform.y, p.transform.z);
-            prefab.rotation.set(p.transform.rx, p.transform.ry, p.transform.rz);
-            prefab.scale.set(p.transform.sx, p.transform.sy, p.transform.sz);
-            this.entities!.group.add(prefab);
-          }
-        }
-      });
+        child.updateMatrixWorld();
+      }
     });
+    
+    const { EditorPrefabs } = await import('../editor/EditorPrefabs');
+    if (layout.prefabs && Array.isArray(layout.prefabs)) {
+      for (const p of layout.prefabs) {
+        const prefab = EditorPrefabs.spawn(p.type);
+        prefab.userData.prefabId = p.id;
+        prefab.position.set(p.transform.x, p.transform.y, p.transform.z);
+        prefab.rotation.set(p.transform.rx, p.transform.ry, p.transform.rz);
+        prefab.scale.set(p.transform.sx, p.transform.sy, p.transform.sz);
+        if (p.transform.animation) {
+          prefab.userData.animType = p.transform.animation.type;
+          prefab.userData.animAxis = p.transform.animation.axis;
+          prefab.userData.animStart = p.transform.animation.start;
+          prefab.userData.animEnd = p.transform.animation.end;
+        }
+        this.entities!.group.add(prefab);
+      }
+    }
   }
 
   private setupEventListeners(): void {
@@ -233,8 +246,9 @@ export class Room04_SterileChamber implements RoomScenario {
     this.audioElement.playPneumaticHiss();
 
     const door = this.entities.corridorDoor;
-    const startRot = door.rotation.y;
-    const targetRot = -Math.PI / 2.2; // Swing inwards into the passage (now deep enough)
+    const targetRot = door.userData.animEnd !== undefined ? door.userData.animEnd : -Math.PI / 2.2;
+    const startRot = door.userData.animStart !== undefined ? door.userData.animStart : door.rotation.y;
+    door.rotation.y = startRot; // Start firmly at animStart if defined
     const startTime = performance.now();
     const anim = () => {
       const elapsed = (performance.now() - startTime) / 800;
@@ -287,8 +301,9 @@ export class Room04_SterileChamber implements RoomScenario {
       if (this.entities) {
         (this.entities.doorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
         const exitDoor = this.entities.exitDoorPanel;
-        const startZ = exitDoor.position.z;
-        const targetZ = -4.35;
+        const targetZ = exitDoor.userData.animEnd !== undefined ? exitDoor.userData.animEnd : -4.35;
+        const startZ = exitDoor.userData.animStart !== undefined ? exitDoor.userData.animStart : exitDoor.position.z;
+        exitDoor.position.z = startZ;
         const startTime = performance.now();
         const anim = () => {
           const elapsed = (performance.now() - startTime) / 1200;

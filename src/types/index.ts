@@ -137,6 +137,12 @@ export interface TransformData {
   sx: number;
   sy: number;
   sz: number;
+  animation?: {
+    type: string;
+    axis: string;
+    start: number;
+    end: number;
+  };
   custom?: Record<string, any>;
 }
 
