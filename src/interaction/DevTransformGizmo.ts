@@ -2,7 +2,6 @@ import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { RaycastManager } from './RaycastManager';
-import { Telemetry } from '../core/Telemetry';
 
 export class DevTransformGizmo {
   private scene: THREE.Scene;
@@ -10,17 +9,22 @@ export class DevTransformGizmo {
   private domElement: HTMLElement;
   private orbitControls: OrbitControls;
   private raycastManager: RaycastManager;
-  private telemetry: Telemetry;
 
   private transformControls: TransformControls;
   private helper: THREE.Object3D;
   private isEnabled: boolean = false;
-  private selectedObject: THREE.Object3D | null = null;
+  private selectedObjects: THREE.Object3D[] = [];
+  private dummyPivot: THREE.Group = new THREE.Group();
   private raycaster: THREE.Raycaster = new THREE.Raycaster();
   private mouse: THREE.Vector2 = new THREE.Vector2();
 
-  public onTransformChange?: (object: THREE.Object3D) => void;
-  public onSelectionChange?: (object: THREE.Object3D | null) => void;
+  private pivotStartPos = new THREE.Vector3();
+  private pivotStartQuat = new THREE.Quaternion();
+  private pivotStartScale = new THREE.Vector3();
+  private objectStartStates: Map<THREE.Object3D, { pos: THREE.Vector3, quat: THREE.Quaternion, scale: THREE.Vector3 }> = new Map();
+
+  public onTransformChange?: (objects: THREE.Object3D[]) => void;
+  public onSelectionChange?: (objects: THREE.Object3D[]) => void;
   public onToggle?: (enabled: boolean) => void;
 
   private keyListener: (e: KeyboardEvent) => void;
@@ -38,7 +42,8 @@ export class DevTransformGizmo {
     this.domElement = domElement;
     this.orbitControls = orbitControls;
     this.raycastManager = raycastManager;
-    this.telemetry = Telemetry.getInstance();
+
+    this.scene.add(this.dummyPivot);
 
     this.transformControls = new TransformControls(this.camera, this.domElement);
     this.transformControls.size = 0.75;
@@ -47,24 +52,47 @@ export class DevTransformGizmo {
     this.helper.visible = false;
     this.scene.add(this.helper);
 
-    // Real-time micro-drag synchronization
+    // Apply delta transforms to all selected objects
     this.transformControls.addEventListener('objectChange', () => {
-      if (this.selectedObject && this.onTransformChange) {
-        this.onTransformChange(this.selectedObject);
+      if (this.selectedObjects.length > 0) {
+        
+        // Calculate deltas from the dummy pivot's movement
+        const deltaQuat = this.dummyPivot.quaternion.clone().multiply(this.pivotStartQuat.clone().invert());
+        const deltaScale = this.dummyPivot.scale.clone().divide(this.pivotStartScale);
+
+        for (const obj of this.selectedObjects) {
+          const state = this.objectStartStates.get(obj);
+          if (state) {
+            // Apply scale (assuming local)
+            obj.scale.copy(state.scale).multiply(deltaScale);
+            
+            // Apply rotation
+            obj.quaternion.copy(deltaQuat).multiply(state.quat);
+            
+            // Apply translation (orbiting around pivot)
+            const offset = state.pos.clone().sub(this.pivotStartPos);
+            offset.applyQuaternion(deltaQuat);
+            obj.position.copy(this.dummyPivot.position).add(offset);
+          }
+        }
+        
+        if (this.onTransformChange) {
+          this.onTransformChange(this.selectedObjects);
+        }
       }
     });
 
-    // Disables OrbitControls and Raycasting while dragging gizmo handles
     this.transformControls.addEventListener('dragging-changed', (event) => {
       const isDragging = !!event.value;
       this.orbitControls.enabled = !isDragging;
       this.raycastManager.setEnabled(!isDragging && !this.isEnabled);
 
-      if (!isDragging && this.selectedObject) {
-        this.logTransform(this.selectedObject);
+      if (!isDragging && this.selectedObjects.length > 0) {
         if (this.onTransformChange) {
-          this.onTransformChange(this.selectedObject);
+          this.onTransformChange(this.selectedObjects);
         }
+        // Update start states for next drag
+        this.cacheStartStates();
       }
     });
 
@@ -80,20 +108,15 @@ export class DevTransformGizmo {
     this.transformControls.enabled = enabled;
     this.helper.visible = enabled;
 
-    // Guard raycasting while Dev Transform mode is active
     this.raycastManager.setEnabled(!enabled);
 
-    if (!enabled && this.selectedObject) {
+    if (!enabled && this.selectedObjects.length > 0) {
       this.detach();
     }
 
     if (this.onToggle) {
       this.onToggle(enabled);
     }
-
-    const statusText = enabled ? 'ENABLED (Press W: Move, E: Rotate, R: Scale, Esc: Deselect)' : 'DISABLED';
-    this.telemetry.record('info', `[DevTransformGizmo] Mode ${statusText}`);
-    this.showToast(`3D Dev Gizmo ${statusText}`);
   }
 
   public toggle(): boolean {
@@ -101,21 +124,59 @@ export class DevTransformGizmo {
     return this.isEnabled;
   }
 
-  public attach(object: THREE.Object3D): void {
-    this.selectedObject = object;
-    this.transformControls.attach(object);
-    this.telemetry.record('info', `[DevTransformGizmo] Attached to ${object.name || 'unnamed object'}`);
-    this.logTransform(object);
+  public attachMultiple(objects: THREE.Object3D[]): void {
+    if (objects.length === 0) {
+      this.detach();
+      return;
+    }
+
+    this.selectedObjects = [...objects];
+    
+    // Calculate bounding box center of all selected objects
+    const box = new THREE.Box3();
+    for (const obj of objects) {
+      box.expandByObject(obj);
+    }
+    
+    const center = new THREE.Vector3();
+    if (!box.isEmpty()) {
+      box.getCenter(center);
+    }
+    
+    this.dummyPivot.position.copy(center);
+    this.dummyPivot.quaternion.identity();
+    this.dummyPivot.scale.set(1, 1, 1);
+    
+    this.cacheStartStates();
+    
+    this.transformControls.attach(this.dummyPivot);
+
     if (this.onSelectionChange) {
-      this.onSelectionChange(object);
+      this.onSelectionChange(this.selectedObjects);
+    }
+  }
+
+  private cacheStartStates(): void {
+    this.pivotStartPos.copy(this.dummyPivot.position);
+    this.pivotStartQuat.copy(this.dummyPivot.quaternion);
+    this.pivotStartScale.copy(this.dummyPivot.scale);
+    
+    this.objectStartStates.clear();
+    for (const obj of this.selectedObjects) {
+      this.objectStartStates.set(obj, {
+        pos: obj.position.clone(),
+        quat: obj.quaternion.clone(),
+        scale: obj.scale.clone()
+      });
     }
   }
 
   public detach(): void {
-    this.selectedObject = null;
     this.transformControls.detach();
+    this.selectedObjects = [];
+    this.objectStartStates.clear();
     if (this.onSelectionChange) {
-      this.onSelectionChange(null);
+      this.onSelectionChange([]);
     }
   }
 
@@ -127,13 +188,13 @@ export class DevTransformGizmo {
     return this.transformControls.getMode();
   }
 
-  public getSelectedObject(): THREE.Object3D | null {
-    return this.selectedObject;
+  public getSelectedObjects(): THREE.Object3D[] {
+    return this.selectedObjects;
   }
 
   public syncTransform(): void {
-    if (this.selectedObject) {
-      this.selectedObject.updateMatrixWorld(true);
+    if (this.selectedObjects.length > 0) {
+      this.selectedObjects[0].updateMatrixWorld(true);
     }
   }
 
@@ -168,8 +229,6 @@ export class DevTransformGizmo {
 
   private handlePointerDown(e: PointerEvent): void {
     if (!this.isEnabled) return;
-
-    // If clicking directly on a gizmo handle, let TransformControls handle it
     if (this.transformControls.dragging) return;
 
     const rect = this.domElement.getBoundingClientRect();
@@ -181,29 +240,37 @@ export class DevTransformGizmo {
 
     for (const hit of intersects) {
       let target: THREE.Object3D | null = hit.object;
+      
+      // Ignore helpers
+      if (target.name === 'Editor_Helpers_Group' || target.userData.isHelper) continue;
 
-      // Climb to top-level named prop or door or named component
       while (target && target.parent && target.parent !== this.scene) {
-        if (target.name && (target.name.startsWith('prop_') || target.name.startsWith('door_') || target.name === 'faceplate' || target.name === 'rotaryDial' || target.name === 'knifeSwitch')) {
+        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_') || target.name === 'faceplate' || target.name === 'rotaryDial' || target.name === 'knifeSwitch') {
           break;
         }
         target = target.parent;
       }
 
       if (target && target.name && target.name !== 'Room04_Root') {
-        this.attach(target);
+        if (e.shiftKey) {
+          const current = [...this.selectedObjects];
+          if (!current.includes(target)) {
+            current.push(target);
+            this.attachMultiple(current);
+          } else {
+            this.attachMultiple(current.filter(o => o !== target));
+          }
+        } else {
+          this.attachMultiple([target]);
+        }
         return;
       }
     }
-  }
-
-  private logTransform(object: THREE.Object3D): void {
-    const p = object.position;
-    const r = object.rotation;
-    const s = object.scale;
-    const info = `[Transform] ${object.name}: pos=[${p.x.toFixed(3)}, ${p.y.toFixed(3)}, ${p.z.toFixed(3)}] rot=[${r.x.toFixed(3)}, ${r.y.toFixed(3)}, ${r.z.toFixed(3)}] scale=[${s.x.toFixed(3)}, ${s.y.toFixed(3)}, ${s.z.toFixed(3)}]`;
-    console.log(info);
-    this.showToast(`${object.name}: [${p.x.toFixed(2)}, ${p.y.toFixed(2)}, ${p.z.toFixed(2)}]`);
+    
+    // If clicked empty space without shift, deselect
+    if (!e.shiftKey) {
+      this.detach();
+    }
   }
 
   private showToast(message: string): void {

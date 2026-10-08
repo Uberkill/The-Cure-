@@ -37,12 +37,14 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   backTileRight.name = 'wall_green_tiles';
   backWallGroup.add(backTileRight);
 
-  const dadoLeft = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.05, 0.26), mat.brassGold);
-  dadoLeft.position.set(-4.0, 2.22, -6.77);
+  // Back wall dado left: side wall dado ends at X=-6.64. So start at -6.64 to -1.0 (length 5.64)
+  const dadoLeft = new THREE.Mesh(new THREE.BoxGeometry(5.64, 0.05, 0.26), mat.brassGold);
+  dadoLeft.position.set(-3.82, 2.22, -6.77);
   backWallGroup.add(dadoLeft);
 
-  const dadoRight = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.05, 0.26), mat.brassGold);
-  dadoRight.position.set(4.0, 2.22, -6.77);
+  // Back wall dado right: side wall dado ends at X=6.64. So start at 6.64 to 1.0 (length 5.64)
+  const dadoRight = new THREE.Mesh(new THREE.BoxGeometry(5.64, 0.05, 0.26), mat.brassGold);
+  dadoRight.position.set(3.82, 2.22, -6.77);
   backWallGroup.add(dadoRight);
 
   const upperLintel = new THREE.Mesh(new THREE.BoxGeometry(14, 2.3, 0.2), mat.chalkUpperWall);
@@ -84,60 +86,66 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
 
   // Decorative Brass Arch Reveal Liners
   const revealLeft = new THREE.Mesh(new THREE.BoxGeometry(0.03, 3.02, 0.24), mat.brassGold);
-  revealLeft.position.set(-0.84, 1.51, -6.75);
+  revealLeft.position.set(-0.84, 1.51, -6.73);
   revealLeft.name = 'corridor_reveal_left';
   backWallGroup.add(revealLeft);
 
   const revealRight = new THREE.Mesh(new THREE.BoxGeometry(0.03, 3.02, 0.24), mat.brassGold);
-  revealRight.position.set(0.84, 1.51, -6.75);
+  revealRight.position.set(0.84, 1.51, -6.73);
   revealRight.name = 'corridor_reveal_right';
   backWallGroup.add(revealRight);
 
   const revealTop = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.03, 0.24), mat.brassGold);
-  revealTop.position.set(0, 3.01, -6.75);
+  revealTop.position.set(0, 3.01, -6.73);
   revealTop.name = 'corridor_reveal_top';
   backWallGroup.add(revealTop);
 
   // Recessed Corridor Passage Void (extends back to z = -7.8)
-  const corridorVoidBack = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 3.0), mat.ceramicGreenTiles);
-  corridorVoidBack.position.set(0, 1.5, -7.8);
-  corridorVoidBack.name = 'corridor_passage';
+  const voidBlackMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const corridorVoidBack = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 3.0), voidBlackMat);
+  corridorVoidBack.position.set(0, 1.5, -8.8);
+  corridorVoidBack.name = 'door_corridor_passage';
   backWallGroup.add(corridorVoidBack);
 
-  const corridorVoidFloor = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 1.04), mat.terrazzoFloor);
-  corridorVoidFloor.position.set(0, 0.001, -7.28);
+  const corridorVoidFloor = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 2.04), mat.terrazzoFloor);
+  corridorVoidFloor.position.set(0, 0.001, -7.78);
   corridorVoidFloor.rotation.x = -Math.PI / 2;
   backWallGroup.add(corridorVoidFloor);
 
-  const corridorVoidCeil = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 1.04), mat.chalkUpperWall);
-  corridorVoidCeil.position.set(0, 3.0, -7.28);
+  const corridorVoidCeil = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 2.04), mat.chalkUpperWall);
+  corridorVoidCeil.position.set(0, 3.0, -7.78);
   corridorVoidCeil.rotation.x = Math.PI / 2;
   backWallGroup.add(corridorVoidCeil);
 
-  const corridorVoidLeft = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 3.0), mat.chalkUpperWall);
-  corridorVoidLeft.position.set(-0.84, 1.5, -7.28);
+  const corridorVoidLeft = new THREE.Mesh(new THREE.PlaneGeometry(2.04, 3.0), mat.chalkUpperWall);
+  corridorVoidLeft.position.set(-0.84, 1.5, -7.78);
   corridorVoidLeft.rotation.y = Math.PI / 2;
   backWallGroup.add(corridorVoidLeft);
 
-  const corridorVoidRight = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 3.0), mat.chalkUpperWall);
-  corridorVoidRight.position.set(0.84, 1.5, -7.28);
+  const corridorVoidRight = new THREE.Mesh(new THREE.PlaneGeometry(2.04, 3.0), mat.chalkUpperWall);
+  corridorVoidRight.position.set(0.84, 1.5, -7.78);
   corridorVoidRight.rotation.y = -Math.PI / 2;
   backWallGroup.add(corridorVoidRight);
 
-  // Sliding Corridor Door (recessed in track, slides along X into right pocket)
+  // Sliding Corridor Door (hinged at left edge for swinging)
   const corridorDoorMat = new THREE.MeshStandardMaterial({
     color: 0x18241e,
     roughness: 0.45,
     metalness: 0.35
   });
-  const corridorDoor = new THREE.Mesh(new THREE.BoxGeometry(1.68, 2.96, 0.10), corridorDoorMat);
-  corridorDoor.position.set(0, 1.48, -6.72);
+  const corridorDoorGeo = new THREE.BoxGeometry(1.68, 2.96, 0.10);
+  corridorDoorGeo.translate(1.68 / 2, 0, 0); // shift origin to left edge
+  corridorDoorGeo.computeBoundingBox();
+  corridorDoorGeo.computeBoundingSphere();
+  const corridorDoor = new THREE.Mesh(corridorDoorGeo, corridorDoorMat);
+  corridorDoor.position.set(-1.68 / 2, 1.48, -6.72);
   corridorDoor.name = 'door_corridor';
   corridorDoor.receiveShadow = false;
 
   const corridorPeephole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.16, 16), mat.brassGold);
   corridorPeephole.rotation.x = Math.PI / 2;
-  corridorPeephole.position.set(0, 0.52, 0.055);
+  corridorPeephole.position.set(1.68 / 2, 0.52, 0.055); // offset to center of the visual door
+
   corridorPeephole.name = 'corridor_peephole';
   corridorDoor.add(corridorPeephole);
 
@@ -216,22 +224,23 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
 
   // Decorative Brass Arch Reveal Liners for Exit
   const exitRevealBack = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.02, 0.03), mat.brassGold);
-  exitRevealBack.position.set(-6.75, 1.51, -3.64);
+  exitRevealBack.position.set(-6.73, 1.51, -3.64);
   exitRevealBack.name = 'exit_reveal_back';
   leftWallGroup.add(exitRevealBack);
 
   const exitRevealFront = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.02, 0.03), mat.brassGold);
-  exitRevealFront.position.set(-6.75, 1.51, -2.36);
+  exitRevealFront.position.set(-6.73, 1.51, -2.36);
   exitRevealFront.name = 'exit_reveal_front';
   leftWallGroup.add(exitRevealFront);
 
   const exitRevealTop = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 1.28), mat.brassGold);
-  exitRevealTop.position.set(-6.75, 3.01, -3.0);
+  exitRevealTop.position.set(-6.73, 3.01, -3.0);
   exitRevealTop.name = 'exit_reveal_top';
   leftWallGroup.add(exitRevealTop);
 
   // Recessed Airlock Exit Passage Void (extends back to x = -7.8)
-  const exitVoidOuter = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 3.0), mat.titaniumChassis);
+  const exitVoidBlackMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  const exitVoidOuter = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 3.0), exitVoidBlackMat);
   exitVoidOuter.position.set(-7.8, 1.5, -3.0);
   exitVoidOuter.rotation.y = Math.PI / 2;
   exitVoidOuter.name = 'exit_airlock_passage';

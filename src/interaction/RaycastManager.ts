@@ -29,10 +29,18 @@ export class RaycastManager {
     let startY = 0;
     let startTime = 0;
 
+    let hoverTimeout: number | null = null;
+
     this.domElement.addEventListener('mousemove', (e) => {
       this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      this.checkHover();
+      
+      if (!hoverTimeout) {
+        hoverTimeout = window.setTimeout(() => {
+          this.checkHover();
+          hoverTimeout = null;
+        }, 50); // ~20Hz throttle
+      }
     });
 
     this.domElement.addEventListener('pointerdown', (e) => {
@@ -61,12 +69,13 @@ export class RaycastManager {
     });
 
     this.eventBus.on('camera:transition_start', () => {
-      this.isEnabled = false;
-      this.domElement.style.cursor = 'default';
+      this.setEnabled(false);
+      this.checkHover();
     });
 
     this.eventBus.on('camera:transition_end', () => {
-      this.isEnabled = true;
+      this.setEnabled(true);
+      this.checkHover();
     });
 
     this.eventBus.on('inspect:open', () => {
@@ -134,6 +143,7 @@ export class RaycastManager {
       prop_door: '[CLICK TO INSPECT EXIT BLASTDOOR]',
       prop_telephone: '[CLICK TO LISTEN TO RECEIVER]',
       door_corridor: '[ENTER: OBSERVATION CORRIDOR]',
+      door_corridor_passage: '[ENTER: OBSERVATION CORRIDOR]',
       door_return_hub: '[RETURN: CENTRAL HUB]',
 
       // Sleep Ward
@@ -194,15 +204,26 @@ export class RaycastManager {
     const intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
     if (intersects.length > 0) {
-      const target = this.findInteractiveParent(intersects[0].object);
-      if (target) {
-        this.domElement.style.cursor = 'pointer';
-        if (this.hoveredObject !== target) {
-          this.hoveredObject = target;
-          const label = this.getInteractionLabel(target.name);
-          this.eventBus.emit('input:object_hovered', { objectId: target.name, label });
+      for (const intersect of intersects) {
+        const target = this.findInteractiveParent(intersect.object);
+        if (target) {
+          this.domElement.style.cursor = 'pointer';
+          if (this.hoveredObject !== target) {
+            this.hoveredObject = target;
+            const label = this.getInteractionLabel(target.name);
+            this.eventBus.emit('input:object_hovered', { objectId: target.name, label });
+          }
+          return;
+        } else {
+          // Block X-ray vision: If we hit a solid opaque non-interactive object, abort the raycast
+          const mat = (intersect.object as THREE.Mesh).material as THREE.Material | THREE.Material[];
+          if (mat) {
+            const isOpaque = Array.isArray(mat) 
+              ? mat.some(m => !m.transparent && m.opacity === 1)
+              : (!mat.transparent && mat.opacity === 1);
+            if (isOpaque) break;
+          }
         }
-        return;
       }
     }
 
@@ -220,12 +241,24 @@ export class RaycastManager {
     const intersects = this.raycaster.intersectObjects(this.scene.children, true);
 
     if (intersects.length > 0) {
-      const target = this.findInteractiveParent(intersects[0].object);
-      if (target) {
-        this.eventBus.emit('input:object_clicked', {
-          objectId: target.name,
-          point: intersects[0].point
-        });
+      for (const intersect of intersects) {
+        const target = this.findInteractiveParent(intersect.object);
+        if (target) {
+          this.eventBus.emit('input:object_clicked', {
+            objectId: target.name,
+            point: intersect.point
+          });
+          return;
+        } else {
+          // Block X-ray vision
+          const mat = (intersect.object as THREE.Mesh).material as THREE.Material | THREE.Material[];
+          if (mat) {
+            const isOpaque = Array.isArray(mat) 
+              ? mat.some(m => !m.transparent && m.opacity === 1)
+              : (!mat.transparent && mat.opacity === 1);
+            if (isOpaque) break;
+          }
+        }
       }
     }
   }

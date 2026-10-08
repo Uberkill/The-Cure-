@@ -15,6 +15,7 @@ import { CRTNodePatcher } from './entities/CRTNodePatcher';
 import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
 import { DevTransformGizmo } from './interaction/DevTransformGizmo';
 import { Dev3DEditorPanel } from './ui/Dev3DEditorPanel';
+import { EditorVisualizers } from './editor/EditorVisualizers';
 
 class VaultApp {
   public telemetry: Telemetry;
@@ -29,6 +30,7 @@ class VaultApp {
   public inspectionManager: InspectionManager;
   public devGizmo: DevTransformGizmo;
   public devEditorPanel: Dev3DEditorPanel;
+  public editorVisualizers?: EditorVisualizers;
 
   public scenarioRegistry: ScenarioRegistry;
   public crtNodePatcher: CRTNodePatcher;
@@ -65,7 +67,8 @@ class VaultApp {
     this.devEditorPanel = new Dev3DEditorPanel(
       this.sceneManager.scene,
       this.cameraDirector,
-      this.devGizmo
+      this.devGizmo,
+      this.sceneManager.renderer
     );
     const devBtn = document.getElementById('btn-dev-3d-toggle');
     devBtn?.addEventListener('click', () => {
@@ -73,8 +76,16 @@ class VaultApp {
     });
 
     this.devGizmo.onToggle = (enabled) => {
-      if (enabled) this.devEditorPanel.show();
-      else this.devEditorPanel.hide();
+      if (enabled) {
+        this.devEditorPanel.show();
+        if (!this.editorVisualizers) {
+          this.editorVisualizers = new EditorVisualizers(this.sceneManager.scene);
+        }
+        this.editorVisualizers.enable();
+      } else {
+        this.devEditorPanel.hide();
+        if (this.editorVisualizers) this.editorVisualizers.disable();
+      }
       devBtn?.classList.toggle('active', enabled);
     };
 
@@ -99,7 +110,6 @@ class VaultApp {
 
         // Load new room meshes into scene
         await this.scenarioRegistry.loadScenario(nextScenario, this.sceneManager.scene);
-        this.devEditorPanel.populateAssetDropdown();
 
         // Reset camera anchor
         const defaultPreset = nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset;
@@ -142,7 +152,6 @@ class VaultApp {
       const hubScenario = this.scenarioRegistry.getScenario('room_04');
       if (hubScenario) {
         await this.scenarioRegistry.loadScenario(hubScenario, this.sceneManager.scene);
-        this.devEditorPanel.populateAssetDropdown();
       }
       this.telemetry.record('info', 'Central Hub loaded successfully');
 
@@ -164,7 +173,7 @@ class VaultApp {
 
     this.cameraDirector.update(delta);
     this.scenarioRegistry.update(delta);
-    this.devEditorPanel.updateTelemetry();
+    this.devEditorPanel.update();
 
     // Primary 3D render pass
     this.sceneManager.render(this.cameraDirector.camera);

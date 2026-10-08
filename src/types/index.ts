@@ -124,3 +124,27 @@ export interface RoomScenario {
   onObjectClick?(objectId: string): boolean;
   update?(delta: number): void;
 }
+
+export interface TransformData {
+  x: number;
+  y: number;
+  z: number;
+  rx: number;
+  ry: number;
+  rz: number;
+  sx: number;
+  sy: number;
+  sz: number;
+  custom?: Record<string, any>;
+}
+
+export interface PrefabSpawnData {
+  id: string;
+  type: string;
+  transform: TransformData;
+}
+
+export interface RoomLayoutData {
+  prefabs?: PrefabSpawnData[];
+  [meshId: string]: TransformData | PrefabSpawnData[] | undefined;
+}

@@ -132,7 +132,41 @@ export class Room04_SterileChamber implements RoomScenario {
       // Procedural fallback already active
     }
 
+    this.applyDevLayoutOverrides();
+
     return this.entities.group;
+  }
+
+  private applyDevLayoutOverrides(): void {
+    if (!this.entities) return;
+    
+    // Dynamic import to avoid circular dependencies
+    import('../editor/EditorServerSync').then(({ EditorServerSync }) => {
+      const layout = EditorServerSync.getFallbackLayout();
+      
+      this.entities!.group.traverse((child) => {
+        const meshLayout = layout[child.name] as any;
+        if (meshLayout && meshLayout.x !== undefined) {
+          child.position.set(meshLayout.x, meshLayout.y, meshLayout.z);
+          child.rotation.set(meshLayout.rx, meshLayout.ry, meshLayout.rz);
+          child.scale.set(meshLayout.sx, meshLayout.sy, meshLayout.sz);
+          child.updateMatrixWorld();
+        }
+      });
+      
+      import('../editor/EditorPrefabs').then(({ EditorPrefabs }) => {
+        if (layout.prefabs && Array.isArray(layout.prefabs)) {
+          for (const p of layout.prefabs) {
+            const prefab = EditorPrefabs.spawn(p.type);
+            prefab.userData.prefabId = p.id;
+            prefab.position.set(p.transform.x, p.transform.y, p.transform.z);
+            prefab.rotation.set(p.transform.rx, p.transform.ry, p.transform.rz);
+            prefab.scale.set(p.transform.sx, p.transform.sy, p.transform.sz);
+            this.entities!.group.add(prefab);
+          }
+        }
+      });
+    });
   }
 
   private setupEventListeners(): void {
@@ -187,16 +221,16 @@ export class Room04_SterileChamber implements RoomScenario {
     this.audioElement.playPneumaticHiss();
 
     const door = this.entities.corridorDoor;
-    const startX = door.position.x;
-    const targetX = 1.35;
+    const startRot = door.rotation.y;
+    const targetRot = -Math.PI / 2.2; // Swing inwards into the passage (now deep enough)
     const startTime = performance.now();
     const anim = () => {
       const elapsed = (performance.now() - startTime) / 800;
       if (elapsed < 1) {
-        door.position.x = startX + (targetX - startX) * Math.sin((elapsed * Math.PI) / 2);
+        door.rotation.y = startRot + (targetRot - startRot) * Math.sin((elapsed * Math.PI) / 2);
         requestAnimationFrame(anim);
       } else {
-        door.position.x = targetX;
+        door.rotation.y = targetRot;
       }
     };
     anim();
@@ -271,15 +305,21 @@ export class Room04_SterileChamber implements RoomScenario {
     for (const unsub of this.unsubscribers) unsub();
     this.unsubscribers = [];
     this.entities = null;
+    this.isTransitioning = false;
   }
+
+  private isTransitioning: boolean = false;
 
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
 
-    if (objectId === 'door_corridor' || objectId === 'corridor_passage') {
+    if (objectId === 'door_corridor' || objectId === 'door_corridor_passage') {
       const stage = GameState.getInstance().getStage();
       if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
-        bus.emit('scenario:switch_room', { targetRoomId: this.getNextSpokeRoomId() });
+        if (!this.isTransitioning) {
+          this.isTransitioning = true;
+          bus.emit('scenario:switch_room', { targetRoomId: this.getNextSpokeRoomId() });
+        }
       } else {
         bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
         bus.emit('ui:subtitle_changed', {

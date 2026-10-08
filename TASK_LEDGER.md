@@ -57,3 +57,5 @@
 - [x] **TASK-019**: Reticle hover prompt matrix, frequency resonance tuning, settings modal accessibility
 - [x] **TASK-020**: Elimination of swallowed exceptions, Wiggum AST audit 0 findings
 - [x] **TASK-021**: Ceramic green tile sRGB calibration, ceiling luminaire, and surgical lighting restoration
+
+- TASK-022: Fixed 3D Room Z-Fighting (corridor and exit reveals, dado junctions), implemented physically swinging corridor door with click-to-enter raycast tracking, restored void black passage planes, and verified interactive Dev 3D Editor composite assemblies and HUD integration.

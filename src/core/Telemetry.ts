@@ -41,6 +41,8 @@ export class Telemetry {
       this.buffer.shift();
     }
     this.buffer.push(record);
+    // @ts-ignore
+    window.__telemetryHistory = this.buffer;
 
     if (level === 'error') {
       console.error(`[Telemetry ERROR] ${message} (${context || 'no context'})`);

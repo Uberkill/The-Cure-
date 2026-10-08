@@ -135,6 +135,7 @@ export class CameraDirector {
       } else {
         this.camera.position.copy(endPos);
         this.controls.target.copy(endTarget);
+        this.controls.update(); // Sync OrbitControls internal spherical state to prevent jerking
         this.controls.enabled = true;
         this.isTransitioning = false;
         this.eventBus.emit('camera:transition_end', {});

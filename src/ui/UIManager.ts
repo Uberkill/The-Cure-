@@ -6,6 +6,7 @@ export class UIManager {
   private eventBus: EventBus;
 
   private subtitleEl!: HTMLElement;
+  private reticleWrapEl!: HTMLElement;
   private reticlePromptEl!: HTMLElement;
   private telemetryEl!: HTMLElement;
   private freqConsoleEl!: HTMLElement;
@@ -36,6 +37,7 @@ export class UIManager {
 
   private cacheDomElements(): void {
     this.subtitleEl = document.getElementById('observation-subtitle')!;
+    this.reticleWrapEl = document.querySelector('.center-reticle-wrap') as HTMLElement;
     this.reticlePromptEl = document.getElementById('reticle-prompt')!;
     this.telemetryEl = document.getElementById('telemetry-status')!;
     this.freqConsoleEl = document.getElementById('freq-console')!;
@@ -55,6 +57,13 @@ export class UIManager {
   }
 
   private setupListeners(): void {
+    window.addEventListener('mousemove', (e) => {
+      if (this.reticleWrapEl) {
+        this.reticleWrapEl.style.left = `${e.clientX}px`;
+        this.reticleWrapEl.style.top = `${e.clientY}px`;
+      }
+    });
+
     this.eventBus.on('ui:subtitle_changed', ({ text }) => {
       this.subtitleEl.textContent = text;
       this.subtitleEl.style.opacity = '1';
