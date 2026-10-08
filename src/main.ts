@@ -95,6 +95,12 @@ class VaultApp {
       }
     });
 
+    this.eventBus.on('editor:toggle_visualizers', (payload) => {
+      if (this.editorVisualizers) {
+        this.editorVisualizers.setVisible(payload.visible);
+      }
+    });
+
     this.scenarioRegistry = ScenarioRegistry.getInstance();
     this.crtNodePatcher = CRTNodePatcher.getInstance();
 

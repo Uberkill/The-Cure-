@@ -57,6 +57,10 @@ export class Dev3DEditorPanel {
         <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • 3D Editor</span>
         <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer;">✕</button>
       </div>
+      <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+        <input type="checkbox" id="dev-chk-visualizers" checked style="accent-color: #00ff88; cursor: pointer;">
+        <label for="dev-chk-visualizers" style="cursor: pointer;">Show Bounding Boxes</label>
+      </div>
 
       <!-- TABS -->
       <div style="display: flex; gap: 4px; margin-bottom: 12px; font-size: 11px;">
@@ -216,6 +220,14 @@ export class Dev3DEditorPanel {
             EventBus.getInstance().emit('scenario:switch_room', { targetRoomId: room });
           });
         }
+      });
+    });
+
+    // Visualizer Toggle
+    document.getElementById('dev-chk-visualizers')?.addEventListener('change', (e) => {
+      const checked = (e.target as HTMLInputElement).checked;
+      import('../core/EventBus').then(({ EventBus }) => {
+        EventBus.getInstance().emit('editor:toggle_visualizers', { visible: checked });
       });
     });
   }

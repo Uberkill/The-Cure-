@@ -4,6 +4,7 @@ export class EditorVisualizers {
   private scene: THREE.Scene;
   private visualizerNodes: THREE.Group[] = [];
   private isEnabled: boolean = false;
+  private isVisible: boolean = true;
 
   constructor(scene: THREE.Scene) {
     this.scene = scene;
@@ -17,6 +18,13 @@ export class EditorVisualizers {
   public disable(): void {
     this.isEnabled = false;
     this.clear();
+  }
+
+  public setVisible(visible: boolean): void {
+    this.isVisible = visible;
+    for (const vizNode of this.visualizerNodes) {
+      vizNode.visible = visible;
+    }
   }
 
   public rebuild(): void {
@@ -64,6 +72,7 @@ export class EditorVisualizers {
         const vizNode = new THREE.Group();
         vizNode.name = 'dev_visualizers_node';
         vizNode.userData.isHelper = true;
+        vizNode.visible = this.isVisible;
 
         const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
         const edges = new THREE.EdgesGeometry(boxGeo);

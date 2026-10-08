@@ -278,11 +278,31 @@ export class DevTransformGizmo {
             // Offset to prevent z-fighting
             clone.position.add(new THREE.Vector3(0.1, 0, 0.1));
             
+            // Remove any ghost visualizers cloned from the original
+            const ghosts: THREE.Object3D[] = [];
+            clone.traverse(child => {
+              if (child.name === 'dev_visualizers_node') {
+                ghosts.push(child);
+              }
+            });
+            ghosts.forEach(g => {
+              if (g.parent) g.parent.remove(g);
+              // Dispose resources for safety
+              g.traverse(gc => {
+                if (gc instanceof THREE.LineSegments) gc.geometry.dispose();
+                if (gc instanceof THREE.Sprite) { gc.material.map?.dispose(); gc.material.dispose(); }
+              });
+            });
+            
             this.scene.add(clone);
             pasted.push(clone);
           }
           this.attachMultiple(pasted);
           this.showToast(`Pasted ${pasted.length} object(s)`);
+          
+          import('../core/EventBus').then(({ EventBus }) => {
+            EventBus.getInstance().emit('editor:rebuild_visualizers', {});
+          });
           
           // Trigger save via change event
           if (this.onTransformChange) {

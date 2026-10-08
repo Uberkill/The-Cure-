@@ -108,6 +108,7 @@ export interface EventPayloadMap {
   'settings:updated': Partial<GameSettings>;
   'telemetry:log': TelemetryRecord;
   'editor:rebuild_visualizers': Record<string, never>;
+  'editor:toggle_visualizers': { visible: boolean };
 }
 
 export type EventKey = keyof EventPayloadMap;
