@@ -280,6 +280,31 @@ body, html {
   pointer-events: none;
 }
 
+/* Developer Mode 3D Toggle Pill (Bottom-Right) */
+.dev-3d-toggle-btn {
+  background: rgba(30, 42, 34, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 3px;
+  opacity: 0.35;
+  pointer-events: auto;
+  transition: opacity 0.2s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+}
+
+.dev-3d-toggle-btn:hover,
+.dev-3d-toggle-btn.active {
+  opacity: 0.95;
+  color: #bad2c8;
+  background: rgba(45, 60, 50, 0.85);
+  border-color: rgba(74, 222, 128, 0.4);
+}
+
 /* Faded Settings Gear (Bottom-Right) */
 .settings-gear-btn {
   background: transparent;

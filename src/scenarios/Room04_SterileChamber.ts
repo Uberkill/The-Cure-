@@ -112,9 +112,11 @@ export class Room04_SterileChamber implements RoomScenario {
     if (stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
       this.exitBlownOpen = true;
       (this.entities.doorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
+      this.entities.exitDoorPanel.position.z = -4.35;
     }
     if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
       (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
+      this.entities.corridorDoor.position.x = 1.35;
     }
 
     // Optional override for self-contained hero props if custom Blender .glb models are present in /assets/models/
@@ -183,6 +185,21 @@ export class Room04_SterileChamber implements RoomScenario {
     if (!this.entities) return;
     (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
     this.audioElement.playPneumaticHiss();
+
+    const door = this.entities.corridorDoor;
+    const startX = door.position.x;
+    const targetX = 1.35;
+    const startTime = performance.now();
+    const anim = () => {
+      const elapsed = (performance.now() - startTime) / 800;
+      if (elapsed < 1) {
+        door.position.x = startX + (targetX - startX) * Math.sin((elapsed * Math.PI) / 2);
+        requestAnimationFrame(anim);
+      } else {
+        door.position.x = targetX;
+      }
+    };
+    anim();
   }
 
   private animateKnifeSwitch(): void {
@@ -221,6 +238,24 @@ export class Room04_SterileChamber implements RoomScenario {
       this.audioElement.playPneumaticHiss();
       this.exitBlownOpen = true;
 
+      if (this.entities) {
+        (this.entities.doorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
+        const exitDoor = this.entities.exitDoorPanel;
+        const startZ = exitDoor.position.z;
+        const targetZ = -4.35;
+        const startTime = performance.now();
+        const anim = () => {
+          const elapsed = (performance.now() - startTime) / 1200;
+          if (elapsed < 1) {
+            exitDoor.position.z = startZ + (targetZ - startZ) * Math.sin((elapsed * Math.PI) / 2);
+            requestAnimationFrame(anim);
+          } else {
+            exitDoor.position.z = targetZ;
+          }
+        };
+        anim();
+      }
+
       // Glow amber through open exit door on left wall
       const exitGlow = new THREE.PointLight(0xf59e0b, 3.5, 12);
       exitGlow.position.set(-6.6, 1.8, -3.0);
@@ -241,7 +276,7 @@ export class Room04_SterileChamber implements RoomScenario {
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
 
-    if (objectId === 'door_corridor') {
+    if (objectId === 'door_corridor' || objectId === 'corridor_passage') {
       const stage = GameState.getInstance().getStage();
       if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
         bus.emit('scenario:switch_room', { targetRoomId: this.getNextSpokeRoomId() });
@@ -254,7 +289,7 @@ export class Room04_SterileChamber implements RoomScenario {
       return true;
     }
 
-    if (objectId === 'prop_door') {
+    if (objectId === 'prop_door' || objectId === 'exit_airlock_passage') {
       const stage = GameState.getInstance().getStage();
       if (this.exitBlownOpen || stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
         bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge' });

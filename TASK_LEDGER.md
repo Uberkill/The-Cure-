@@ -24,6 +24,8 @@
 | **TASK-012** | `rendering` | Non-Coplanar Geometry Offsets & Z-Fighting Elimination | `[COMPLETED]` | HIGH |
 | **TASK-013** | `assets` | Hybrid Hero Prop Override Pipeline & Clinical Gallery Painting | `[COMPLETED]` | HIGH |
 | **TASK-014** | `editor` | Dev3DEditorPanel Real-Time Bi-Directional Asset Selector & Batch Launcher | `[COMPLETED]` | HIGH |
+| **TASK-015** | `doors` | Architectural Portals, Recessed Voids, Sliding Animations & Hardware Parenting | `[COMPLETED]` | HIGH |
+| **TASK-016** | `telemetry` | HUD Developer Mode Pill, Live Telemetry Box & Composite Assembly Groups | `[COMPLETED]` | HIGH |
 
 ---
 
@@ -43,3 +45,5 @@
 - [x] **TASK-012**: Non-Coplanar Geometry Offsets & Z-Fighting Elimination
 - [x] **TASK-013**: Hybrid Hero Prop Override Pipeline & Clinical Gallery Painting
 - [x] **TASK-014**: Dev3DEditorPanel Real-Time Bi-Directional Asset Selector & Batch Launcher
+- [x] **TASK-015**: Architectural Portals, Recessed Voids, Sliding Animations & Hardware Parenting
+- [x] **TASK-016**: HUD Developer Mode Pill, Live Telemetry Box & Composite Assembly Groups

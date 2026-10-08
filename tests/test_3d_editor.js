@@ -62,6 +62,11 @@ server.listen(PORT, async () => {
     await page.goto(`http://localhost:${PORT}/?editor=true`);
     await page.waitForSelector('#dev-3d-editor-panel', { state: 'visible', timeout: 8000 });
 
+    if (await page.isVisible('#btn-begin-intake')) {
+      await page.click('#btn-begin-intake');
+      await page.waitForTimeout(500);
+    }
+
     const isVisible = await page.$eval('#dev-3d-editor-panel', (el) => el.style.display !== 'none');
     console.log(`Editor Panel visible: ${isVisible}`);
     if (!isVisible) throw new Error('Editor panel was not visible');
@@ -108,13 +113,71 @@ server.listen(PORT, async () => {
     }
     console.log('PASSED: Real-time bi-directional input to Three.js coordinate sync verified.');
 
-    console.log('--- Step 5: Checking Console Errors ---');
+    console.log('--- Step 5: Verifying Live Telemetry Box & HUD Status ---');
+    await page.waitForTimeout(200);
+    const telemetryData = await page.evaluate(() => {
+      const camPos = document.getElementById('dev-telem-cam-pos')?.textContent;
+      const camTgt = document.getElementById('dev-telem-cam-tgt')?.textContent;
+      const activeObj = document.getElementById('dev-telem-active')?.textContent;
+      const hudStatus = document.getElementById('telemetry-status')?.textContent;
+      return { camPos, camTgt, activeObj, hudStatus };
+    });
+    console.log('Telemetry Box values:', telemetryData);
+    if (!telemetryData.camPos || !telemetryData.camTgt || telemetryData.activeObj !== 'prop_telephone') {
+      throw new Error(`Telemetry values incorrect: ${JSON.stringify(telemetryData)}`);
+    }
+    if (!telemetryData.hudStatus || (!telemetryData.hudStatus.includes('[DevTransformGizmo]') && !telemetryData.hudStatus.includes('DEVELOPER MODE'))) {
+      throw new Error(`HUD status did not reflect active Developer Mode: ${telemetryData.hudStatus}`);
+    }
+    console.log('PASSED: Live Telemetry Box and HUD status verified.');
+
+    console.log('--- Step 6: Verifying Composite Assembly Group Selection ---');
+    await page.selectOption('#dev-asset-select', 'group_wall_back');
+    await page.waitForTimeout(200);
+    const assemblyInitialY = await page.evaluate(() => {
+      const group = window.__VAULT_APP__.sceneManager.scene.getObjectByName('group_wall_back');
+      return group ? group.position.y : null;
+    });
+    console.log('group_wall_back initial Y position:', assemblyInitialY);
+    await page.fill('#dev-pos-y', '0.500');
+    await page.dispatchEvent('#dev-pos-y', 'input');
+    await page.waitForTimeout(100);
+
+    const assemblyUpdatedY = await page.evaluate(() => {
+      const group = window.__VAULT_APP__.sceneManager.scene.getObjectByName('group_wall_back');
+      return group ? group.position.y : null;
+    });
+    console.log('group_wall_back updated Y position:', assemblyUpdatedY);
+    if (Math.abs(assemblyUpdatedY - 0.500) > 0.001) {
+      throw new Error(`Assembly group Y position failed to update: ${assemblyUpdatedY}`);
+    }
+    console.log('PASSED: Composite group assembly moves all nested objects together.');
+
+    console.log('--- Step 7: Verifying HUD [DEV 3D] Button Toggle ---');
+    await page.click('#btn-dev-3d-toggle');
+    await page.waitForTimeout(200);
+    const panelClosed = await page.$eval('#dev-3d-editor-panel', (el) => el.style.display === 'none');
+    const hudStatusClosed = await page.$eval('#telemetry-status', (el) => el.textContent);
+    console.log(`Panel closed after clicking HUD button: ${panelClosed}, HUD status: ${hudStatusClosed}`);
+    if (!panelClosed || !hudStatusClosed.includes('DISABLED')) {
+      throw new Error(`HUD button toggle did not close editor or report disabled: panelClosed=${panelClosed}, hud=${hudStatusClosed}`);
+    }
+
+    // Toggle back on via HUD button
+    await page.click('#btn-dev-3d-toggle');
+    await page.waitForTimeout(200);
+    const panelReopened = await page.$eval('#dev-3d-editor-panel', (el) => el.style.display !== 'none');
+    console.log(`Panel reopened after clicking HUD button: ${panelReopened}`);
+    if (!panelReopened) throw new Error('HUD button toggle did not reopen editor');
+    console.log('PASSED: HUD [DEV 3D] button toggles editor smoothly.');
+
+    console.log('--- Step 8: Checking Console Errors ---');
     console.log(`Console Errors: ${consoleErrors.length}`);
     if (consoleErrors.length > 0) {
       throw new Error(`Test encountered console errors: ${consoleErrors.join(', ')}`);
     }
 
-    console.log('SUCCESS: All 3D Editor and transform gizmo tests passed with 0 errors!');
+    console.log('SUCCESS: All 3D Editor, telemetry, and transform gizmo tests passed with 0 errors!');
     await browser.close();
     server.close();
     process.exit(0);

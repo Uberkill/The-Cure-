@@ -67,9 +67,15 @@ class VaultApp {
       this.cameraDirector,
       this.devGizmo
     );
+    const devBtn = document.getElementById('btn-dev-3d-toggle');
+    devBtn?.addEventListener('click', () => {
+      this.devGizmo.toggle();
+    });
+
     this.devGizmo.onToggle = (enabled) => {
       if (enabled) this.devEditorPanel.show();
       else this.devEditorPanel.hide();
+      devBtn?.classList.toggle('active', enabled);
     };
 
     this.scenarioRegistry = ScenarioRegistry.getInstance();
@@ -158,6 +164,7 @@ class VaultApp {
 
     this.cameraDirector.update(delta);
     this.scenarioRegistry.update(delta);
+    this.devEditorPanel.updateTelemetry();
 
     // Primary 3D render pass
     this.sceneManager.render(this.cameraDirector.camera);

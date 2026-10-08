@@ -19,6 +19,11 @@ export class ScreenManager {
 
     this.cacheDomElements();
     this.setupListeners();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('editor')) {
+      this.switchView('chamber');
+    }
   }
 
   private cacheDomElements(): void {

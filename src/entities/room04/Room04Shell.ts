@@ -11,6 +11,7 @@ export interface Room04ShellEntities {
   corridorDoor: THREE.Mesh;
   corridorLed: THREE.Mesh;
   doorLed: THREE.Mesh;
+  exitDoorPanel: THREE.Mesh;
 }
 
 export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntities {
@@ -18,9 +19,11 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), mat.terrazzoFloor);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
+  floor.name = 'shell_floor';
 
   // 2. Back Wall with Split Wainscot and Architectural Forward Corridor Portal
   const backWallGroup = new THREE.Group();
+  backWallGroup.name = 'group_wall_back';
 
   const backTileLeft = new THREE.Mesh(new THREE.BoxGeometry(6.0, 2.2, 0.22), mat.ceramicGreenTiles);
   backTileLeft.position.set(-4.0, 1.1, -6.78);
@@ -60,40 +63,92 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   upperRight.name = 'wall_chalk_upper';
   backWallGroup.add(upperRight);
 
-  const corridorFrame = new THREE.Mesh(new THREE.BoxGeometry(2.04, 3.24, 0.24), mat.chalkUpperWall);
-  corridorFrame.position.set(0, 1.6, -6.76);
-  corridorFrame.receiveShadow = false;
-  backWallGroup.add(corridorFrame);
+  // Forward Corridor Portal Jambs & Recessed Passage (No solid blocking slab)
+  const corridorJambLeft = new THREE.Mesh(new THREE.BoxGeometry(0.18, 3.20, 0.28), mat.chalkUpperWall);
+  corridorJambLeft.position.set(-0.93, 1.6, -6.76);
+  corridorJambLeft.receiveShadow = false;
+  corridorJambLeft.name = 'corridor_jamb_left';
+  backWallGroup.add(corridorJambLeft);
 
-  const archwayReveal = new THREE.Mesh(new THREE.BoxGeometry(1.88, 3.08, 0.22), mat.brassGold);
-  archwayReveal.position.set(0, 1.54, -6.75);
-  archwayReveal.receiveShadow = false;
-  backWallGroup.add(archwayReveal);
+  const corridorJambRight = new THREE.Mesh(new THREE.BoxGeometry(0.18, 3.20, 0.28), mat.chalkUpperWall);
+  corridorJambRight.position.set(0.93, 1.6, -6.76);
+  corridorJambRight.receiveShadow = false;
+  corridorJambRight.name = 'corridor_jamb_right';
+  backWallGroup.add(corridorJambRight);
 
+  const corridorLintel = new THREE.Mesh(new THREE.BoxGeometry(2.04, 0.18, 0.28), mat.chalkUpperWall);
+  corridorLintel.position.set(0, 3.11, -6.76);
+  corridorLintel.receiveShadow = false;
+  corridorLintel.name = 'corridor_lintel';
+  backWallGroup.add(corridorLintel);
+
+  // Decorative Brass Arch Reveal Liners
+  const revealLeft = new THREE.Mesh(new THREE.BoxGeometry(0.03, 3.02, 0.24), mat.brassGold);
+  revealLeft.position.set(-0.84, 1.51, -6.75);
+  backWallGroup.add(revealLeft);
+
+  const revealRight = new THREE.Mesh(new THREE.BoxGeometry(0.03, 3.02, 0.24), mat.brassGold);
+  revealRight.position.set(0.84, 1.51, -6.75);
+  backWallGroup.add(revealRight);
+
+  const revealTop = new THREE.Mesh(new THREE.BoxGeometry(1.68, 0.03, 0.24), mat.brassGold);
+  revealTop.position.set(0, 3.01, -6.75);
+  backWallGroup.add(revealTop);
+
+  // Recessed Corridor Passage Void (extends back to z = -7.8)
+  const corridorVoidBack = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 3.0), mat.ceramicGreenTiles);
+  corridorVoidBack.position.set(0, 1.5, -7.8);
+  corridorVoidBack.name = 'corridor_passage';
+  backWallGroup.add(corridorVoidBack);
+
+  const corridorVoidFloor = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 1.04), mat.terrazzoFloor);
+  corridorVoidFloor.position.set(0, 0.001, -7.28);
+  corridorVoidFloor.rotation.x = -Math.PI / 2;
+  backWallGroup.add(corridorVoidFloor);
+
+  const corridorVoidCeil = new THREE.Mesh(new THREE.PlaneGeometry(1.68, 1.04), mat.chalkUpperWall);
+  corridorVoidCeil.position.set(0, 3.0, -7.28);
+  corridorVoidCeil.rotation.x = Math.PI / 2;
+  backWallGroup.add(corridorVoidCeil);
+
+  const corridorVoidLeft = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 3.0), mat.chalkUpperWall);
+  corridorVoidLeft.position.set(-0.84, 1.5, -7.28);
+  corridorVoidLeft.rotation.y = Math.PI / 2;
+  backWallGroup.add(corridorVoidLeft);
+
+  const corridorVoidRight = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 3.0), mat.chalkUpperWall);
+  corridorVoidRight.position.set(0.84, 1.5, -7.28);
+  corridorVoidRight.rotation.y = -Math.PI / 2;
+  backWallGroup.add(corridorVoidRight);
+
+  // Sliding Corridor Door (recessed in track, slides along X into right pocket)
   const corridorDoorMat = new THREE.MeshStandardMaterial({
     color: 0x18241e,
     roughness: 0.45,
     metalness: 0.35
   });
-  const corridorDoor = new THREE.Mesh(new THREE.BoxGeometry(1.72, 2.96, 0.16), corridorDoorMat);
-  corridorDoor.position.set(0, 1.48, -6.74);
+  const corridorDoor = new THREE.Mesh(new THREE.BoxGeometry(1.68, 2.96, 0.10), corridorDoorMat);
+  corridorDoor.position.set(0, 1.48, -6.72);
   corridorDoor.name = 'door_corridor';
   corridorDoor.receiveShadow = false;
-  backWallGroup.add(corridorDoor);
 
-  const corridorPeephole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.2, 16), mat.brassGold);
+  const corridorPeephole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.16, 16), mat.brassGold);
   corridorPeephole.rotation.x = Math.PI / 2;
-  corridorPeephole.position.set(0, 2.0, -6.73);
-  backWallGroup.add(corridorPeephole);
+  corridorPeephole.position.set(0, 0.52, 0.055);
+  corridorPeephole.name = 'corridor_peephole';
+  corridorDoor.add(corridorPeephole);
+
+  backWallGroup.add(corridorDoor);
 
   const corridorLedMat = new THREE.MeshBasicMaterial({ color: 0x8b1e23 });
   const corridorLed = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), corridorLedMat);
-  corridorLed.position.set(0, 3.12, -6.73);
+  corridorLed.position.set(0, 3.12, -6.61);
   corridorLed.name = 'corridor_led';
   backWallGroup.add(corridorLed);
 
   const brassArchLintel = new THREE.Mesh(new THREE.BoxGeometry(2.04, 0.06, 0.26), mat.brassGold);
   brassArchLintel.position.set(0, 3.22, -6.75);
+  brassArchLintel.name = 'corridor_arch_lintel';
   backWallGroup.add(brassArchLintel);
 
   // 3. Left Wall with Split Tile Wainscot & Exit Blastdoor Architectural Portal
@@ -137,39 +192,92 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   leftUpperFront.name = 'wall_chalk_upper';
   leftWallGroup.add(leftUpperFront);
 
-  const exitDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.24, 1.64), mat.chalkUpperWall);
-  exitDoorFrame.position.set(-6.75, 1.6, -3.0);
-  exitDoorFrame.receiveShadow = false;
-  leftWallGroup.add(exitDoorFrame);
+  // Left Exit Portal Jambs & Recessed Airlock Passage (No solid blocking slab)
+  const exitJambBack = new THREE.Mesh(new THREE.BoxGeometry(0.28, 3.20, 0.18), mat.chalkUpperWall);
+  exitJambBack.position.set(-6.76, 1.6, -3.73);
+  exitJambBack.receiveShadow = false;
+  exitJambBack.name = 'exit_jamb_back';
+  leftWallGroup.add(exitJambBack);
 
-  const exitArchReveal = new THREE.Mesh(new THREE.BoxGeometry(0.20, 3.08, 1.52), mat.brassGold);
-  exitArchReveal.position.set(-6.71, 1.54, -3.0);
-  exitArchReveal.receiveShadow = false;
-  leftWallGroup.add(exitArchReveal);
+  const exitJambFront = new THREE.Mesh(new THREE.BoxGeometry(0.28, 3.20, 0.18), mat.chalkUpperWall);
+  exitJambFront.position.set(-6.76, 1.6, -2.27);
+  exitJambFront.receiveShadow = false;
+  exitJambFront.name = 'exit_jamb_front';
+  leftWallGroup.add(exitJambFront);
 
-  const exitDoorPanel = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.96, 1.40), mat.titaniumChassis);
-  exitDoorPanel.position.set(-6.73, 1.48, -3.0);
+  const exitLintel = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.18, 1.64), mat.chalkUpperWall);
+  exitLintel.position.set(-6.76, 3.11, -3.0);
+  exitLintel.receiveShadow = false;
+  exitLintel.name = 'exit_lintel';
+  leftWallGroup.add(exitLintel);
+
+  // Decorative Brass Arch Reveal Liners for Exit
+  const exitRevealBack = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.02, 0.03), mat.brassGold);
+  exitRevealBack.position.set(-6.75, 1.51, -3.64);
+  leftWallGroup.add(exitRevealBack);
+
+  const exitRevealFront = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.02, 0.03), mat.brassGold);
+  exitRevealFront.position.set(-6.75, 1.51, -2.36);
+  leftWallGroup.add(exitRevealFront);
+
+  const exitRevealTop = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.03, 1.28), mat.brassGold);
+  exitRevealTop.position.set(-6.75, 3.01, -3.0);
+  leftWallGroup.add(exitRevealTop);
+
+  // Recessed Airlock Exit Passage Void (extends back to x = -7.8)
+  const exitVoidOuter = new THREE.Mesh(new THREE.PlaneGeometry(1.28, 3.0), mat.titaniumChassis);
+  exitVoidOuter.position.set(-7.8, 1.5, -3.0);
+  exitVoidOuter.rotation.y = Math.PI / 2;
+  exitVoidOuter.name = 'exit_airlock_passage';
+  leftWallGroup.add(exitVoidOuter);
+
+  const exitVoidFloor = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 1.28), mat.terrazzoFloor);
+  exitVoidFloor.position.set(-7.28, 0.001, -3.0);
+  exitVoidFloor.rotation.x = -Math.PI / 2;
+  leftWallGroup.add(exitVoidFloor);
+
+  const exitVoidCeil = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 1.28), mat.chalkUpperWall);
+  exitVoidCeil.position.set(-7.28, 3.0, -3.0);
+  exitVoidCeil.rotation.x = Math.PI / 2;
+  leftWallGroup.add(exitVoidCeil);
+
+  const exitVoidBack = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 3.0), mat.brushedChrome);
+  exitVoidBack.position.set(-7.28, 1.5, -3.64);
+  leftWallGroup.add(exitVoidBack);
+
+  const exitVoidFront = new THREE.Mesh(new THREE.PlaneGeometry(1.04, 3.0), mat.brushedChrome);
+  exitVoidFront.position.set(-7.28, 1.5, -2.36);
+  leftWallGroup.add(exitVoidFront);
+
+  // Sliding Heavy Blastdoor Panel (slides in Z along wall pocket behind exitJambBack)
+  const exitDoorPanel = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.96, 1.36), mat.titaniumChassis);
+  exitDoorPanel.position.set(-6.72, 1.48, -3.0);
   exitDoorPanel.name = 'prop_door';
   exitDoorPanel.receiveShadow = false;
-  leftWallGroup.add(exitDoorPanel);
 
   const lockWheel = new THREE.Mesh(new THREE.TorusGeometry(0.18, 0.025, 12, 24), mat.brassGold);
   lockWheel.rotation.y = Math.PI / 2;
-  lockWheel.position.set(-6.61, 1.5, -3.0);
-  leftWallGroup.add(lockWheel);
+  lockWheel.position.set(0.08, 0.02, 0);
+  lockWheel.name = 'exit_lock_wheel';
+  exitDoorPanel.add(lockWheel);
 
-  const exitPeephole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.2, 16), mat.brassGold);
+  const exitPeephole = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.16, 16), mat.brassGold);
   exitPeephole.rotation.z = Math.PI / 2;
-  exitPeephole.position.set(-6.61, 2.2, -3.0);
-  leftWallGroup.add(exitPeephole);
+  exitPeephole.position.set(0.08, 0.72, 0);
+  exitPeephole.name = 'exit_peephole';
+  exitDoorPanel.add(exitPeephole);
 
-  const exitRibTop = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 1.3), mat.brushedChrome);
-  exitRibTop.position.set(-6.61, 2.1, -3.0);
-  leftWallGroup.add(exitRibTop);
+  const exitRibTop = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 1.26), mat.brushedChrome);
+  exitRibTop.position.set(0.07, 0.62, 0);
+  exitRibTop.name = 'exit_rib_top';
+  exitDoorPanel.add(exitRibTop);
 
-  const exitRibBottom = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 1.3), mat.brushedChrome);
-  exitRibBottom.position.set(-6.61, 1.1, -3.0);
-  leftWallGroup.add(exitRibBottom);
+  const exitRibBottom = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 1.26), mat.brushedChrome);
+  exitRibBottom.position.set(0.07, -0.38, 0);
+  exitRibBottom.name = 'exit_rib_bottom';
+  exitDoorPanel.add(exitRibBottom);
+
+  leftWallGroup.add(exitDoorPanel);
 
   const doorLedMat = new THREE.MeshBasicMaterial({ color: 0x8b1e23 });
   const doorLed = new THREE.Mesh(new THREE.SphereGeometry(0.025, 12, 12), doorLedMat);
@@ -179,6 +287,7 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
 
   // 4. Right Wall with Tile Wainscot & Ventilation Acoustic Panel
   const rightWallGroup = new THREE.Group();
+  rightWallGroup.name = 'group_wall_right';
   const rightTile = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.2, 14), mat.ceramicGreenTiles);
   rightTile.position.set(6.78, 1.1, 0);
   rightTile.receiveShadow = false;
@@ -223,6 +332,7 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
 
   // 5. Front Wall with Tile Wainscot & Intake Observation Window
   const frontWallGroup = new THREE.Group();
+  frontWallGroup.name = 'group_wall_front';
   const frontTile = new THREE.Mesh(new THREE.BoxGeometry(14, 2.2, 0.22), mat.ceramicGreenTiles);
   frontTile.position.set(0, 1.1, 6.78);
   frontTile.receiveShadow = false;
@@ -249,6 +359,7 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
 
   // 6. Architectural Ceiling & Cove Frame (y = 5.5)
   const ceilingGroup = new THREE.Group();
+  ceilingGroup.name = 'group_ceiling';
   const ceilingSlab = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), mat.chalkUpperWall);
   ceilingSlab.position.set(0, 5.5, 0);
   ceilingSlab.rotation.x = Math.PI / 2;
@@ -272,6 +383,7 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
     ceilingGroup,
     corridorDoor,
     corridorLed,
-    doorLed
+    doorLed,
+    exitDoorPanel
   };
 }

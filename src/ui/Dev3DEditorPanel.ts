@@ -36,6 +36,11 @@ export class Dev3DEditorPanel {
 
   private initialTransforms: Map<string, PropTransformRecord> = new Map();
 
+  private lastTelemetryTime: number = 0;
+  private frameCount: number = 0;
+  private fpsDisplay: number = 60;
+  private lastFpsCalcTime: number = performance.now();
+
   constructor(scene: THREE.Scene, cameraDirector: CameraDirector, devGizmo: DevTransformGizmo) {
     this.scene = scene;
     this.cameraDirector = cameraDirector;
@@ -86,6 +91,18 @@ export class Dev3DEditorPanel {
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
         <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • 3D Editor</span>
         <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer; font-size: 14px; padding: 2px 6px;">✕</button>
+      </div>
+
+      <!-- Live Telemetry Diagnostic Box -->
+      <div id="dev-telemetry-box" style="background: rgba(10, 14, 12, 0.85); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 8px; margin-bottom: 12px; font-size: 10px; line-height: 1.5; color: #a4b3a8;">
+        <div style="display: flex; justify-content: space-between; color: #bad2c8; font-weight: 600; margin-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 2px;">
+          <span>LIVE TELEMETRY</span>
+          <span id="dev-telem-fps" style="color: #4ade80;">60 FPS</span>
+        </div>
+        <div>CAM POS: <span id="dev-telem-cam-pos" style="color: #bad2c8;">0.00, 1.80, 4.50</span></div>
+        <div>CAM TGT: <span id="dev-telem-cam-tgt" style="color: #bad2c8;">0.00, 0.90, 0.00</span></div>
+        <div>ACTIVE: <span id="dev-telem-active" style="color: #f59e0b;">NONE</span></div>
+        <div>SCENE: <span id="dev-telem-mesh-count" style="color: #bad2c8;">0 meshes</span></div>
       </div>
 
       <div style="margin-bottom: 12px;">
@@ -281,24 +298,92 @@ export class Dev3DEditorPanel {
     if (!this.assetSelect) return;
     this.assetSelect.innerHTML = '<option value="">[None - Click object or select]</option>';
 
-    const namesFound = new Set<string>();
+    // 1. Composite Assemblies (Parent Groups)
+    const assemblies: Array<{ name: string; label: string }> = [
+      { name: 'Room04_Root', label: '[Assembly] Room 04 Whole Scene (Room04_Root)' },
+      { name: 'prop_desk', label: '[Assembly] Desk & Workspace (prop_desk)' },
+      { name: 'prop_chair', label: '[Assembly] Breuer Chair (prop_chair)' },
+      { name: 'prop_vault', label: '[Assembly] Vault Apparatus (prop_vault)' },
+      { name: 'group_wall_back', label: '[Assembly] Back Wall & Corridor Portal (group_wall_back)' },
+      { name: 'group_wall_left', label: '[Assembly] Left Wall & Exit Blastdoor (group_wall_left)' },
+      { name: 'group_wall_right', label: '[Assembly] Right Wall & Vent (group_wall_right)' },
+      { name: 'group_wall_front', label: '[Assembly] Front Observation Wall (group_wall_front)' },
+      { name: 'group_ceiling', label: '[Assembly] Ceiling & Cove (group_ceiling)' }
+    ];
+
+    const optgroupAssemblies = document.createElement('optgroup');
+    optgroupAssemblies.label = 'Composite Assemblies (Move Together)';
+    for (const asm of assemblies) {
+      if (this.scene.getObjectByName(asm.name)) {
+        const opt = document.createElement('option');
+        opt.value = asm.name;
+        opt.textContent = asm.label;
+        optgroupAssemblies.appendChild(opt);
+      }
+    }
+    this.assetSelect.appendChild(optgroupAssemblies);
+
+    // 2. Interactive Props & Hero Elements
+    const heroProps: Array<{ name: string; label: string }> = [
+      { name: 'prop_desk', label: 'prop_desk (Desk Assembly)' },
+      { name: 'prop_chair', label: 'prop_chair (Chair Assembly)' },
+      { name: 'prop_vault', label: 'prop_vault (Vault Chassis)' },
+      { name: 'prop_telephone', label: 'prop_telephone (Rotary Telephone)' },
+      { name: 'prop_key', label: 'prop_key (Cipher Key)' },
+      { name: 'prop_envelope', label: 'prop_envelope (Crimson Envelope)' },
+      { name: 'prop_belljar', label: 'prop_belljar (Containment Jar)' },
+      { name: 'prop_painting', label: 'prop_painting (Blueprint Frame)' },
+      { name: 'prop_planter', label: 'prop_planter (Monstera Plant)' },
+      { name: 'prop_door', label: 'prop_door (Exit Blastdoor)' },
+      { name: 'door_corridor', label: 'door_corridor (Corridor Door)' },
+      { name: 'faceplate', label: 'faceplate (Apparatus Panel)' },
+      { name: 'rotaryDial', label: 'rotaryDial (Tuning Dial)' },
+      { name: 'knifeSwitch', label: 'knifeSwitch (Power Throw)' }
+    ];
+
+    const optgroupHero = document.createElement('optgroup');
+    optgroupHero.label = 'Interactive Props & Hero Elements';
+    const heroNamesAdded = new Set<string>();
+
+    for (const hero of heroProps) {
+      if (this.scene.getObjectByName(hero.name)) {
+        const opt = document.createElement('option');
+        opt.value = hero.name;
+        opt.textContent = hero.label;
+        optgroupHero.appendChild(opt);
+        heroNamesAdded.add(hero.name);
+      }
+    }
+    this.assetSelect.appendChild(optgroupHero);
+
+    // 3. Structural & Architectural Individual Meshes
+    const structuralNames = new Set<string>();
+    let totalMeshes = 0;
     this.scene.traverse((node) => {
-      if (node.name && (node.name.startsWith('prop_') || node.name.startsWith('door_') || node.name === 'faceplate' || node.name === 'rotaryDial' || node.name === 'knifeSwitch')) {
-        namesFound.add(node.name);
+      if (node instanceof THREE.Mesh) totalMeshes++;
+      if (node.name && !heroNamesAdded.has(node.name) && !assemblies.some(a => a.name === node.name)) {
+        structuralNames.add(node.name);
       }
     });
 
-    Array.from(namesFound).sort().forEach((name) => {
+    const optgroupStructural = document.createElement('optgroup');
+    optgroupStructural.label = 'Scene Meshes & Architecture';
+    Array.from(structuralNames).sort().forEach((name) => {
       const opt = document.createElement('option');
       opt.value = name;
       opt.textContent = name;
-      this.assetSelect?.appendChild(opt);
+      optgroupStructural.appendChild(opt);
     });
+    this.assetSelect.appendChild(optgroupStructural);
+
+    // Update telemetry mesh count
+    const meshCountEl = document.getElementById('dev-telem-mesh-count');
+    if (meshCountEl) meshCountEl.textContent = `${totalMeshes} meshes`;
   }
 
   private recordInitialTransforms(): void {
     this.scene.traverse((node) => {
-      if (node.name && (node.name.startsWith('prop_') || node.name.startsWith('door_'))) {
+      if (node.name) {
         this.initialTransforms.set(node.name, {
           position: [node.position.x, node.position.y, node.position.z],
           rotationDeg: [
@@ -374,17 +459,56 @@ export class Dev3DEditorPanel {
     this.isVisible = true;
     if (this.panelContainer) this.panelContainer.style.display = 'block';
     this.populateAssetDropdown();
+    const telemStatus = document.getElementById('telemetry-status');
+    if (telemStatus) telemStatus.textContent = 'DEVELOPER MODE: GIZMO ARMED';
+    const devBtn = document.getElementById('btn-dev-3d-toggle');
+    if (devBtn) devBtn.classList.add('active');
   }
 
   public hide(): void {
     this.isVisible = false;
     if (this.panelContainer) this.panelContainer.style.display = 'none';
+    const telemStatus = document.getElementById('telemetry-status');
+    if (telemStatus) telemStatus.textContent = 'DIAGNOSTIC: ALL SYSTEMS NOMINAL';
+    const devBtn = document.getElementById('btn-dev-3d-toggle');
+    if (devBtn) devBtn.classList.remove('active');
   }
 
   public toggle(): boolean {
     if (this.isVisible) this.hide();
     else this.show();
     return this.isVisible;
+  }
+
+  public updateTelemetry(): void {
+    if (!this.isVisible) return;
+    const now = performance.now();
+    this.frameCount++;
+    if (now - this.lastFpsCalcTime >= 1000) {
+      this.fpsDisplay = Math.round((this.frameCount * 1000) / (now - this.lastFpsCalcTime));
+      this.frameCount = 0;
+      this.lastFpsCalcTime = now;
+    }
+
+    // Throttle DOM text updates to 10 FPS (100ms) to avoid layout thrashing
+    if (now - this.lastTelemetryTime < 100) return;
+    this.lastTelemetryTime = now;
+
+    const cam = this.cameraDirector.camera;
+    const tgt = this.cameraDirector.controls.target;
+    const sel = this.devGizmo.getSelectedObject();
+
+    const fpsEl = document.getElementById('dev-telem-fps');
+    if (fpsEl) fpsEl.textContent = `${this.fpsDisplay} FPS`;
+
+    const camPosEl = document.getElementById('dev-telem-cam-pos');
+    if (camPosEl) camPosEl.textContent = `${cam.position.x.toFixed(2)}, ${cam.position.y.toFixed(2)}, ${cam.position.z.toFixed(2)}`;
+
+    const camTgtEl = document.getElementById('dev-telem-cam-tgt');
+    if (camTgtEl) camTgtEl.textContent = `${tgt.x.toFixed(2)}, ${tgt.y.toFixed(2)}, ${tgt.z.toFixed(2)}`;
+
+    const activeEl = document.getElementById('dev-telem-active');
+    if (activeEl) activeEl.textContent = sel ? sel.name || '[Unnamed Object]' : 'NONE';
   }
 
   private copyTypeScriptSnippet(): void {
@@ -408,7 +532,7 @@ export class Dev3DEditorPanel {
   private saveOverridesToLocalStorage(): void {
     const overrides: Record<string, PropTransformRecord> = {};
     this.scene.traverse((node) => {
-      if (node.name && (node.name.startsWith('prop_') || node.name.startsWith('door_'))) {
+      if (node.name && this.initialTransforms.has(node.name)) {
         overrides[node.name] = {
           position: [node.position.x, node.position.y, node.position.z],
           rotationDeg: [
@@ -448,7 +572,7 @@ export class Dev3DEditorPanel {
   private exportAllLayoutJSON(): void {
     const data: Record<string, PropTransformRecord> = {};
     this.scene.traverse((node) => {
-      if (node.name && (node.name.startsWith('prop_') || node.name.startsWith('door_'))) {
+      if (node.name && this.initialTransforms.has(node.name)) {
         data[node.name] = {
           position: [
             parseFloat(node.position.x.toFixed(3)),

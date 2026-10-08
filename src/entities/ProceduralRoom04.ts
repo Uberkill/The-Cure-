@@ -18,6 +18,7 @@ export interface Room04Entities {
   crimsonEnvelope: THREE.Mesh;
   telephone: THREE.Group;
   doorLed: THREE.Mesh;
+  exitDoorPanel: THREE.Mesh;
   corridorDoor: THREE.Mesh;
   corridorLed: THREE.Mesh;
   updateOscilloscope: (freq: number, isResonating: boolean, time: number) => void;
@@ -65,6 +66,7 @@ export class ProceduralRoom04 {
       crimsonEnvelope: props.crimsonEnvelope,
       telephone: props.telephone,
       doorLed: shell.doorLed,
+      exitDoorPanel: shell.exitDoorPanel,
       corridorDoor: shell.corridorDoor,
       corridorLed: shell.corridorLed,
       updateOscilloscope
