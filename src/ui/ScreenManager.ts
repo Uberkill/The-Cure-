@@ -3,10 +3,11 @@ import { ViewState } from '../types';
 import { AudioEngine } from '../audio/AudioEngine';
 
 export class ScreenManager {
-  private currentView: ViewState = 'intro';
+  private currentView: ViewState = 'boot';
   private eventBus: EventBus;
   private audioEngine: AudioEngine;
 
+  private terminalBoot!: HTMLElement;
   private introOverlay!: HTMLElement;
   private dossierModal!: HTMLElement;
   private debriefModal: HTMLElement | null = null;
@@ -22,11 +23,15 @@ export class ScreenManager {
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('editor')) {
+      this.terminalBoot.classList.add('hidden');
       this.switchView('chamber');
+    } else {
+      this.playTerminalBootSequence();
     }
   }
 
   private cacheDomElements(): void {
+    this.terminalBoot = document.getElementById('view-terminal-boot')!;
     this.introOverlay = document.getElementById('view-intro')!;
     this.dossierModal = document.getElementById('modal-dossier')!;
     this.debriefModal = document.getElementById('modal-debrief');
@@ -34,11 +39,64 @@ export class ScreenManager {
     this.blackoutScreen = document.getElementById('view-terminal-blackout');
   }
 
+  private playTerminalBootSequence(): void {
+    const textContainer = document.getElementById('terminal-text-container')!;
+    const btnInitiate = document.getElementById('btn-initiate-recovery')!;
+    
+    // Set initial canvas blur
+    document.querySelector('canvas')?.classList.add('canvas-blur');
+
+    const message = "SYNDICATE EMERGENCY DECREE 12\nCOGNITIVE INTAKE TERMINAL ONLINE\nINITIALIZING LIMBIC DE-COUPLING...\nSUBJECT 104 DETECTED.";
+    let charIndex = 0;
+    
+    const typeInterval = setInterval(() => {
+      textContainer.textContent = message.slice(0, charIndex) + "█";
+      charIndex++;
+      if (charIndex > message.length) {
+        clearInterval(typeInterval);
+        textContainer.textContent = message;
+        btnInitiate.classList.remove('hidden');
+      }
+    }, 40);
+
+    btnInitiate.addEventListener('click', () => {
+      this.audioEngine.ensureContext();
+      this.audioEngine.playPneumaticHiss();
+      
+      // Flash white
+      this.terminalBoot.style.backgroundColor = '#ffffff';
+      textContainer.style.opacity = '0';
+      btnInitiate.style.opacity = '0';
+      
+      setTimeout(() => {
+        this.terminalBoot.classList.add('hidden');
+        
+        // Start fading in 3D canvas
+        document.querySelector('canvas')?.classList.remove('canvas-blur');
+        document.querySelector('canvas')?.classList.add('canvas-focus');
+        
+        // Point camera up at ceiling immediately
+        this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'ceiling', durationMs: 0 });
+        
+        // Then pan down slowly
+        setTimeout(() => {
+          this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'dossier_intro', durationMs: 4000 });
+        }, 100);
+        
+        // Show dossier after pan
+        setTimeout(() => {
+          this.switchView('intro');
+        }, 4000);
+      }, 200);
+    });
+  }
+
   private setupListeners(): void {
     const btnBegin = document.getElementById('btn-begin-intake');
     btnBegin?.addEventListener('click', () => {
-      this.audioEngine.ensureContext();
       this.switchView('chamber');
+      // Return to overview
+      this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview' });
     });
 
     const btnCloseDossier = document.getElementById('btn-close-dossier');

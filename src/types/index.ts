@@ -31,7 +31,7 @@ export type CrystalId =
 
 export type DecayLevel = 0 | 1 | 2 | 3 | 4;
 
-export type ViewState = 'intro' | 'chamber' | 'dossier' | 'crt_patcher' | 'settings' | 'debrief' | 'terminal_blackout';
+export type ViewState = 'boot' | 'intro' | 'chamber' | 'dossier' | 'crt_patcher' | 'settings' | 'debrief' | 'terminal_blackout';
 
 export interface GameSettings {
   masterVolume: number;
@@ -94,7 +94,7 @@ export interface EventPayloadMap {
   'puzzle:key_inserted': Record<string, never>;
   'puzzle:frequency_changed': { frequency: number; isResonating: boolean };
   'puzzle:switch_thrown': Record<string, never>;
-  'camera:move_to_hotspot': { hotspotId: string };
+  'camera:move_to_hotspot': { hotspotId: string; durationMs?: number };
   'camera:transition_start': Record<string, never>;
   'camera:transition_end': Record<string, never>;
   'inspect:open': { targetMesh: THREE.Object3D; title: string; subtitle: string };

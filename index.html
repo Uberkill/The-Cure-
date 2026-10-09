@@ -68,8 +68,16 @@
     <button class="btn-switch" id="btn-throw-switch" disabled>THROW PRIMARY RELAY</button>
   </div>
 
+  <!-- View: Terminal Boot -->
+  <div class="overlay-screen" id="view-terminal-boot" style="background-color: #030403; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <div id="terminal-text-container" style="font-family: var(--font-mono); color: var(--color-crt-phosphor); font-size: 14px; line-height: 1.8; text-transform: uppercase; white-space: pre-wrap; text-align: left; width: 400px; min-height: 120px; text-shadow: 0 0 4px var(--color-crt-phosphor);"></div>
+    <button class="pill-btn hidden" id="btn-initiate-recovery" style="margin-top: 40px; padding: 12px 32px; font-size: 12px; background: transparent; color: var(--color-crt-phosphor); border: 1px solid var(--color-crt-phosphor); text-shadow: 0 0 4px var(--color-crt-phosphor); box-shadow: 0 0 10px rgba(74, 219, 133, 0.2) inset;">
+      INITIATE RECOVERY
+    </button>
+  </div>
+
   <!-- View: Intro Gate -->
-  <div class="overlay-screen" id="view-intro">
+  <div class="overlay-screen hidden" id="view-intro">
     <div class="dossier-paper" style="text-align: center;">
       <div class="dossier-header">ST. JUDE SECTOR 04 • COGNITIVE INTAKE</div>
       <h2 class="dossier-title">The Sterile Chamber</h2>

@@ -49,8 +49,8 @@ export class CameraDirector {
   }
 
   private setupListeners(): void {
-    this.eventBus.on('camera:move_to_hotspot', ({ hotspotId }) => {
-      this.moveToHotspot(hotspotId);
+    this.eventBus.on('camera:move_to_hotspot', (payload: any) => {
+      this.moveToHotspot(payload.hotspotId, payload.durationMs);
     });
 
     this.eventBus.on('inspect:open', () => {
@@ -128,6 +128,16 @@ export class CameraDirector {
 
 
 
+    if (durationMs === 0) {
+      this.camera.position.copy(endPos);
+      this.controls.target.copy(endTarget);
+      this.controls.enabled = true;
+      this.controls.update();
+      this.isTransitioning = false;
+      this.eventBus.emit('camera:transition_end', {});
+      return;
+    }
+
     const startTime = performance.now();
 
     const step = () => {
@@ -154,12 +164,22 @@ export class CameraDirector {
     requestAnimationFrame(step);
   }
 
-  public moveToHotspot(hotspotId: string): void {
+  public moveToHotspot(hotspotId: string, durationMs?: number): void {
     const presets: Record<string, CameraPreset> = {
       overview: {
         name: 'overview',
         position: new THREE.Vector3(4.2, 2.6, 4.4),
         target: new THREE.Vector3(0, 0.85, 0)
+      },
+      ceiling: {
+        name: 'ceiling',
+        position: new THREE.Vector3(1.0, 1.8, 1.0),
+        target: new THREE.Vector3(1.0, 5.0, 1.0)
+      },
+      dossier_intro: {
+        name: 'dossier_intro',
+        position: new THREE.Vector3(1.0, 1.8, 1.0),
+        target: new THREE.Vector3(1.2, 0.9, 0.2)
       },
       vault: {
         name: 'vault',
@@ -189,7 +209,7 @@ export class CameraDirector {
     };
 
     const targetPreset = presets[hotspotId] || presets.overview;
-    this.moveToPreset(targetPreset);
+    this.moveToPreset(targetPreset, durationMs);
   }
 
   private currentParallax: THREE.Vector2 = new THREE.Vector2(0, 0);
