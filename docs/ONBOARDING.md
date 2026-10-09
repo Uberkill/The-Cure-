@@ -1,4 +1,4 @@
-# The Vault: Room 04 - Technical Onboarding & Architecture Guide
+﻿# The Vault: Room 04 - Technical Onboarding & Architecture Guide
 
 
 ## 1. Project Overview & Aesthetic Identity
@@ -24,46 +24,46 @@ The project avoids monolithic god-objects by enforcing decoupled boundaries medi
 
 ```
 src/
-├── main.ts                    # Application bootstrap, lifecycle loop, and resize handlers
-├── types/
-│   └── index.ts               # Core TypeScript interfaces, GameStage enum, event payloads
-├── core/
-│   ├── EventBus.ts            # Decoupled singleton pub/sub mediator
-│   ├── GameState.ts           # Central Finite State Machine (FSM) & puzzle stages
-│   └── Telemetry.ts           # Diagnostic logging, crash resilience & WebGL recovery
-├── audio/
-│   ├── AudioEngine.ts         # Procedural Web Audio API synthesizer & cassette logs
-│   └── MusicTrackManager.ts   # Custom track audio loader with smooth crossfading
-├── rendering/
-│   ├── SceneManager.ts        # Three.js renderer, ACESFilmic tone mapping, PCF shadows
-│   └── CameraDirector.ts      # OrbitControls & cinematic camera transitions with input locks
-├── entities/
-│   ├── ProceduralTextures.ts  # Canvas-generated ceramic tiles, terrazzo, CRT screen maps
-│   ├── ProceduralRoom04.ts    # Procedural 3D geometry fallback for Room 04 (The Central Hub)
-│   ├── HubDecayManager.ts     # Progressive material rot, bruising, and weeping in Room 04
-│   └── CRTNodePatcher.ts      # 2D Canvas phosphor node-linking minigame
-├── scenarios/
-│   ├── ScenarioRegistry.ts    # Chamber loader with recursive GPU VRAM disposal
-│   ├── Room04_SterileChamber.ts # Act I Hub chamber logic
-│   ├── Room02_SleepWard.ts    # Act II Sleep Ward & 3-digit rotary lock (1-0-4)
-│   ├── Room03_Hydrotherapy.ts # Act III Hydrotherapy chamber & valve manifold puzzle
-│   ├── Room04_AudiologyVault.ts # Act IV Audiology chamber & 741 Hz amplifier slider
-│   ├── Room05_Archive.ts      # Act V Archive maze & patient filing drawer 104
-│   ├── Room06_DirectorsOffice.ts # Act VI Void office & breathing telephone
-│   └── Room08_VelvetLounge.ts # Act VIII Lynchian climax with sole ringing payphone
-├── interaction/
-│   ├── RaycastManager.ts      # Cursor hover reticle & drag-vs-click separation (<6px / <500ms)
-│   ├── InspectionManager.ts   # Isolated WebGL 3D turntable for inspecting items (Brass Key)
-│   └── DevTransformGizmo.ts   # In-Engine 3D transform tool for Dev Mode
-├── editor/
-│   ├── Dev3DEditorPanel.ts    # React-like DOM Dev tool for multi-select and live persistence
-│   ├── EditorServerSync.ts    # Local API hooks to auto-save layout.json
-│   ├── EditorVisualizers.ts   # Raycast hover bounding box visualizers
-│   └── EditorPrefabs.ts       # Spawners for clocks, lights, and set dressing
-│   └── InspectionManager.ts   # Isolated WebGL 3D turntable for inspecting items (Brass Key)
-└── ui/
-    ├── ScreenManager.ts       # View state router (title, chamber, dossier, inspect, debrief)
-    └── UIManager.ts           # Chapter cards, sensory subtitles, and modal controls
+â”œâ”€â”€ main.ts                    # Application bootstrap, lifecycle loop, and resize handlers
+â”œâ”€â”€ types/
+â”‚   â””â”€â”€ index.ts               # Core TypeScript interfaces, GameStage enum, event payloads
+â”œâ”€â”€ core/
+â”‚   â”œâ”€â”€ EventBus.ts            # Decoupled singleton pub/sub mediator
+â”‚   â”œâ”€â”€ GameState.ts           # Central Finite State Machine (FSM) & puzzle stages
+â”‚   â””â”€â”€ Telemetry.ts           # Diagnostic logging, crash resilience & WebGL recovery
+â”œâ”€â”€ audio/
+â”‚   â”œâ”€â”€ AudioEngine.ts         # Procedural Web Audio API synthesizer & cassette logs
+â”‚   â””â”€â”€ MusicTrackManager.ts   # Custom track audio loader with smooth crossfading
+â”œâ”€â”€ rendering/
+â”‚   â”œâ”€â”€ SceneManager.ts        # Three.js renderer, ACESFilmic tone mapping, PCF shadows
+â”‚   â””â”€â”€ CameraDirector.ts      # OrbitControls & cinematic camera transitions with input locks
+â”œâ”€â”€ entities/
+â”‚   â”œâ”€â”€ ProceduralTextures.ts  # Canvas-generated ceramic tiles, terrazzo, CRT screen maps
+â”‚   â”œâ”€â”€ ProceduralRoom04.ts    # Procedural 3D geometry fallback for Room 04 (The Central Hub)
+â”‚   â”œâ”€â”€ HubDecayManager.ts     # Progressive material rot, bruising, and weeping in Room 04
+â”‚   â””â”€â”€ CRTNodePatcher.ts      # 2D Canvas phosphor node-linking minigame
+â”œâ”€â”€ scenarios/
+â”‚   â”œâ”€â”€ ScenarioRegistry.ts    # Chamber loader with recursive GPU VRAM disposal
+â”‚   â”œâ”€â”€ Room04_SterileChamber.ts # Act I Hub chamber logic
+â”‚   â”œâ”€â”€ Room02_SleepWard.ts    # Act II Sleep Ward & 3-digit rotary lock (1-0-4)
+â”‚   â”œâ”€â”€ Room03_Hydrotherapy.ts # Act III Hydrotherapy chamber & valve manifold puzzle
+â”‚   â”œâ”€â”€ Room04_AudiologyVault.ts # Act IV Audiology chamber & 741 Hz amplifier slider
+â”‚   â”œâ”€â”€ Room05_Archive.ts      # Act V Archive maze & patient filing drawer 104
+â”‚   â”œâ”€â”€ Room06_DirectorsOffice.ts # Act VI Void office & breathing telephone
+â”‚   â””â”€â”€ Room08_VelvetLounge.ts # Act VIII Lynchian climax with sole ringing payphone
+â”œâ”€â”€ interaction/
+â”‚   â”œâ”€â”€ RaycastManager.ts      # Cursor hover reticle & drag-vs-click separation (<6px / <500ms)
+â”‚   â”œâ”€â”€ InspectionManager.ts   # Isolated WebGL 3D turntable for inspecting items (Brass Key)
+â”‚   â””â”€â”€ DevTransformGizmo.ts   # In-Engine 3D transform tool for Dev Mode
+â”œâ”€â”€ editor/
+â”‚   â”œâ”€â”€ Dev3DEditorPanel.ts    # React-like DOM Dev tool for multi-select and live persistence
+â”‚   â”œâ”€â”€ EditorServerSync.ts    # Local API hooks to auto-save layout.json
+â”‚   â”œâ”€â”€ EditorVisualizers.ts   # Raycast hover bounding box visualizers
+â”‚   â””â”€â”€ EditorPrefabs.ts       # Spawners for clocks, lights, and set dressing
+â”‚   â””â”€â”€ InspectionManager.ts   # Isolated WebGL 3D turntable for inspecting items (Brass Key)
+â””â”€â”€ ui/
+    â”œâ”€â”€ ScreenManager.ts       # View state router (title, chamber, dossier, inspect, debrief)
+    â””â”€â”€ UIManager.ts           # Chapter cards, sensory subtitles, and modal controls
 ```
 
 ### Core Communication Contracts
@@ -162,3 +162,14 @@ npm run test:click
 
 ---
 
+
+
+## 6. Dev 3D Editor & Prefab System
+
+The Vault features a built-in 3D level editor to manipulate the environment during development:
+1. **Accessing the Editor:** Append ?editor=true to the URL or press the [DEV 3D] button in the HUD to open the editor panel.
+2. **Transform Controls:** Click any prop to attach the 3D gizmo. Use W (Move), E (Rotate), and R (Scale) to adjust objects. Press Ctrl+Z to undo mistakes.
+3. **Multi-Select:** Hold Shift and drag a marquee box to select and move multiple objects synchronously.
+4. **Prefabs:** Use the "Spawn Prefab" dropdown to insert modular furniture (Desks, Chairs) or general prefabs (Paintings, Plants). For Paintings, you can import custom textures via URL.
+5. **Sandbox Mode:** Jump to the "Empty Sandbox Scene" via the Scenarios tab to prototype custom environments from scratch.
+6. **Live Persistence:** Clicking "Save to Server" pushes coordinates directly to src/data/room_layout.json via a Vite dev server plugin, bypassing HMR for seamless live-editing.

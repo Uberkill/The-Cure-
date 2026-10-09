@@ -1,4 +1,4 @@
-# Technical Architecture Specification: The Vault (Room 04)
+﻿# Technical Architecture Specification: The Vault (Room 04)
 
 ## 1. Architecture Overview & Principles
 * **Framework & Tooling:** Vite + TypeScript (`strict: true`), Three.js (`@types/three`), TWEEN.js.
@@ -115,7 +115,7 @@ flowchart TD
 ### 3.5. 3D Inspection Mode (`interaction/InspectionManager.ts`)
 * Uses a secondary Three.js scene (`inspectScene`) rendered to the primary viewport.
 * When active, the Brass Key is centered and isolated.
-* Player drags with mouse to rotate 360° around any axis.
+* Player drags with mouse to rotate 360Â° around any axis.
 * Raycasting within the inspection scene detects clicks on the keypin sliding notch, triggering the pin extension animation and dispatching `PUZZLE:KEY_ALIGNED`.
 * Exiting returns camera authority cleanly to `CameraDirector`.
 
@@ -141,10 +141,17 @@ flowchart TD
 
 ### 3.7. Audio Architecture (`audio/AudioEngine.ts` & `MusicTrackManager.ts`)
 * **Web Audio Autoplay Guard:** `AudioContext` is suspended on initialization and resumed via an explicit pointer listener on the intro screen.
-* **Procedural Synthesis:** Synthesizes low 45Hz drone with binaural beating, 60Hz/120Hz ballast buzz, tumbler clicks, 400–700Hz sine sweep, filtered white noise hiss, and clinical two-tone chime.
+* **Procedural Synthesis:** Synthesizes low 45Hz drone with binaural beating, 60Hz/120Hz ballast buzz, tumbler clicks, 400â€“700Hz sine sweep, filtered white noise hiss, and clinical two-tone chime.
 * **Custom Audio Streams:** `MusicTrackManager` streams external audio files (`/assets/audio/music/`) with automatic volume ramping and crossfading.
 
 ### 3.8. Telemetry & Crash Recovery (`core/Telemetry.ts`)
 * Global error listener capturing uncaught exceptions, promise rejections, and WebGL context loss.
 * Stores diagnostics in a circular memory buffer (100 entries).
 * Emits visual recovery indicators in the UI without halting gameplay.
+
+### 3.9. Dev 3D Editor & Transform Gizmo (editor/ & ui/Dev3DEditorPanel.ts)
+* Provides a full in-engine level editor built on TransformControls and SelectionBox.
+* Features multi-select marquee drag, Ctrl+Z transform undo history, and gizmo mode switching (Translate/Rotate/Scale).
+* Features a Prefab Spawner to drop modular assets (furniture, lights, clocks) into any scenario.
+* Integrates a Live Telemetry Dashboard displaying FPS, memory allocations, and triangle counts.
+* Layout JSON (oom_layout.json) is live-saved directly via a custom Vite server plugin intercepting API POST calls, bypassing HMR for live updates.
