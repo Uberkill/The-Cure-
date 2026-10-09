@@ -1,0 +1,65 @@
+/* Diegetic Hardware Screen Housing & Bezel Styles */
+
+.diegetic-screen-overlay {
+  z-index: 12000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(8px);
+}
+
+.diegetic-housing {
+  background: #1e2220;
+  border: 2px solid #3d4642;
+  border-radius: 8px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #e5ece7;
+  font-family: var(--font-mono, monospace);
+  width: 90vw;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.diegetic-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #141816;
+  border-bottom: 1px solid #2b322f;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+}
+
+.diegetic-model {
+  color: #8b9991;
+  font-weight: 600;
+}
+
+.diegetic-btn-close {
+  background: #252c28;
+  border: 1px solid #3c4842;
+  color: #c8d3cb;
+  padding: 6px 14px;
+  border-radius: 4px;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+}
+
+.diegetic-btn-close:hover {
+  background: #323c37;
+  color: #ffffff;
+}
+
+.diegetic-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
