@@ -10,5 +10,12 @@
     "sx": 1,
     "sy": 1,
     "sz": 1
+  },
+  "overrides": {},
+  "environment": {
+    "fogColor": "#ffffff",
+    "fogDensity": 0.007,
+    "ambColor": "#ffffff",
+    "ambIntensity": 0.75
   }
 }

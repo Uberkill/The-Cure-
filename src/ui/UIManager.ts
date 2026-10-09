@@ -202,10 +202,12 @@ export class UIManager {
           handled = true;
         }
 
-        if (!handled) {
-          // If no modal was open, back out of cinematic views
-          this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview' });
-        }
+        if (handled) {
+            e.stopPropagation();
+          } else {
+            // If no modal was open, back out of cinematic views
+            this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview' });
+          }
       }
     });
 

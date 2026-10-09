@@ -591,10 +591,28 @@ export class Dev3DEditorPanel {
       this.devGizmo.detach();
       
       objs.forEach(obj => {
-        if (obj.parent) {
-          obj.parent.remove(obj);
-        }
-      });
+          if (obj.parent) {
+            obj.parent.remove(obj);
+          }
+          // Recursively dispose geometry, materials, and textures
+          obj.traverse((child: any) => {
+            if (child.isMesh) {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) {
+                const materials = Array.isArray(child.material) ? child.material : [child.material];
+                materials.forEach((mat: any) => {
+                  for (const key in mat) {
+                    const value = mat[key];
+                    if (value && value.isTexture) {
+                      value.dispose();
+                    }
+                  }
+                  mat.dispose();
+                });
+              }
+            }
+          });
+        });
       
       // Force save to server to persist deletion
       document.getElementById('dev-btn-save-server')?.click();

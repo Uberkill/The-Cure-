@@ -4,6 +4,13 @@ import { AudioEngine } from '../audio/AudioEngine';
 import { GameState } from '../core/GameState';
 
 export class ScreenManager {
+  private cinematicTimeouts: ReturnType<typeof setTimeout>[] = [];
+
+  public clearCinematicTimers() {
+    this.cinematicTimeouts.forEach(clearTimeout);
+    this.cinematicTimeouts = [];
+  }
+
   private currentView: ViewState = 'boot';
   private eventBus: EventBus;
   private audioEngine: AudioEngine;
@@ -73,17 +80,14 @@ export class ScreenManager {
       this.mainMenuEl.style.backgroundColor = '#ffffff';
       
       // Hide the menu content elements during the flash
-      Array.from(this.mainMenuEl.children).forEach((child) => {
-        (child as HTMLElement).style.transition = 'opacity 1s ease-out';
-        (child as HTMLElement).style.opacity = '0';
-      });
+      this.mainMenuEl.classList.add('fade-out-children');
       
-      setTimeout(() => {
+      this.cinematicTimeouts.push(setTimeout(() => {
         this.mainMenuEl.style.opacity = '0';
         
-        setTimeout(() => {
+        this.cinematicTimeouts.push(setTimeout(() => {
           this.mainMenuEl.classList.add('hidden');
-        }, 3000); // Wait for the 3s opacity transition to finish
+        }, 3000)); // Wait for the 3s opacity transition to finish
         
         // Start fading in 3D canvas
         document.querySelector('canvas')?.classList.remove('canvas-blur');
@@ -92,14 +96,14 @@ export class ScreenManager {
         // Wake up looking at ceiling, then pan down slowly
         this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'ceiling', durationMs: 0 });
         
-        setTimeout(() => {
+        this.cinematicTimeouts.push(setTimeout(() => {
           this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview', durationMs: 7000 });
-        }, 100);
+        }, 100));
         
-        setTimeout(() => {
+        this.cinematicTimeouts.push(setTimeout(() => {
           this.switchView('chamber');
-        }, 7000);
-      }, 2000);
+        }, 7000));
+      }, 2000));
     });
   }
 
@@ -130,19 +134,6 @@ export class ScreenManager {
     };
     btnCloseInspect?.addEventListener('click', handleCloseInspect);
     btnCloseInspectX?.addEventListener('click', handleCloseInspect);
-
-    // Global ESC key listener to dismiss modals or return camera to overview
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        if (!this.inspectModal.classList.contains('hidden')) {
-          handleCloseInspect();
-        } else if (this.currentView === 'dossier') {
-          handleCloseDossier();
-        } else if (this.currentView === 'chamber') {
-          this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview' });
-        }
-      }
-    });
 
     const btnRestart = document.getElementById('btn-terminal-restart');
     btnRestart?.addEventListener('click', () => {
