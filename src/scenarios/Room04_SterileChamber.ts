@@ -10,8 +10,8 @@ import { ModelLoader } from '../loaders/ModelLoader';
 export class Room04_SterileChamber implements RoomScenario {
   public id = 'room_04';
   public title = 'The Sterile Chamber';
-  public actTitle = 'ACT I â€¢ THE RECEPTION';
-  public roomCode = 'Room 04 â€¢ Sanatorium of Cognitive Alignment';
+  public actTitle = 'ACT I • THE RECEPTION';
+  public roomCode = 'Room 04 • Sanatorium of Cognitive Alignment';
   public defaultHotspot = 'overview';
 
   public hotspots: Record<string, HotspotAnchor> = {

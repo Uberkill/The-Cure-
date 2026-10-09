@@ -54,8 +54,8 @@ export class Dev3DEditorPanel {
 
     panel.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
-        <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 â€¢ 3D Editor</span>
-        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer;">âœ•</button>
+        <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • 3D Editor</span>
+        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer;">✕</button>
       </div>
       <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
         <input type="checkbox" id="dev-chk-visualizers" checked style="accent-color: #00ff88; cursor: pointer;">
@@ -76,8 +76,21 @@ export class Dev3DEditorPanel {
         <label style="display: block; margin-bottom: 6px; color: #88928b;">Selected Object(s)</label>
         <div id="dev-selected-object" style="padding: 6px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 3px; margin-bottom: 12px; color: #4ade80;">None</div>
 
-        <div style="margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position X</span> <input type="number" id="dev-pos-x" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
+        <div style="margin-bottom: 12px; display: flex; gap: 4px;">
+            <button id="dev-btn-mode-t" style="flex:1; padding: 4px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 3px;">Move (W)</button>
+            <button id="dev-btn-mode-r" style="flex:1; padding: 4px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 3px;">Rotate (E)</button>
+            <button id="dev-btn-mode-s" style="flex:1; padding: 4px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; border-radius: 3px;">Scale (R)</button>
+          </div>
+          <div id="dev-painting-props" style="display: none; margin-bottom: 12px; padding: 8px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06); border-radius: 3px;">
+            <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Painting Customization</label>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px; align-items: center;">
+              <span>Image URL</span>
+              <input type="text" id="dev-painting-url" placeholder="https://..." style="width:120px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
+            </div>
+            <button id="dev-btn-painting-apply" style="width: 100%; padding: 4px; margin-top: 4px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; cursor: pointer;">Apply Image</button>
+          </div>
+          <div style="margin-bottom: 12px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position X</span> <input type="number" id="dev-pos-x" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position Y</span> <input type="number" id="dev-pos-y" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position Z</span> <input type="number" id="dev-pos-z" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
         </div>
@@ -86,17 +99,17 @@ export class Dev3DEditorPanel {
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">X</span>
             <input type="range" id="dev-rot-x" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
-            <span id="dev-rot-x-val" style="width: 35px; text-align: right;">0Â°</span>
+            <span id="dev-rot-x-val" style="width: 35px; text-align: right;">0°</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">Y</span>
             <input type="range" id="dev-rot-y" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
-            <span id="dev-rot-y-val" style="width: 35px; text-align: right;">0Â°</span>
+            <span id="dev-rot-y-val" style="width: 35px; text-align: right;">0°</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">Z</span>
             <input type="range" id="dev-rot-z" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
-            <span id="dev-rot-z-val" style="width: 35px; text-align: right;">0Â°</span>
+            <span id="dev-rot-z-val" style="width: 35px; text-align: right;">0°</span>
           </div>
         </div>
         <button id="dev-btn-save-server" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Save to Server (room_layout.json)</button>
@@ -251,9 +264,9 @@ export class Dev3DEditorPanel {
             objs[0].rotation.set(rx, ry, rz);
           }
           
-          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}Â°`;
-          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}Â°`;
-          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}Â°`;
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
         }
         this.devGizmo.syncTransform();
       }
@@ -262,6 +275,39 @@ export class Dev3DEditorPanel {
     this.posXInput?.addEventListener('input', applyTransform);
     this.posYInput?.addEventListener('input', applyTransform);
     this.posZInput?.addEventListener('input', applyTransform);
+
+    document.getElementById('dev-btn-mode-t')?.addEventListener('click', () => this.devGizmo.setMode('translate'));
+    document.getElementById('dev-btn-mode-r')?.addEventListener('click', () => this.devGizmo.setMode('rotate'));
+    document.getElementById('dev-btn-mode-s')?.addEventListener('click', () => this.devGizmo.setMode('scale'));
+
+    document.getElementById('dev-btn-painting-apply')?.addEventListener('click', () => {
+      const objs = this.devGizmo.getSelectedObjects();
+      if (objs.length === 1 && objs[0].userData && objs[0].userData.prefabType === 'Painting') {
+        const urlInput = document.getElementById('dev-painting-url') as HTMLInputElement;
+        const url = urlInput.value.trim();
+        objs[0].userData.paintingUrl = url;
+        
+        // Find the canvas mesh inside the Painting group (child index 1 based on EditorPrefabs)
+        const canvasMesh = objs[0].children[1] as any;
+        if (canvasMesh && canvasMesh.material) {
+          if (url) {
+            import('three').then(THREE => {
+              const loader = new THREE.TextureLoader();
+              loader.load(url, (texture) => {
+                canvasMesh.material.map = texture;
+                canvasMesh.material.color.setHex(0xffffff);
+                canvasMesh.material.needsUpdate = true;
+              });
+            });
+          } else {
+            canvasMesh.material.map = null;
+            canvasMesh.material.color.setHex(0xedf0eb); // chalkUpperWall default
+            canvasMesh.material.needsUpdate = true;
+          }
+        }
+        document.getElementById('dev-btn-save-server')?.click();
+      }
+    });
     rotXInput?.addEventListener('input', applyTransform);
     rotYInput?.addEventListener('input', applyTransform);
     rotZInput?.addEventListener('input', applyTransform);
@@ -371,8 +417,11 @@ export class Dev3DEditorPanel {
               x: child.position.x, y: child.position.y, z: child.position.z,
               rx: child.rotation.x, ry: child.rotation.y, rz: child.rotation.z,
               sx: child.scale.x, sy: child.scale.y, sz: child.scale.z
+              }
+            };
+            if (child.userData.paintingUrl) {
+              pEntry.paintingUrl = child.userData.paintingUrl;
             }
-          };
           if (child.userData.animType) {
             pEntry.transform.animation = {
               type: child.userData.animType,
@@ -488,8 +537,19 @@ export class Dev3DEditorPanel {
         else display.innerText = `[Multiple: ${objects.length}]`;
       }
 
-      if (objects.length === 1 && this.posXInput && this.posYInput && this.posZInput) {
-        const obj = objects[0];
+      const paintingProps = document.getElementById('dev-painting-props');
+        if (paintingProps) {
+          if (objects.length === 1 && objects[0].userData && objects[0].userData.prefabType === 'Painting') {
+            paintingProps.style.display = 'block';
+            const urlInput = document.getElementById('dev-painting-url') as HTMLInputElement;
+            urlInput.value = objects[0].userData.paintingUrl || '';
+          } else {
+            paintingProps.style.display = 'none';
+          }
+        }
+
+        if (objects.length === 1 && this.posXInput && this.posYInput && this.posZInput) {
+          const obj = objects[0];
         this.posXInput.value = obj.position.x.toFixed(3);
         this.posYInput.value = obj.position.y.toFixed(3);
         this.posZInput.value = obj.position.z.toFixed(3);
@@ -501,9 +561,9 @@ export class Dev3DEditorPanel {
           rotXInput.value = (obj.rotation.x * (180 / Math.PI)).toFixed(1);
           rotYInput.value = (obj.rotation.y * (180 / Math.PI)).toFixed(1);
           rotZInput.value = (obj.rotation.z * (180 / Math.PI)).toFixed(1);
-          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}Â°`;
-          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}Â°`;
-          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}Â°`;
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
         }
 
         const typeSelect = document.getElementById('dev-anim-type') as HTMLSelectElement;
@@ -553,9 +613,9 @@ export class Dev3DEditorPanel {
           rotXInput.value = (obj.rotation.x * (180 / Math.PI)).toFixed(1);
           rotYInput.value = (obj.rotation.y * (180 / Math.PI)).toFixed(1);
           rotZInput.value = (obj.rotation.z * (180 / Math.PI)).toFixed(1);
-          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}Â°`;
-          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}Â°`;
-          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}Â°`;
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
         }
         this.isUpdatingFromUI = false;
       }
