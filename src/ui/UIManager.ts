@@ -110,6 +110,22 @@ export class UIManager {
       this.freqConsoleEl.classList.add('hidden');
     });
 
+    this.eventBus.on('ui:inventory_updated', ({ inventory }) => {
+      const invBar = document.getElementById('inventory-bar');
+      if (invBar) {
+        invBar.innerHTML = '';
+        inventory.forEach(item => {
+          const slot = document.createElement('div');
+          slot.className = 'inventory-slot filled';
+          // Pretty name mapping
+          let itemName = item;
+          if (item === 'prop_key') itemName = 'Brass Key';
+          slot.textContent = itemName;
+          invBar.appendChild(slot);
+        });
+      }
+    });
+
     this.eventBus.on('ui:modal_opened', () => {
       this.freqConsoleEl.classList.add('hidden');
     });

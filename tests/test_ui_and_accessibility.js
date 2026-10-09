@@ -71,8 +71,8 @@ server.listen(PORT, async () => {
   try {
     console.log('--- Step 1: Application Bootstrap ---');
     await page.goto(`http://localhost:${PORT}/?test=true`);
-    await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
-    await page.click('#btn-begin-intake');
+    await page.waitForSelector('#btn-menu-start', { state: 'visible' });
+    await page.click('#btn-menu-start');
     await page.waitForTimeout(600);
 
     console.log('--- Step 2: Reticle Hover Prompts Matrix ---');

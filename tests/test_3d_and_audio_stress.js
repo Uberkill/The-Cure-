@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = 4182;
+const PORT = 4188;
 const DIST_DIR = path.resolve(__dirname, '../dist');
 
 const MIME_TYPES = {
@@ -21,7 +21,7 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url.split('?')[0]);
+  const cleanUrl = req.url.split('?')[0]; let filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
@@ -68,8 +68,14 @@ server.listen(PORT, async () => {
   try {
     console.log('--- Step 1: Bootstrap & Autoplay Verification ---');
     await page.goto(`http://localhost:${PORT}/?test=true`);
-    await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
-    await page.click('#btn-begin-intake');
+    try {
+      await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 5000 });
+    } catch (e) {
+      const html = await page.content();
+      console.log("DOM DUMP:", html);
+      throw e;
+    }
+    await page.click('#btn-menu-start');
     await page.waitForTimeout(800);
 
     const audioState = await page.evaluate(() => {

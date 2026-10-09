@@ -23,7 +23,7 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url.split('?')[0]);
+  const cleanUrl = req.url.split('?')[0]; let filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
@@ -59,10 +59,10 @@ server.listen(PORT, async () => {
   try {
     console.log('--- Step 1: Loading Application ---');
     await page.goto(`http://localhost:${PORT}/?test=true`);
-    await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
+    await page.waitForSelector('#btn-menu-start', { state: 'visible' });
 
     console.log('--- Step 2: Intake Gate Dismissal ---');
-    await page.click('#btn-begin-intake');
+    await page.click('#btn-menu-start');
     await page.waitForTimeout(600);
 
     console.log('--- Step 3: Verifying Dark Overlay & Dossier Close X ---');
@@ -151,7 +151,7 @@ server.listen(PORT, async () => {
 
     // Close inspect via Close X
     console.log('Testing Inspect Close X button...');
-    await page.click('#btn-close-inspect-x');
+    await page.click('#btn-close-inspect');
     await page.waitForTimeout(400);
     const isInspectClosed = !(await page.isVisible('#modal-inspect'));
     console.log(`Inspect Closed by X: ${isInspectClosed}`);

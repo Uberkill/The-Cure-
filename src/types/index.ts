@@ -97,8 +97,10 @@ export interface EventPayloadMap {
   'camera:move_to_hotspot': { hotspotId: string; durationMs?: number };
   'camera:transition_start': Record<string, never>;
   'camera:transition_end': Record<string, never>;
-  'inspect:open': { targetMesh: THREE.Object3D; title: string; subtitle: string };
+  'inspect:open': { targetMesh?: THREE.Object3D; itemId?: string; title: string; subtitle: string };
   'inspect:close': Record<string, never>;
+  'inventory:add': { itemId: string };
+  'ui:inventory_updated': { inventory: string[] };
   'ui:view_changed': { view: ViewState };
   'ui:modal_opened': Record<string, never>;
   'ui:modal_closed': Record<string, never>;

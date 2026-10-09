@@ -21,7 +21,7 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url.split('?')[0]);
+  const cleanUrl = req.url.split('?')[0]; let filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
@@ -74,7 +74,7 @@ server.listen(PORT, async () => {
   try {
     console.log('--- Step 1: Loading Room 04 & Verifying Audio Startup State ---');
     await page.goto(`http://localhost:${PORT}/?test=true`);
-    await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
+    await page.waitForSelector('#btn-menu-start', { state: 'visible' });
 
     // Verify btn-drone does not have active class
     const btnDroneActive = await page.$eval('#btn-drone', (el) => el.classList.contains('active'));
@@ -84,7 +84,7 @@ server.listen(PORT, async () => {
     }
 
     // Dismiss cognitive intake
-    await page.click('#btn-begin-intake');
+    await page.click('#btn-menu-start');
     await page.waitForTimeout(500);
 
     // Verify drone is NOT playing in AudioEngine

@@ -72,7 +72,7 @@ server.listen(4173, async () => {
     console.log('Captured screenshot_app_intro.png');
 
     // Click Begin Intake
-    await page.click('#btn-begin-intake');
+    await page.click('#btn-menu-start');
     await page.waitForTimeout(1200);
 
     // 2. Chamber Overview

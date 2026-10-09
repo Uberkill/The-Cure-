@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+﻿import * as THREE from 'three';
 import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
 
@@ -43,9 +43,9 @@ export class InspectionManager {
     const scrim = new THREE.Mesh(
       new THREE.PlaneGeometry(12, 12),
       new THREE.MeshBasicMaterial({
-        color: 0x070b09,
-        transparent: true,
-        opacity: 0.72
+        color: 0xebefeb,
+        transparent: false,
+        opacity: 1.0
       })
     );
     scrim.position.z = -0.6;
@@ -200,6 +200,12 @@ export class InspectionManager {
 
   public render(renderer: THREE.WebGLRenderer): void {
     if (!this.isActive) return;
+
+    if (!this.isDragging) {
+      this.inspectGroup.rotation.y += 0.003;
+      this.inspectGroup.position.y = Math.sin(performance.now() * 0.0015) * 0.02;
+    }
+
     const prevAutoClear = renderer.autoClear;
     renderer.autoClear = false;
     renderer.clearDepth();

@@ -71,7 +71,7 @@ server.listen(PORT, async () => {
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step1_intro.png') });
 
     console.log('--- Step 2: Beginning Cognitive Intake ---');
-    await page.click('#btn-begin-intake');
+    await page.click('#btn-menu-start');
     await page.waitForTimeout(600);
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step2_hub.png') });
 
@@ -99,7 +99,22 @@ server.listen(PORT, async () => {
     await page.click('#btn-throw-switch');
     await page.waitForTimeout(600);
 
-    console.log('--- Step 5: Traversing into Room 02 (The Sleep Ward) ---');
+    console.log('--- Step 5: Collecting Key & Traversing into Room 02 (The Sleep Ward) ---');
+    await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_key' });
+    });
+    await page.waitForTimeout(500);
+    // Take the key
+    await page.waitForSelector('#btn-take-item', { state: 'visible', timeout: 5000 });
+    await page.click('#btn-take-item');
+    await page.waitForTimeout(500);
+    
+    // Open the corridor door
+    await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
+    });
+    await page.waitForTimeout(1000);
+    // Enter the corridor (clicks again because first click unlocks)
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
@@ -134,6 +149,10 @@ server.listen(PORT, async () => {
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
+    });
     await page.waitForTimeout(800);
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step8_hydrotherapy.png') });
 
@@ -161,6 +180,10 @@ server.listen(PORT, async () => {
     console.log('CRT Node 2 patched. Audio Log 2 unlocked.');
 
     console.log('--- Step 11: Traversing into Room 04 (The Audiology Vault) ---');
+    await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
+    });
+    await page.waitForTimeout(1000);
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
@@ -193,6 +216,10 @@ server.listen(PORT, async () => {
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
+    await page.waitForTimeout(1000);
+    await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
+    });
     await page.waitForTimeout(800);
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step14_archive.png') });
 
@@ -218,6 +245,10 @@ server.listen(PORT, async () => {
     console.log('CRT Node 4 patched. Hub decayed to level 4.');
 
     console.log('--- Step 17: Traversing into Room 06 (The Director\'s Office) ---');
+    await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
+    });
+    await page.waitForTimeout(1000);
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });

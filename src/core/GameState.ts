@@ -8,7 +8,7 @@ export class GameState {
   private eventBus: EventBus;
   private telemetry: Telemetry;
 
-  private inventory: Set<string> = new Set();
+  private inventory: string[] = [];
   private collectedCrystals: Set<CrystalId> = new Set();
   private patchedCrystals: Set<CrystalId> = new Set();
   private pendingCrystalToPatch: CrystalId | null = null;
@@ -27,6 +27,14 @@ export class GameState {
       GameState.instance = new GameState();
     }
     return GameState.instance;
+  }
+
+  public hasItem(itemId: string): boolean {
+    return this.inventory.includes(itemId);
+  }
+
+  public getInventory(): string[] {
+    return [...this.inventory];
   }
 
   private setupListeners(): void {
@@ -57,6 +65,8 @@ export class GameState {
       this.handlePatchCompleted(crystalId, log);
     });
 
+    this.eventBus.on('inventory:add', ({ itemId }) => { if (!this.inventory.includes(itemId)) { this.inventory.push(itemId); this.eventBus.emit('ui:inventory_updated', { inventory: [...this.inventory] }); } });
+
     this.eventBus.on('puzzle:frequency_changed', ({ frequency }) => {
       this.calibratedFrequency = frequency;
     });
@@ -81,8 +91,9 @@ export class GameState {
 
       case 'prop_bell_jar':
       case 'prop_key':
-        this.inventory.add('brass_key');
+        
         this.eventBus.emit('inspect:open', {
+          itemId: 'prop_key',
           targetMesh: null as any,
           title: 'The Brass Tuning Key',
           subtitle: 'SPECIMEN ARTIFACT • RECOVERED FROM BELL JAR'

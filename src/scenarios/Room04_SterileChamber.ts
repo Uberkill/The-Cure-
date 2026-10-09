@@ -112,6 +112,10 @@ export class Room04_SterileChamber implements RoomScenario {
     // Dev layout overrides MUST be applied BEFORE stage-specific overrides
     await this.applyDevLayoutOverridesAsync();
 
+    if (GameState.getInstance().hasItem('prop_key') && this.entities.cipherKey) {
+      this.entities.cipherKey.visible = false;
+    }
+
     if (stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
       this.exitBlownOpen = true;
       (this.entities.doorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
@@ -203,11 +207,13 @@ export class Room04_SterileChamber implements RoomScenario {
   private setupEventListeners(): void {
     const bus = EventBus.getInstance();
 
+    const unsubInv = bus.on('inventory:add', ({ itemId }) => { if (itemId === 'prop_key' && this.entities?.cipherKey) { this.entities.cipherKey.visible = false; } });
+
     const unsubStage = bus.on('game:stage_transition', ({ to }) => {
       if (!this.entities) return;
 
       if (to === GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
-        this.animateDepressurization();
+        this.animatePressureRelease();
       }
 
       if (to === GameStage.ACT_2_PATCH_1_COMPLETE) {
@@ -222,7 +228,7 @@ export class Room04_SterileChamber implements RoomScenario {
         this.triggerActVIIBlackout();
       }
     });
-    this.unsubscribers.push(unsubStage);
+    this.unsubscribers.push(unsubStage, unsubInv);
 
     const unsubFreq = bus.on('puzzle:frequency_changed', ({ frequency }) => {
       if (!this.entities) return;
@@ -246,15 +252,20 @@ export class Room04_SterileChamber implements RoomScenario {
     return 'directors_office';
   }
 
-  private animateDepressurization(): void {
+  private animatePressureRelease(): void {
     if (!this.entities) return;
     (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
+    this.audioElement.playTumblerClick();
+  }
+
+  private animateCorridorDoorOpen(): void {
+    if (!this.entities) return;
     this.audioElement.playPneumaticHiss();
 
     const door = this.entities.corridorDoor;
     const targetRot = door.userData.animEnd !== undefined ? door.userData.animEnd : -Math.PI / 2.2;
     const startRot = door.userData.animStart !== undefined ? door.userData.animStart : door.rotation.y;
-    door.rotation.y = startRot; // Start firmly at animStart if defined
+    door.rotation.y = startRot;
     const startTime = performance.now();
     const anim = () => {
       const elapsed = (performance.now() - startTime) / 800;
@@ -340,9 +351,11 @@ export class Room04_SterileChamber implements RoomScenario {
     this.unsubscribers = [];
     this.entities = null;
     this.isTransitioning = false;
+    this.corridorDoorOpen = false;
   }
 
   private isTransitioning: boolean = false;
+  private corridorDoorOpen: boolean = false;
 
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
@@ -350,6 +363,20 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_corridor' || objectId === 'door_corridor_passage') {
       const stage = GameState.getInstance().getStage();
       if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
+        if (!GameState.getInstance().hasItem('prop_key')) {
+          bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
+          bus.emit('ui:subtitle_changed', { text: 'The pressure seal is released, but the mechanical cipher lock requires a heavy brass key.' });
+          // Optional: play locked sound
+          return true;
+        }
+        
+        if (!this.corridorDoorOpen) {
+          this.corridorDoorOpen = true;
+          this.animateCorridorDoorOpen();
+          bus.emit('ui:subtitle_changed', { text: 'Cipher key engaged. The observation corridor unseals.' });
+          return true;
+        }
+
         if (!this.isTransitioning) {
           this.isTransitioning = true;
           bus.emit('scenario:switch_room', { targetRoomId: this.getNextSpokeRoomId() });

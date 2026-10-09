@@ -23,7 +23,7 @@ const MIME_TYPES = {
 };
 
 const server = http.createServer((req, res) => {
-  let filePath = path.join(DIST_DIR, req.url === '/' ? 'index.html' : req.url.split('?')[0]);
+  const cleanUrl = req.url.split('?')[0]; let filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
   const ext = path.extname(filePath).toLowerCase();
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
@@ -52,10 +52,10 @@ server.listen(PORT, async () => {
 
   try {
     await page.goto(`http://localhost:${PORT}/?test=true`);
-    await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
+    await page.waitForSelector('#btn-menu-start', { state: 'visible' });
 
     // Begin intake
-    await page.click('#btn-begin-intake');
+    await page.click('#btn-menu-start');
     await page.waitForTimeout(1000);
 
     // 1. Overview Screenshot

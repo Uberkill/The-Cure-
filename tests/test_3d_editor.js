@@ -62,8 +62,8 @@ server.listen(PORT, async () => {
     await page.goto(`http://localhost:${PORT}/?editor=true`);
     await page.waitForSelector('#dev-3d-editor-panel', { state: 'visible', timeout: 8000 });
 
-    if (await page.isVisible('#btn-begin-intake')) {
-      await page.click('#btn-begin-intake');
+    if (await page.isVisible('#btn-menu-start')) {
+      await page.click('#btn-menu-start');
       await page.waitForTimeout(500);
     }
 

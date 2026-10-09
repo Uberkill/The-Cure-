@@ -1,13 +1,14 @@
 import { EventBus } from '../core/EventBus';
 import { ViewState } from '../types';
 import { AudioEngine } from '../audio/AudioEngine';
+import { GameState } from '../core/GameState';
 
 export class ScreenManager {
   private currentView: ViewState = 'boot';
   private eventBus: EventBus;
   private audioEngine: AudioEngine;
 
-  private terminalBoot!: HTMLElement;
+  private mainMenuEl!: HTMLElement;
   private dossierModal!: HTMLElement;
   private debriefModal: HTMLElement | null = null;
   private inspectModal!: HTMLElement;
@@ -22,86 +23,79 @@ export class ScreenManager {
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('editor')) {
-      this.terminalBoot.classList.add('hidden');
+      this.mainMenuEl.classList.add('hidden');
       this.switchView('chamber');
     } else {
-      this.playTerminalBootSequence();
+      this.setupMainMenu();
     }
   }
 
   private cacheDomElements(): void {
-    this.terminalBoot = document.getElementById('view-terminal-boot')!;
+    this.mainMenuEl = document.getElementById('view-main-menu')!;
     this.dossierModal = document.getElementById('modal-dossier')!;
     this.debriefModal = document.getElementById('modal-debrief');
     this.inspectModal = document.getElementById('modal-inspect')!;
     this.blackoutScreen = document.getElementById('view-terminal-blackout');
   }
 
-  private playTerminalBootSequence(): void {
-    const textContainer = document.getElementById('terminal-text-container')!;
-    const btnInitiate = document.getElementById('btn-begin-intake')!;
+    private setupMainMenu(): void {
+    const btnStart = document.getElementById('btn-menu-start')!;
+    const btnSettings = document.getElementById('btn-menu-settings')!;
+    const btnExit = document.getElementById('btn-menu-exit')!;
     
     const isTest = new URLSearchParams(window.location.search).has('test');
 
     // Set initial canvas blur
     document.querySelector('canvas')?.classList.add('canvas-blur');
 
-    const message = "SYNDICATE EMERGENCY DECREE 12\nCOGNITIVE INTAKE TERMINAL ONLINE\nINITIALIZING LIMBIC DE-COUPLING...\nSUBJECT 104 DETECTED.";
-    let charIndex = 0;
-    
-    // Slower typewriter effect (instantly finish in test mode)
-    const typeInterval = setInterval(() => {
-      if (isTest) {
-        charIndex = message.length;
-      }
-      textContainer.textContent = message.slice(0, charIndex) + "█";
-      charIndex++;
-      if (charIndex > message.length) {
-        clearInterval(typeInterval);
-        textContainer.textContent = message;
-        btnInitiate.classList.remove('hidden');
-      }
-    }, isTest ? 1 : 60);
+    btnSettings?.addEventListener('click', () => {
+      document.getElementById('modal-settings')?.classList.remove('hidden');
+    });
 
-    btnInitiate.addEventListener('click', () => {
+    btnExit?.addEventListener('click', () => {
+       window.close();
+    });
+
+    btnStart?.addEventListener('click', () => {
       this.audioEngine.ensureContext();
       this.audioEngine.playPneumaticHiss();
       
       if (isTest) {
-        this.terminalBoot.classList.add('hidden');
+        this.mainMenuEl.classList.add('hidden');
         document.querySelector('canvas')?.classList.remove('canvas-blur');
         this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview', durationMs: 0 });
         this.switchView('chamber');
         return;
       }
 
-      // Slower Flash white (2s fade out for text, then reveal canvas)
-      this.terminalBoot.style.transition = 'background-color 2s ease-out';
-      this.terminalBoot.style.backgroundColor = '#ffffff';
-      textContainer.style.opacity = '0';
-      btnInitiate.style.opacity = '0';
+      // Smooth white flash transition to wake up in room
+      this.mainMenuEl.style.transition = 'background-color 2s ease-out, opacity 3s ease-out 2s';
+      this.mainMenuEl.style.backgroundColor = '#ffffff';
+      
+      // Hide the menu content elements during the flash
+      Array.from(this.mainMenuEl.children).forEach((child) => {
+        (child as HTMLElement).style.transition = 'opacity 1s ease-out';
+        (child as HTMLElement).style.opacity = '0';
+      });
       
       setTimeout(() => {
-        // Slow fade out of the white flash itself
-        this.terminalBoot.style.opacity = '0';
+        this.mainMenuEl.style.opacity = '0';
         
         setTimeout(() => {
-          this.terminalBoot.classList.add('hidden');
+          this.mainMenuEl.classList.add('hidden');
         }, 3000); // Wait for the 3s opacity transition to finish
         
-        // Start fading in 3D canvas (CSS handles the 4s-5s transition)
+        // Start fading in 3D canvas
         document.querySelector('canvas')?.classList.remove('canvas-blur');
         document.querySelector('canvas')?.classList.add('canvas-focus');
         
-        // Point camera up at ceiling immediately
+        // Wake up looking at ceiling, then pan down slowly
         this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'ceiling', durationMs: 0 });
         
-        // Then pan down slowly to the room overview (not the dossier) over 7 seconds
         setTimeout(() => {
           this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview', durationMs: 7000 });
         }, 100);
         
-        // Start the game! Player must click the dossier on the desk themselves.
         setTimeout(() => {
           this.switchView('chamber');
         }, 7000);
@@ -131,6 +125,8 @@ export class ScreenManager {
       this.eventBus.emit('inspect:close', {});
       this.eventBus.emit('ui:modal_closed', {});
       this.inspectModal.classList.add('hidden');
+      document.querySelector('.ui-layer')?.classList.remove('hidden');
+      document.getElementById('inventory-bar')?.classList.remove('hidden');
     };
     btnCloseInspect?.addEventListener('click', handleCloseInspect);
     btnCloseInspectX?.addEventListener('click', handleCloseInspect);
@@ -157,10 +153,48 @@ export class ScreenManager {
       this.switchView(view);
     });
 
-    this.eventBus.on('inspect:open', () => {
+    this.eventBus.on('inspect:open', ({ itemId, title, subtitle }) => {
       this.eventBus.emit('ui:modal_opened', {});
       this.inspectModal.classList.remove('hidden');
+      document.querySelector('.ui-layer')?.classList.add('hidden');
+      document.getElementById('inventory-bar')?.classList.add('hidden');
+
+      const titleEl = document.getElementById('inspect-title');
+      if (titleEl && title) titleEl.textContent = title;
+
+      const subtitleEl = document.getElementById('inspect-subtitle');
+      if (subtitleEl && subtitle) subtitleEl.textContent = subtitle;
+
+      const btnTake = document.getElementById('btn-take-item');
+      if (btnTake) {
+        if (itemId) {
+          // Check if already in inventory
+          const gameState = GameState.getInstance();
+          if (gameState.hasItem(itemId)) {
+             btnTake.classList.add('hidden');
+          } else {
+             btnTake.classList.remove('hidden');
+             // Assign item ID so the button knows what to take
+             btnTake.dataset.itemId = itemId;
+          }
+        } else {
+          btnTake.classList.add('hidden');
+        }
+      }
     });
+
+    // Add Take Item button listener
+    const btnTake = document.getElementById('btn-take-item');
+    if (btnTake) {
+      btnTake.addEventListener('click', () => {
+        const itemId = btnTake.dataset.itemId;
+        if (itemId) {
+          this.eventBus.emit('inventory:add', { itemId });
+          // Optional: sound effect here via EventBus or direct AudioEngine call
+          handleCloseInspect();
+        }
+      });
+    }
   }
 
   public switchView(nextView: ViewState): void {

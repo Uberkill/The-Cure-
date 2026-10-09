@@ -68,12 +68,19 @@
     <button class="btn-switch" id="btn-throw-switch" disabled>THROW PRIMARY RELAY</button>
   </div>
 
-  <!-- View: Terminal Boot -->
-  <div class="overlay-screen" id="view-terminal-boot" style="background-color: #030403; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-    <div id="terminal-text-container" style="font-family: var(--font-mono); color: var(--color-crt-phosphor); font-size: 14px; line-height: 1.8; text-transform: uppercase; white-space: pre-wrap; text-align: left; width: 400px; min-height: 120px; text-shadow: 0 0 4px var(--color-crt-phosphor);"></div>
-    <button class="pill-btn hidden" id="btn-begin-intake" style="margin-top: 40px; padding: 12px 32px; font-size: 12px; background: transparent; color: var(--color-crt-phosphor); border: 1px solid var(--color-crt-phosphor); text-shadow: 0 0 4px var(--color-crt-phosphor); box-shadow: 0 0 10px rgba(74, 219, 133, 0.2) inset;">
-      > MANUAL OVERRIDE [CLICK]
-    </button>
+  <!-- View: Main Menu -->
+  <div class="overlay-screen" id="view-main-menu" style="background-color: #ebefeb; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #030403;">
+    <div style="text-align: center; margin-bottom: 60px;">
+      <div style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.25em; color: rgba(0,0,0,0.5); margin-bottom: 16px;">DEPARTMENT OF COGNITIVE ALIGNMENT</div>
+      <h1 style="font-size: 64px; font-weight: bold; letter-spacing: -0.02em; margin: 0; line-height: 1;">THE VAULT</h1>
+      <div style="font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.15em; margin-top: 24px;">ROOM 04 &bull; SANATORIUM PROTOCOL</div>
+    </div>
+    
+    <div style="display: flex; flex-direction: column; gap: 16px; width: 280px;">
+      <button class="pill-btn" id="btn-menu-start" style="width: 100%; padding: 16px; font-size: 14px;">Begin Assessment</button>
+      <button class="pill-btn" id="btn-menu-settings" style="width: 100%; padding: 16px; font-size: 14px;">System Preferences</button>
+      <button class="pill-btn" id="btn-menu-exit" style="width: 100%; padding: 16px; font-size: 14px;">Exit Terminal</button>
+    </div>
   </div>
 
   <!-- Modal: Dossier Reader -->
@@ -123,27 +130,22 @@ Alignment precedes release.</div>
   <div class="inspect-modal hidden" id="modal-inspect">
     <div class="inspect-header">
       <div>
-        <div class="inspect-cat">SPECIMEN ARTIFACT • RECOVERED FROM BELL JAR</div>
-        <div class="inspect-name">The Brass Tuning Key</div>
+        <div class="inspect-cat" id="inspect-subtitle">SPECIMEN ARTIFACT • RECOVERED FROM BELL JAR</div>
+        <div class="inspect-name" id="inspect-title">The Brass Tuning Key</div>
       </div>
       <div style="display: flex; gap: 12px; align-items: center;">
-        <button class="pill-btn" id="btn-close-inspect">Return to Chamber</button>
-        <button class="modal-close-x" id="btn-close-inspect-x" aria-label="Close inspection">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
+        <button class="pill-btn hidden" id="btn-take-item" style="background: white; color: black; border: 1px solid rgba(0,0,0,0.1);">Take Item</button>
+        <button class="pill-btn" id="btn-close-inspect" style="background: white; color: black; border: 1px solid rgba(0,0,0,0.1);">Return to Chamber</button>
       </div>
     </div>
     <div style="flex: 1;"></div>
-    <div class="inspect-footer">
-      DRAG TO ROTATE 360° • CLICK SLIDER NOTCH ON BARREL TO EXTEND CIPHER PINS
+    <div class="inspect-footer" style="background: white; color: black; border-radius: 20px; padding: 12px 24px; align-self: center; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em;">
+      DRAG TO ROTATE 360° IN HANDS • EXAMINE THE NOTCH
     </div>
   </div>
 
   <!-- Modal: System Settings -->
-  <div class="overlay-screen hidden" id="modal-settings">
+  <div class="overlay-screen hidden" id="modal-settings" style="z-index: 10000;">
     <div class="dossier-paper" style="max-width: 480px;">
       <button class="modal-close-x" id="btn-close-settings-x" aria-label="Close settings">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
