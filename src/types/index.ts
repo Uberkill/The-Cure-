@@ -142,6 +142,9 @@ export interface TransformData {
     axis: string;
     start: number;
     end: number;
+    trigger?: 'none' | 'click' | 'proximity';
+    duration?: number; // in ms
+    state?: boolean; // true = at end, false = at start
   };
   custom?: Record<string, any>;
 }

@@ -170,6 +170,9 @@ export class Room04_SterileChamber implements RoomScenario {
           child.userData.animAxis = meshLayout.animation.axis;
           child.userData.animStart = meshLayout.animation.start;
           child.userData.animEnd = meshLayout.animation.end;
+          child.userData.animTrigger = meshLayout.animation.trigger || 'none';
+          child.userData.animDuration = meshLayout.animation.duration || 800;
+          child.userData.animState = false; // Initial state (false = start, true = end)
         }
         child.updateMatrixWorld();
       }
@@ -188,6 +191,9 @@ export class Room04_SterileChamber implements RoomScenario {
           prefab.userData.animAxis = p.transform.animation.axis;
           prefab.userData.animStart = p.transform.animation.start;
           prefab.userData.animEnd = p.transform.animation.end;
+          prefab.userData.animTrigger = p.transform.animation.trigger || 'none';
+          prefab.userData.animDuration = p.transform.animation.duration || 800;
+          prefab.userData.animState = false;
         }
         this.entities!.group.add(prefab);
       }

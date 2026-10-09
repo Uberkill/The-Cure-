@@ -16,6 +16,7 @@ import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
 import { DevTransformGizmo } from './interaction/DevTransformGizmo';
 import { Dev3DEditorPanel } from './ui/Dev3DEditorPanel';
 import { EditorVisualizers } from './editor/EditorVisualizers';
+import { AnimatorSystem } from './rendering/AnimatorSystem';
 
 class VaultApp {
   public telemetry: Telemetry;
@@ -31,6 +32,7 @@ class VaultApp {
   public devGizmo: DevTransformGizmo;
   public devEditorPanel: Dev3DEditorPanel;
   public editorVisualizers?: EditorVisualizers;
+  public animatorSystem: AnimatorSystem;
 
   public scenarioRegistry: ScenarioRegistry;
   public crtNodePatcher: CRTNodePatcher;
@@ -51,6 +53,10 @@ class VaultApp {
     const canvasContainer = document.getElementById('canvas-container')!;
     this.sceneManager = new SceneManager(canvasContainer);
     this.cameraDirector = new CameraDirector(this.sceneManager.renderer.domElement);
+    
+    this.animatorSystem = AnimatorSystem.getInstance();
+    this.animatorSystem.init(this.sceneManager.scene, this.cameraDirector.camera);
+
     this.raycastManager = new RaycastManager(
       this.sceneManager.scene,
       this.cameraDirector.camera,
@@ -185,6 +191,7 @@ class VaultApp {
 
     this.cameraDirector.update(delta);
     this.scenarioRegistry.update(delta);
+    this.animatorSystem.update(delta);
     this.devEditorPanel.update();
 
     // Primary 3D render pass

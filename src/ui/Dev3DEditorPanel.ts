@@ -101,6 +101,7 @@ export class Dev3DEditorPanel {
         </div>
         <button id="dev-btn-save-server" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Save to Server (room_layout.json)</button>
         <button id="dev-btn-export" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); color: #bad2c8; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;">Export Clipboard</button>
+        <button id="dev-btn-delete" style="width: 100%; padding: 8px; background: rgba(220,50,50,0.1); color: #ff8888; border: 1px solid rgba(220,50,50,0.3); border-radius: 4px; cursor: pointer; margin-top: 8px;">Delete Selected</button>
       </div>
 
       <!-- TAB CONTENT: ANIMATION -->
@@ -137,6 +138,20 @@ export class Dev3DEditorPanel {
               <button id="dev-anim-set-end" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #bad2c8; cursor: pointer; padding: 2px 6px; border-radius: 2px;">Set from Gizmo</button>
               <input type="number" id="dev-anim-end" step="0.05" value="0" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
             </div>
+          </div>
+          
+          <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+            <span>Trigger</span>
+            <select id="dev-anim-trigger" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px; width: 120px;">
+              <option value="none">Manual / Script</option>
+              <option value="click">On Click (Toggle)</option>
+              <option value="proximity">On Proximity</option>
+            </select>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span>Duration (ms)</span>
+            <input type="number" id="dev-anim-duration" step="100" value="800" style="width:80px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
           </div>
           
           <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-bottom: 12px;">
@@ -287,6 +302,13 @@ export class Dev3DEditorPanel {
       obj.userData.animStart = start;
       obj.userData.animEnd = end;
       
+      const triggerSelect = document.getElementById('dev-anim-trigger') as HTMLSelectElement;
+      const durationInput = document.getElementById('dev-anim-duration') as HTMLInputElement;
+      if (triggerSelect && durationInput) {
+        obj.userData.animTrigger = triggerSelect.value;
+        obj.userData.animDuration = parseFloat(durationInput.value) || 800;
+      }
+      
       this.devGizmo.syncTransform();
     };
 
@@ -295,6 +317,8 @@ export class Dev3DEditorPanel {
     axisSelect?.addEventListener('change', applyAnimScrub);
     startInput?.addEventListener('change', applyAnimScrub);
     endInput?.addEventListener('change', applyAnimScrub);
+    document.getElementById('dev-anim-trigger')?.addEventListener('change', applyAnimScrub);
+    document.getElementById('dev-anim-duration')?.addEventListener('change', applyAnimScrub);
 
     document.getElementById('dev-anim-set-start')?.addEventListener('click', () => {
       const objs = this.devGizmo.getSelectedObjects();
@@ -320,10 +344,35 @@ export class Dev3DEditorPanel {
 
     // Save to Server
     document.getElementById('dev-btn-save-server')?.addEventListener('click', async () => {
-      const data: any = { prefabs: [] };
-      // Gather transforms of selected object
+      // Gather all prefabs currently in the scene to prevent wiping others
+      this.scene.traverse(child => {
+        if (child.userData && child.userData.isPrefab) {
+          const pEntry: any = {
+            id: child.userData.prefabId,
+            type: child.userData.prefabType,
+            transform: {
+              x: child.position.x, y: child.position.y, z: child.position.z,
+              rx: child.rotation.x, ry: child.rotation.y, rz: child.rotation.z,
+              sx: child.scale.x, sy: child.scale.y, sz: child.scale.z
+            }
+          };
+          if (child.userData.animType) {
+            pEntry.transform.animation = {
+              type: child.userData.animType,
+              axis: child.userData.animAxis,
+              start: child.userData.animStart,
+              end: child.userData.animEnd,
+              trigger: child.userData.animTrigger,
+              duration: child.userData.animDuration
+            };
+          }
+          data.prefabs.push(pEntry);
+        }
+      });
+
+      // Gather transforms of selected standard objects
       const objs = this.devGizmo.getSelectedObjects();
-      if (objs.length === 1) {
+      if (objs.length === 1 && !objs[0].userData.isPrefab) {
         const obj = objs[0];
         const layoutEntry: any = {
           x: obj.position.x, y: obj.position.y, z: obj.position.z,
@@ -335,20 +384,14 @@ export class Dev3DEditorPanel {
             type: obj.userData.animType,
             axis: obj.userData.animAxis,
             start: obj.userData.animStart,
-            end: obj.userData.animEnd
+            end: obj.userData.animEnd,
+            trigger: obj.userData.animTrigger,
+            duration: obj.userData.animDuration
           };
         }
-
-        if (obj.userData.isPrefab) {
-          data.prefabs.push({
-            id: obj.userData.prefabId,
-            type: obj.userData.prefabType,
-            transform: layoutEntry
-          });
-        } else {
-          data[obj.name] = layoutEntry;
-        }
+        data[obj.name] = layoutEntry;
       }
+      
       const success = await EditorServerSync.saveLayout(data);
       if (success) alert('Saved to room_layout.json');
     });
@@ -367,6 +410,28 @@ export class Dev3DEditorPanel {
       
       this.scene.add(prefab);
       this.devGizmo.attachMultiple([prefab]);
+      
+      import('../core/EventBus').then(({ EventBus }) => {
+        EventBus.getInstance().emit('editor:rebuild_visualizers', {});
+      });
+    });
+
+    // Delete Selected
+    document.getElementById('dev-btn-delete')?.addEventListener('click', () => {
+      const objs = this.devGizmo.getSelectedObjects();
+      if (objs.length === 0) return;
+      
+      // Detach gizmo first to prevent errors
+      this.devGizmo.detach();
+      
+      objs.forEach(obj => {
+        if (obj.parent) {
+          obj.parent.remove(obj);
+        }
+      });
+      
+      // Force save to server to persist deletion
+      document.getElementById('dev-btn-save-server')?.click();
       
       import('../core/EventBus').then(({ EventBus }) => {
         EventBus.getInstance().emit('editor:rebuild_visualizers', {});
@@ -429,6 +494,9 @@ export class Dev3DEditorPanel {
         const startInput = document.getElementById('dev-anim-start') as HTMLInputElement;
         const endInput = document.getElementById('dev-anim-end') as HTMLInputElement;
         const scrubInput = document.getElementById('dev-anim-scrub') as HTMLInputElement;
+        const triggerSelect = document.getElementById('dev-anim-trigger') as HTMLSelectElement;
+        const durationInput = document.getElementById('dev-anim-duration') as HTMLInputElement;
+        
         if (typeSelect && axisSelect && startInput && endInput && scrubInput) {
           if (obj.userData.animType) {
             typeSelect.value = obj.userData.animType;
@@ -436,12 +504,16 @@ export class Dev3DEditorPanel {
             startInput.value = obj.userData.animStart !== undefined ? obj.userData.animStart : 0;
             endInput.value = obj.userData.animEnd !== undefined ? obj.userData.animEnd : 0;
             scrubInput.value = '0';
+            if (triggerSelect) triggerSelect.value = obj.userData.animTrigger || 'none';
+            if (durationInput) durationInput.value = obj.userData.animDuration || '800';
           } else {
             typeSelect.value = 'rotation';
             axisSelect.value = 'y';
             startInput.value = '0';
             endInput.value = '0';
             scrubInput.value = '0';
+            if (triggerSelect) triggerSelect.value = 'none';
+            if (durationInput) durationInput.value = '800';
           }
         }
       }
