@@ -11,8 +11,8 @@ export class CameraDirector {
   private isTransitioning: boolean = false;
   private isUserOrbiting: boolean = false;
   private mouseNorm: THREE.Vector2 = new THREE.Vector2(0, 0);
-  private basePosition: THREE.Vector3 = new THREE.Vector3(4.2, 2.6, 4.4);
-  private baseTarget: THREE.Vector3 = new THREE.Vector3(0, 0.85, 0);
+
+
 
   private parallaxEnabled: boolean = true;
   private parallaxSensitivity: number = 0.18;
@@ -21,12 +21,13 @@ export class CameraDirector {
     this.eventBus = EventBus.getInstance();
 
     this.camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
-    this.camera.position.copy(this.basePosition);
+    this.camera.position.set(4.2, 2.6, 4.4);
 
     this.controls = new OrbitControls(this.camera, domElement);
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
-    this.controls.target.copy(this.baseTarget);
+    this.controls.target.set(0, 0.85, 0);
+
     this.controls.minPolarAngle = 0.1; // Loosened from Math.PI/6 to prevent twisting on steep presets (e.g. envelope)
     this.controls.maxPolarAngle = Math.PI / 2.08;
     this.controls.minDistance = 0.5; // Loosened from 1.2 to prevent bounding-back on closeups (e.g. telephone)
@@ -38,8 +39,8 @@ export class CameraDirector {
 
     this.controls.addEventListener('end', () => {
       this.isUserOrbiting = false;
-      this.basePosition.copy(this.camera.position);
-      this.baseTarget.copy(this.controls.target);
+
+
     });
 
     this.setupListeners();
@@ -58,8 +59,8 @@ export class CameraDirector {
 
     this.eventBus.on('inspect:close', () => {
       this.controls.enabled = true;
-      this.basePosition.copy(this.camera.position);
-      this.baseTarget.copy(this.controls.target);
+
+
     });
 
     this.eventBus.on('ui:modal_opened', () => {
@@ -68,8 +69,8 @@ export class CameraDirector {
 
     this.eventBus.on('ui:modal_closed', () => {
       this.controls.enabled = true;
-      this.basePosition.copy(this.camera.position);
-      this.baseTarget.copy(this.controls.target);
+
+
     });
 
     this.eventBus.on('settings:updated', (settings) => {
@@ -99,8 +100,8 @@ export class CameraDirector {
   public resetForScenario(preset: CameraPreset): void {
     this.isTransitioning = false;
     this.controls.enabled = true;
-    this.basePosition.copy(preset.position);
-    this.baseTarget.copy(preset.target);
+
+
     this.camera.position.copy(preset.position);
     this.controls.target.copy(preset.target);
     this.controls.update();
@@ -118,8 +119,8 @@ export class CameraDirector {
     const startTarget = this.controls.target.clone();
     const endTarget = preset.target.clone();
 
-    this.basePosition.copy(endPos);
-    this.baseTarget.copy(endTarget);
+
+
 
     const startTime = performance.now();
 
@@ -185,14 +186,30 @@ export class CameraDirector {
     this.moveToPreset(targetPreset);
   }
 
+  private currentParallax: THREE.Vector2 = new THREE.Vector2(0, 0);
+
   public update(delta: number): void {
     this.controls.update();
 
-    if (!this.isTransitioning && this.controls.enabled && this.parallaxEnabled && !this.isUserOrbiting) {
-      const parallaxTargetX = this.basePosition.x + this.mouseNorm.x * this.parallaxSensitivity;
-      const parallaxTargetY = this.basePosition.y + this.mouseNorm.y * (this.parallaxSensitivity * 0.65);
-      this.camera.position.x = THREE.MathUtils.lerp(this.camera.position.x, parallaxTargetX, delta * 3);
-      this.camera.position.y = THREE.MathUtils.lerp(this.camera.position.y, parallaxTargetY, delta * 3);
+    if (this.parallaxEnabled && !this.isUserOrbiting && !this.isTransitioning) {
+      // Use setViewOffset for parallax to avoid fighting OrbitControls camera.position
+      const targetX = this.mouseNorm.x * (window.innerWidth * (this.parallaxSensitivity * 0.08));
+      const targetY = -this.mouseNorm.y * (window.innerHeight * (this.parallaxSensitivity * 0.08));
+      this.currentParallax.x = THREE.MathUtils.lerp(this.currentParallax.x, targetX, delta * 3);
+      this.currentParallax.y = THREE.MathUtils.lerp(this.currentParallax.y, targetY, delta * 3);
+    } else {
+      this.currentParallax.x = THREE.MathUtils.lerp(this.currentParallax.x, 0, delta * 5);
+      this.currentParallax.y = THREE.MathUtils.lerp(this.currentParallax.y, 0, delta * 5);
+    }
+
+    if (Math.abs(this.currentParallax.x) > 0.1 || Math.abs(this.currentParallax.y) > 0.1) {
+      this.camera.setViewOffset(
+        window.innerWidth, window.innerHeight,
+        this.currentParallax.x, this.currentParallax.y,
+        window.innerWidth, window.innerHeight
+      );
+    } else {
+      this.camera.clearViewOffset();
     }
   }
 
