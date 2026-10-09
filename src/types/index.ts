@@ -94,6 +94,7 @@ export interface EventPayloadMap {
   'puzzle:key_inserted': Record<string, never>;
   'puzzle:frequency_changed': { frequency: number; isResonating: boolean };
   'puzzle:switch_thrown': Record<string, never>;
+  'puzzle:synthesis_complete': Record<string, never>;
   'camera:move_to_hotspot': { hotspotId: string; durationMs?: number };
   'camera:transition_start': Record<string, never>;
   'camera:transition_end': Record<string, never>;

@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor } from '../types';
 import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
+import { SwitchboardMirrorScreen } from '../ui/screens/SwitchboardMirrorScreen';
 
 export class Room08_VelvetLounge implements RoomScenario {
   public id = 'velvet_lounge';
@@ -44,9 +45,20 @@ export class Room08_VelvetLounge implements RoomScenario {
         target: new THREE.Vector3(-1.4, 1.8, -2.9)
       }
     },
+    switchboard: {
+      id: 'switchboard',
+      name: 'IV. Operator Switchboard',
+      position: new THREE.Vector3(1.2, 1.8, 0),
+      interactionPrompt: '[INSPECT SWITCHBOARD]',
+      cameraPreset: {
+        name: 'switchboard',
+        position: new THREE.Vector3(0.2, 1.8, 1.2),
+        target: new THREE.Vector3(1.2, 1.6, 0)
+      }
+    },
     payphone: {
       id: 'payphone',
-      name: 'IV. Ringing Payphone',
+      name: 'V. Ringing Payphone',
       position: new THREE.Vector3(2.6, 1.7, -1.5),
       interactionPrompt: '[ANSWER: THE PHANTOM RECEIVER]',
       cameraPreset: {
@@ -61,6 +73,7 @@ export class Room08_VelvetLounge implements RoomScenario {
   private payphoneMesh: THREE.Mesh | null = null;
   private mirrorMesh: THREE.Mesh | null = null;
   private payphoneAnswered: boolean = false;
+  private switchboardScreen: SwitchboardMirrorScreen = new SwitchboardMirrorScreen();
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
@@ -100,103 +113,95 @@ export class Room08_VelvetLounge implements RoomScenario {
       color: 0x050505
     });
 
-    // Dark Chevron Wood Parquet Floor
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), matChevron);
+    // Floor: Black-and-white chevron zigzag
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), matChevron);
     floor.rotation.x = -Math.PI / 2;
-    floor.receiveShadow = true;
     this.group.add(floor);
 
-    // Ceiling
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), matMahogany);
+    // Ceiling & Deep Red Velvet Drapes
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.MeshBasicMaterial({ color: 0x050505 }));
     ceiling.position.y = 4.2;
     ceiling.rotation.x = Math.PI / 2;
     this.group.add(ceiling);
 
-    // Heavy Pleated Red Velvet Curtain Walls
-    const wallBack = new THREE.Mesh(new THREE.BoxGeometry(14, 4.2, 0.4), matVelvet);
-    wallBack.position.set(0, 2.1, -7);
-    this.group.add(wallBack);
+    const drapesBack = new THREE.Mesh(new THREE.BoxGeometry(16, 4.2, 0.4), matVelvet);
+    drapesBack.position.set(0, 2.1, -6);
+    this.group.add(drapesBack);
 
-    const wallFront = new THREE.Mesh(new THREE.BoxGeometry(14, 4.2, 0.4), matVelvet);
-    wallFront.position.set(0, 2.1, 7);
-    this.group.add(wallFront);
+    const drapesLeft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 16), matVelvet);
+    drapesLeft.position.set(-6, 2.1, 0);
+    this.group.add(drapesLeft);
 
-    const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 14), matVelvet);
-    wallLeft.position.set(-7, 2.1, 0);
-    this.group.add(wallLeft);
+    const drapesRight = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 16), matVelvet);
+    drapesRight.position.set(6, 2.1, 0);
+    this.group.add(drapesRight);
 
-    const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 14), matVelvet);
-    wallRight.position.set(7, 2.1, 0);
-    this.group.add(wallRight);
-
-    // Long Smoked Mahogany Bar Counter
-    const barGroup = new THREE.Group();
-    barGroup.position.set(-2.2, 0, 0);
-    barGroup.name = 'prop_lounge_bar';
-
-    const barTop = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.14, 7.0), matMahogany);
-    barTop.position.set(0, 1.1, 0);
+    // Mahogany Bar Counter
+    const barTop = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.12, 1.2), matMahogany);
+    barTop.position.set(-1.8, 1.05, 0);
     barTop.castShadow = true;
-    barTop.receiveShadow = true;
-    barGroup.add(barTop);
+    this.group.add(barTop);
 
-    const barBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.05, 6.8), matMahogany);
-    barBody.position.set(0, 0.525, 0);
-    barGroup.add(barBody);
+    // The Solitary Lowball Glass of Amber Whiskey
+    const glassGroup = new THREE.Group();
+    glassGroup.position.set(-1.4, 1.15, 0);
+    glassGroup.name = 'prop_whiskey_glass';
 
-    // Brass Footrail
-    const footrail = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 6.8, 16), matBrass);
-    footrail.position.set(0.7, 0.15, 0);
-    barGroup.add(footrail);
+    const tumbler = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.14, 16), matGlass);
+    glassGroup.add(tumbler);
 
-    // Tumbler Glass with Melting Ice & Amber Whiskey
-    const tumbler = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.12, 16), matGlass);
-    tumbler.position.set(0.1, 1.23, 0.5);
-    tumbler.name = 'prop_whiskey_glass';
-    barGroup.add(tumbler);
+    const whiskey = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.065, 0.08, 16), matAmberLiquor);
+    whiskey.position.y = -0.02;
+    glassGroup.add(whiskey);
+    this.group.add(glassGroup);
 
-    const whiskey = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.048, 0.06, 16), matAmberLiquor);
-    whiskey.position.set(0.1, 1.20, 0.5);
-    barGroup.add(whiskey);
+    // The Large Gilded Mirror
+    const mirrorFrame = new THREE.Mesh(new THREE.BoxGeometry(2.4, 3.2, 0.12), matBrass);
+    mirrorFrame.position.set(-1.4, 2.1, -5.7);
+    this.group.add(mirrorFrame);
 
-    this.group.add(barGroup);
-
-    // Gilded Bar Mirror with Pitch-Black Silhouette Reflection
-    const mirrorGroup = new THREE.Group();
-    mirrorGroup.position.set(-2.2, 2.2, -3.2);
-    mirrorGroup.name = 'prop_bar_mirror';
-
-    const mirrorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 1.4, 0.06), matBrass);
-    mirrorGroup.add(mirrorFrame);
-
-    this.mirrorMesh = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.2, 0.04), new THREE.MeshStandardMaterial({
-      color: 0x1f2420,
-      roughness: 0.1,
-      metalness: 0.95
+    this.mirrorMesh = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 2.9), new THREE.MeshStandardMaterial({
+      color: 0x111613,
+      metalness: 0.95,
+      roughness: 0.05
     }));
-    this.mirrorMesh.position.z = 0.02;
-    this.mirrorMesh.name = 'prop_bar_mirror_glass';
-    mirrorGroup.add(this.mirrorMesh);
+    this.mirrorMesh.position.set(-1.4, 2.1, -5.63);
+    this.mirrorMesh.name = 'prop_lounge_mirror';
+    this.group.add(this.mirrorMesh);
 
-    // The Silhouette Reflection (Uncanny Featureless Void Figure)
-    const silhouetteHead = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), matSilhouette);
-    silhouetteHead.position.set(0, 0.1, 0.06);
-    silhouetteHead.name = 'prop_bar_mirror_silhouette';
-    mirrorGroup.add(silhouetteHead);
+    // Featureless Black Silhouette
+    const silhouette = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.1, 8, 16), matSilhouette);
+    silhouette.position.set(-1.4, 1.8, -5.55);
+    silhouette.name = 'prop_silhouette';
+    this.group.add(silhouette);
 
-    const silhouetteShoulders = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.45, 0.08), matSilhouette);
-    silhouetteShoulders.position.set(0, -0.25, 0.06);
-    mirrorGroup.add(silhouetteShoulders);
+    // Vintage Operator Switchboard Wall Terminal
+    const switchboardGroup = new THREE.Group();
+    switchboardGroup.position.set(1.2, 1.8, 0);
+    switchboardGroup.rotation.y = -Math.PI / 2;
+    switchboardGroup.name = 'prop_switchboard';
 
-    this.group.add(mirrorGroup);
+    const switchboardCase = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.8, 0.2),
+      new THREE.MeshStandardMaterial({ color: 0x19211c, roughness: 0.6, metalness: 0.3 })
+    );
+    switchboardGroup.add(switchboardCase);
 
-    // The Solitary Ringing Analog Payphone on Far Wall
+    const jackFace = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.0, 0.6),
+      new THREE.MeshStandardMaterial({ color: 0x090e0c, roughness: 0.2 })
+    );
+    jackFace.position.z = 0.101;
+    switchboardGroup.add(jackFace);
+    this.group.add(switchboardGroup);
+
+    // Ringing Vintage Payphone on Wall
     const phoneGroup = new THREE.Group();
-    phoneGroup.position.set(4.0, 1.8, -1.5);
+    phoneGroup.position.set(2.6, 1.8, -1.5);
     phoneGroup.name = 'prop_lounge_payphone';
 
-    const phoneBox = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.7, 0.28), new THREE.MeshStandardMaterial({
-      color: 0x1e2422,
+    const phoneBox = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.7, 0.25), new THREE.MeshStandardMaterial({
+      color: 0x1f2924,
       roughness: 0.3,
       metalness: 0.8
     }));
@@ -243,6 +248,7 @@ export class Room08_VelvetLounge implements RoomScenario {
     const audio = AudioEngine.getInstance();
     audio.stopPayphoneRing();
     audio.teardownScenarioAudio();
+    this.switchboardScreen.teardown();
 
     if (this.group) {
       scene.remove(this.group);
@@ -256,12 +262,18 @@ export class Room08_VelvetLounge implements RoomScenario {
     const bus = EventBus.getInstance();
     const audio = AudioEngine.getInstance();
 
+    if (objectId === 'prop_switchboard') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'switchboard' });
+      this.switchboardScreen.open();
+      return true;
+    }
+
     if (objectId.includes('mirror')) {
       audio.playToneAlignmentSweep(220);
       bus.emit('puzzle:mirror_inspected', {});
-      bus.emit('ui:subtitle_changed', {
-        text: 'You look into the dark gilded mirror. Your face is gone. Only an opaque, featureless black silhouette stares back.'
-      });
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'mirror' });
+      this.switchboardScreen.open();
       return true;
     }
 

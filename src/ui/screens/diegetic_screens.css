@@ -1369,3 +1369,395 @@
   border-color: #4ade80;
   color: #f0fdf4;
 }
+
+/* ==========================================================================
+   ACT VII: 5-CHANNEL GALVANOMETER GRID & HIGH-VOLTAGE BUS LEVER
+   ========================================================================== */
+
+.galvanometer-housing {
+  max-width: 860px;
+}
+
+.galvanometer-console-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.breaker-annunciator-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #0f1513;
+  border: 1px solid #23312b;
+  border-radius: 4px;
+}
+
+.breaker-status-text {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono, monospace);
+}
+
+.btn-reset-breaker {
+  padding: 6px 14px;
+  background: #7f1d1d;
+  border: 1px solid #ef4444;
+  color: #fee2e2;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  letter-spacing: 0.1em;
+  transition: all 0.15s ease;
+}
+
+.btn-reset-breaker:hover {
+  background: #991b1b;
+}
+
+.galvanometer-channels-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+
+.channel-bay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #111714;
+  border: 1px solid #24332c;
+  border-radius: 6px;
+  padding: 10px 6px;
+}
+
+.channel-title {
+  font-size: 9px;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.meter-housing {
+  width: 90px;
+  height: 60px;
+  background: #090e0c;
+  border: 2px solid #2b3933;
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+}
+
+.meter-scale-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.meter-center-green-zone {
+  position: absolute;
+  bottom: 0;
+  width: 14px;
+  height: 100%;
+  background: rgba(74, 222, 128, 0.15);
+  border-left: 1px dashed rgba(74, 222, 128, 0.4);
+  border-right: 1px dashed rgba(74, 222, 128, 0.4);
+}
+
+.meter-needle-arm {
+  width: 2px;
+  height: 48px;
+  background: #f59e0b;
+  position: absolute;
+  bottom: 0;
+  left: calc(50% - 1px);
+  transform-origin: bottom center;
+  transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.3, 1);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.6);
+}
+
+.shunt-slider-rack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+}
+
+.shunt-slider-rack label {
+  font-size: 8px;
+  color: #64748b;
+  letter-spacing: 0.05em;
+}
+
+.shunt-slider-rack input[type="range"] {
+  width: 90%;
+}
+
+.shunt-value-pill {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono, monospace);
+}
+
+.shunt-value-pill.balanced {
+  color: #4ade80;
+}
+
+.bus-lever-action-bay {
+  margin-top: 6px;
+}
+
+.main-bus-lever {
+  width: 100%;
+  padding: 14px;
+  background: #19201d;
+  border: 1px solid #364641;
+  color: #8b9991;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.main-bus-lever.ready {
+  background: #14532d;
+  border-color: #4ade80;
+  color: #f0fdf4;
+}
+
+.main-bus-lever.unlocked {
+  background: #065f46;
+  border-color: #34d399;
+  color: #ecfdf5;
+}
+
+/* ==========================================================================
+   ACT VIII: OPERATOR SWITCHBOARD & GILDED MIRROR PARADOX TERMINAL
+   ========================================================================== */
+
+.switchboard-housing {
+  max-width: 840px;
+}
+
+.switchboard-console-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 20px;
+}
+
+.mirror-paradox-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #121614;
+  border: 1px solid #28372f;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.panel-heading {
+  font-size: 10px;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.mirror-viewport {
+  background: #090e0c;
+  border: 2px solid #c28833;
+  border-radius: 6px;
+  height: 200px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.9);
+}
+
+.mirror-reflection-frame {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, #1b2821 0%, #080d0a 80%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.mirror-reflection-frame.aligned {
+  background: radial-gradient(circle at center, #153825 0%, #05140b 80%);
+  box-shadow: inset 0 0 20px rgba(74, 222, 128, 0.3);
+}
+
+.reflection-silhouette {
+  width: 48px;
+  height: 64px;
+  background: #050505;
+  border-radius: 24px 24px 0 0;
+  border: 1px solid #1a241e;
+}
+
+.reflection-table {
+  width: 140px;
+  height: 20px;
+  background: #18110b;
+  border-top: 1px solid #c28833;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.reflection-decanter-ghost {
+  font-size: 8px;
+  color: #d97706;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  opacity: 0.6;
+}
+
+.mirror-reflection-frame.aligned .reflection-decanter-ghost {
+  color: #38bdf8;
+  opacity: 1;
+}
+
+.btn-place-decanter {
+  padding: 10px;
+  background: #1c2520;
+  border: 1px solid #36463e;
+  color: #c28833;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-place-decanter:hover {
+  background: #25332a;
+  border-color: #c28833;
+}
+
+.btn-place-decanter.active {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  color: #dbeafe;
+}
+
+.operator-switchboard-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #101614;
+  border: 1px solid #233129;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.patch-status-annunciator {
+  padding: 8px 10px;
+  background: #090e0c;
+  border: 1px solid #1c2621;
+  border-radius: 4px;
+}
+
+.patch-status-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono, monospace);
+}
+
+.jacks-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.jacks-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.jacks-row-label {
+  font-size: 9px;
+  color: #64748b;
+  letter-spacing: 0.08em;
+}
+
+.jacks-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.patch-jack-btn {
+  padding: 8px 4px;
+  background: #17201c;
+  border: 1px solid #2d3b35;
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.patch-jack-btn:hover {
+  background: #22302a;
+  color: #f1f5f9;
+}
+
+.patch-jack-btn.active {
+  background: #78350f;
+  border-color: #f59e0b;
+  color: #fef3c7;
+}
+
+.climax-trigger-lane {
+  margin-top: 6px;
+}
+
+.answer-climax-btn {
+  width: 100%;
+  padding: 12px;
+  background: #19201d;
+  border: 1px solid #364641;
+  color: #8b9991;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.answer-climax-btn.ready {
+  background: #831843;
+  border-color: #ec4899;
+  color: #fdf2f8;
+}
+
+.answer-climax-btn.unlocked {
+  background: #4c1d95;
+  border-color: #a78bfa;
+  color: #f5f3ff;
+}

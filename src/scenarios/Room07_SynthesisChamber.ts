@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { HotspotAnchor } from '../types';
 import { Room04_SterileChamber } from './Room04_SterileChamber';
 import { EventBus } from '../core/EventBus';
+import { GalvanometerGridScreen } from '../ui/screens/GalvanometerGridScreen';
+import { AudioEngine } from '../audio/AudioEngine';
 
 export class Room07_SynthesisChamber extends Room04_SterileChamber {
   public override id = 'synthesis_blackout';
@@ -44,9 +46,20 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
         target: new THREE.Vector3(0, 1.15, 0)
       }
     },
+    grid: {
+      id: 'grid',
+      name: 'IV. Galvanometer Grid',
+      position: new THREE.Vector3(-3.0, 1.4, 0.0),
+      interactionPrompt: '[INSPECT POWER BUS]',
+      cameraPreset: {
+        name: 'grid',
+        position: new THREE.Vector3(-1.8, 1.5, 0.0),
+        target: new THREE.Vector3(-3.0, 1.4, 0.0)
+      }
+    },
     corridor: {
       id: 'corridor',
-      name: 'IV. Sealed Corridor',
+      name: 'V. Sealed Corridor',
       position: new THREE.Vector3(0, 1.8, -6.5),
       interactionPrompt: '[INSPECT SEALED CORRIDOR]',
       cameraPreset: {
@@ -56,6 +69,8 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       }
     }
   };
+
+  private galvanometerScreen: GalvanometerGridScreen = new GalvanometerGridScreen();
 
   public override async buildScene(scene: THREE.Scene): Promise<THREE.Group> {
     const group = await super.buildScene(scene);
@@ -81,16 +96,61 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       exitGlow.position.set(-6.6, 1.8, -3.0);
       exitGlow.name = 'amber_exit_spill_light';
       this.entities.group.add(exitGlow);
+
+      // Galvanometer Grid Wall Console Mesh
+      const gridConsole = new THREE.Group();
+      gridConsole.position.set(-3.2, 1.4, 0.0);
+      gridConsole.rotation.y = Math.PI / 2;
+      gridConsole.name = 'prop_galvanometer_grid';
+
+      const panelMesh = new THREE.Mesh(
+        new THREE.BoxGeometry(1.6, 0.9, 0.15),
+        new THREE.MeshStandardMaterial({ color: 0x18201c, roughness: 0.6, metalness: 0.4 })
+      );
+      gridConsole.add(panelMesh);
+
+      // 5 miniature dials on panel
+      [-0.6, -0.3, 0, 0.3, 0.6].forEach(x => {
+        const dial = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.08, 0.08, 0.03, 16),
+          new THREE.MeshStandardMaterial({ color: 0x090e0c, roughness: 0.2 })
+        );
+        dial.rotation.x = Math.PI / 2;
+        dial.position.set(x, 0.15, 0.09);
+        gridConsole.add(dial);
+      });
+
+      this.entities.group.add(gridConsole);
     }
 
     return group;
   }
 
+  public override teardown(scene: THREE.Scene): void {
+    this.galvanometerScreen.teardown();
+    super.teardown(scene);
+  }
+
   public override onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
+    const audio = AudioEngine.getInstance();
 
     if (objectId === 'prop_door' || objectId === 'exit_airlock_passage') {
       bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge' });
+      return true;
+    }
+
+    if (objectId === 'prop_galvanometer_grid') {
+      if (this.galvanometerScreen.getState().gridBalanced) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'grid' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The 5-channel circuit bus is balanced at 100 Ohms. Hydraulic blast clamps released.'
+        });
+        return true;
+      }
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'grid' });
+      this.galvanometerScreen.open();
       return true;
     }
 
