@@ -149,9 +149,10 @@ flowchart TD
 * Stores diagnostics in a circular memory buffer (100 entries).
 * Emits visual recovery indicators in the UI without halting gameplay.
 
-### 3.9. Dev 3D Editor & Transform Gizmo (editor/ & ui/Dev3DEditorPanel.ts)
+### 3.9. Developer Mode & Transform Gizmo (editor/ & ui/Dev3DEditorPanel.ts)
 * Provides a full in-engine level editor built on TransformControls and SelectionBox.
 * Features multi-select marquee drag, Ctrl+Z transform undo history, and gizmo mode switching (Translate/Rotate/Scale).
 * Features a Prefab Spawner to drop modular assets (furniture, lights, clocks) into any scenario.
 * Integrates a Live Telemetry Dashboard displaying FPS, memory allocations, and triangle counts.
-* Layout JSON (oom_layout.json) is live-saved directly via a custom Vite server plugin intercepting API POST calls, bypassing HMR for live updates.
+* Layout JSON (
+oom_layout.json) is live-saved directly via a custom Vite server plugin intercepting API POST calls, bypassing HMR for live updates.

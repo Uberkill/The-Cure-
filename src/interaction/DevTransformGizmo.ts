@@ -263,6 +263,18 @@ export class DevTransformGizmo {
     return this.selectedObjects;
   }
 
+  public setSnapping(enabled: boolean): void {
+    if (enabled) {
+      this.transformControls.setTranslationSnap(0.1);
+      this.transformControls.setRotationSnap(THREE.MathUtils.degToRad(15));
+      this.transformControls.setScaleSnap(0.1);
+    } else {
+      this.transformControls.setTranslationSnap(null as any);
+      this.transformControls.setRotationSnap(null as any);
+      this.transformControls.setScaleSnap(null as any);
+    }
+  }
+
   public syncTransform(): void {
     if (this.selectedObjects.length > 0) {
       this.selectedObjects[0].updateMatrixWorld(true);

@@ -54,7 +54,7 @@ export class Dev3DEditorPanel {
 
     panel.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
-        <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • 3D Editor</span>
+        <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • Developer Mode</span>
         <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer;">✕</button>
       </div>
       <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
@@ -95,7 +95,12 @@ export class Dev3DEditorPanel {
           <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Position Z</span> <input type="number" id="dev-pos-z" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
         </div>
         <div style="margin-bottom: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
-          <label style="display: block; margin-bottom: 6px; color: #88928b;">Rotation (Degrees)</label>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Scale X</span> <input type="number" id="dev-scl-x" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Scale Y</span> <input type="number" id="dev-scl-y" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Scale Z</span> <input type="number" id="dev-scl-z" step="0.05" style="width:60px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;"></div>
+          </div>
+          <div style="margin-bottom: 12px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px;">
+            <label style="display: block; margin-bottom: 6px; color: #88928b;">Rotation (Degrees)</label>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">X</span>
             <input type="range" id="dev-rot-x" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
@@ -250,7 +255,13 @@ export class Dev3DEditorPanel {
         
         if (!isNaN(px) && !isNaN(py) && !isNaN(pz)) {
           objs[0].position.set(px, py, pz);
-        }
+            const sx = parseFloat((document.getElementById('dev-scl-x') as HTMLInputElement).value);
+            const sy = parseFloat((document.getElementById('dev-scl-y') as HTMLInputElement).value);
+            const sz = parseFloat((document.getElementById('dev-scl-z') as HTMLInputElement).value);
+            if (!isNaN(sx) && !isNaN(sy) && !isNaN(sz)) {
+              objs[0].scale.set(sx, sy, sz);
+            }
+          }
         
         if (rotXInput && rotYInput && rotZInput) {
           const rxRaw = parseFloat(rotXInput.value);
@@ -275,6 +286,12 @@ export class Dev3DEditorPanel {
     this.posXInput?.addEventListener('input', applyTransform);
     this.posYInput?.addEventListener('input', applyTransform);
     this.posZInput?.addEventListener('input', applyTransform);
+    const sclXInput = document.getElementById('dev-scl-x') as HTMLInputElement;
+    const sclYInput = document.getElementById('dev-scl-y') as HTMLInputElement;
+    const sclZInput = document.getElementById('dev-scl-z') as HTMLInputElement;
+    sclXInput?.addEventListener('input', applyTransform);
+    sclYInput?.addEventListener('input', applyTransform);
+    sclZInput?.addEventListener('input', applyTransform);
 
     document.getElementById('dev-btn-mode-t')?.addEventListener('click', () => this.devGizmo.setMode('translate'));
     document.getElementById('dev-btn-mode-r')?.addEventListener('click', () => this.devGizmo.setMode('rotate'));
@@ -523,8 +540,13 @@ export class Dev3DEditorPanel {
       const checked = (e.target as HTMLInputElement).checked;
       import('../core/EventBus').then(({ EventBus }) => {
         EventBus.getInstance().emit('editor:toggle_visualizers', { visible: checked });
+        });
       });
-    });
+
+      document.getElementById('dev-chk-snap')?.addEventListener('change', (e) => {
+        const checked = (e.target as HTMLInputElement).checked;
+        this.devGizmo.setSnapping(checked);
+      });
   }
 
   private bindGizmoEvents(): void {
@@ -553,6 +575,14 @@ export class Dev3DEditorPanel {
         this.posXInput.value = obj.position.x.toFixed(3);
         this.posYInput.value = obj.position.y.toFixed(3);
         this.posZInput.value = obj.position.z.toFixed(3);
+          const sclXInput = document.getElementById('dev-scl-x') as HTMLInputElement;
+          const sclYInput = document.getElementById('dev-scl-y') as HTMLInputElement;
+          const sclZInput = document.getElementById('dev-scl-z') as HTMLInputElement;
+          if (sclXInput && sclYInput && sclZInput) {
+            sclXInput.value = obj.scale.x.toFixed(3);
+            sclYInput.value = obj.scale.y.toFixed(3);
+            sclZInput.value = obj.scale.z.toFixed(3);
+          }
 
         const rotXInput = document.getElementById('dev-rot-x') as HTMLInputElement;
         const rotYInput = document.getElementById('dev-rot-y') as HTMLInputElement;
@@ -605,6 +635,14 @@ export class Dev3DEditorPanel {
         this.posXInput.value = obj.position.x.toFixed(3);
         this.posYInput.value = obj.position.y.toFixed(3);
         this.posZInput.value = obj.position.z.toFixed(3);
+          const sclXInput = document.getElementById('dev-scl-x') as HTMLInputElement;
+          const sclYInput = document.getElementById('dev-scl-y') as HTMLInputElement;
+          const sclZInput = document.getElementById('dev-scl-z') as HTMLInputElement;
+          if (sclXInput && sclYInput && sclZInput) {
+            sclXInput.value = obj.scale.x.toFixed(3);
+            sclYInput.value = obj.scale.y.toFixed(3);
+            sclZInput.value = obj.scale.z.toFixed(3);
+          }
         
         const rotXInput = document.getElementById('dev-rot-x') as HTMLInputElement;
         const rotYInput = document.getElementById('dev-rot-y') as HTMLInputElement;

@@ -164,10 +164,10 @@ npm run test:click
 
 
 
-## 6. Dev 3D Editor & Prefab System
+## 6. Developer Mode & Prefab System
 
 The Vault features a built-in 3D level editor to manipulate the environment during development:
-1. **Accessing the Editor:** Append ?editor=true to the URL or press the [DEV 3D] button in the HUD to open the editor panel.
+1. **Accessing the Editor:** Append ?editor=true to the URL or press the [DEV MODE] button in the HUD to open the editor panel.
 2. **Transform Controls:** Click any prop to attach the 3D gizmo. Use W (Move), E (Rotate), and R (Scale) to adjust objects. Press Ctrl+Z to undo mistakes.
 3. **Multi-Select:** Hold Shift and drag a marquee box to select and move multiple objects synchronously.
 4. **Prefabs:** Use the "Spawn Prefab" dropdown to insert modular furniture (Desks, Chairs) or general prefabs (Paintings, Plants). For Paintings, you can import custom textures via URL.

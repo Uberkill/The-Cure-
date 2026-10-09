@@ -242,10 +242,10 @@ npm run test:click
 
 
 
-## 6. Dev 3D Editor & Prefab System
+## 6. Developer Mode & Prefab System
 
 The Vault features a built-in 3D level editor to manipulate the environment during development:
-1. **Accessing the Editor:** Append ?editor=true to the URL or press the [DEV 3D] button in the HUD to open the editor panel.
+1. **Accessing the Editor:** Append ?editor=true to the URL or press the [DEV MODE] button in the HUD to open the editor panel.
 2. **Transform Controls:** Click any prop to attach the 3D gizmo. Use W (Move), E (Rotate), and R (Scale) to adjust objects. Press Ctrl+Z to undo mistakes.
 3. **Multi-Select:** Hold Shift and drag a marquee box to select and move multiple objects synchronously.
 4. **Prefabs:** Use the "Spawn Prefab" dropdown to insert modular furniture (Desks, Chairs) or general prefabs (Paintings, Plants). For Paintings, you can import custom textures via URL.
@@ -447,12 +447,13 @@ flowchart TD
 * Stores diagnostics in a circular memory buffer (100 entries).
 * Emits visual recovery indicators in the UI without halting gameplay.
 
-### 3.9. Dev 3D Editor & Transform Gizmo (editor/ & ui/Dev3DEditorPanel.ts)
+### 3.9. Developer Mode & Transform Gizmo (editor/ & ui/Dev3DEditorPanel.ts)
 * Provides a full in-engine level editor built on TransformControls and SelectionBox.
 * Features multi-select marquee drag, Ctrl+Z transform undo history, and gizmo mode switching (Translate/Rotate/Scale).
 * Features a Prefab Spawner to drop modular assets (furniture, lights, clocks) into any scenario.
 * Integrates a Live Telemetry Dashboard displaying FPS, memory allocations, and triangle counts.
-* Layout JSON (oom_layout.json) is live-saved directly via a custom Vite server plugin intercepting API POST calls, bypassing HMR for live updates.
+* Layout JSON (
+oom_layout.json) is live-saved directly via a custom Vite server plugin intercepting API POST calls, bypassing HMR for live updates.
 
 
 ---
