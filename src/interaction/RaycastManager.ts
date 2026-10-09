@@ -157,34 +157,46 @@ export class RaycastManager {
       crystal_01_quartz: '[COLLECT: PRISMATIC QUARTZ]',
 
       // Hydrotherapy
-      prop_manifold: '[INSPECT PRESSURE MANIFOLD]',
-      prop_valve_0: '[ROTATE BRASS VALVE A]',
-      prop_valve_1: '[ROTATE BRASS VALVE B]',
-      prop_valve_2: '[ROTATE BRASS VALVE C]',
+      prop_tub_1: '[EXAMINE: IMMERSION TUB 1 STENCIL]',
+      prop_tub_2: '[EXAMINE: IMMERSION TUB 2 STENCIL]',
+      prop_manifold: '[INSPECT PRESSURE MANIFOLD GAUGE]',
+      prop_valve_0: '[ROTATE BRASS VALVE A (INTAKE)]',
+      prop_valve_1: '[ROTATE BRASS VALVE B (RELIEF)]',
+      prop_valve_2: '[ROTATE BRASS VALVE C (DRAIN)]',
       prop_drain: '[INSPECT FLOOR DRAIN HATCH]',
       crystal_02_bronze: '[COLLECT: DRAINED BRONZE]',
 
       // Audiology
+      prop_audiology_score: '[EXAMINE: ACOUSTIC NOTATION SCORE]',
       prop_amplifier_monolith: '[INSPECT AMPLIFIER MONOLITH]',
-      prop_amp_stack: '[TUNE AMPLIFIER FREQUENCY]',
+      prop_amp_stack: '[TUNE AMPLIFIER HARMONIC FREQUENCY]',
       prop_speaker_cone: '[INSPECT 15-INCH SPEAKER CONE]',
       crystal_03_amethyst: '[COLLECT: AMETHYST CORE]',
 
       // Archive
+      prop_cabinet_0: '[SEARCH: PATIENT ARCHIVE 042]',
+      prop_cabinet_1: '[SEARCH: PATIENT ARCHIVE 067]',
+      prop_cabinet_2: '[SEARCH: PATIENT ARCHIVE 088]',
+      prop_cabinet_3: '[SEARCH: PATIENT ARCHIVE 099]',
+      prop_cabinet_4: '[SEARCH: PATIENT ARCHIVE 101]',
+      prop_cabinet_5: '[SEARCH: PATIENT ARCHIVE 102]',
+      prop_cabinet_6: '[SEARCH: PATIENT ARCHIVE 103]',
+      prop_cabinet_7: '[SEARCH: PATIENT CABINET 104]',
       prop_drawer_104: '[SEARCH: PATIENT DRAWER 104]',
       crystal_04_obsidian: '[COLLECT: PITCH-BLACK OBSIDIAN]',
 
       // Director's Office
-      prop_void_phone: '[LISTEN: UNPLUGGED TELEPHONE]',
-      prop_director_desk: '[INSPECT MAHOGANY DESK]',
-      crystal_05_celadon: '[COLLECT: GLOWING CELADON]',
+      prop_void_phone: '[LIFT: UNPLUGGED ROTARY RECEIVER]',
+      prop_director_desk: '[INSPECT MAHOGANY EXECUTIVE DESK]',
+      prop_director_drawer: '[SEARCH: SECRET DESK DRAWER]',
+      crystal_05_celadon: '[COLLECT: GLOWING CELADON CORE]',
 
       // Velvet Lounge
       prop_lounge_bar: '[INSPECT MAHOGANY BAR COUNTER]',
-      prop_whiskey_glass: '[INSPECT AMBER WHISKEY]',
+      prop_whiskey_glass: '[EXAMINE: AMBER WHISKEY & ICE]',
       prop_bar_mirror_glass: '[INSPECT GILDED MIRROR REFLECTION]',
-      prop_bar_mirror_silhouette: '[LOOK: SHADOW SILHOUETTE]',
-      prop_lounge_payphone: '[ANSWER: RINGING PAYPHONE]'
+      prop_bar_mirror_silhouette: '[LOOK: SHADOW SILHOUETTE IN GLASS]',
+      prop_lounge_payphone: '[ANSWER: RINGING ANALOG PAYPHONE]'
     };
 
     return labels[name] || '[CLICK TO EXAMINE]';

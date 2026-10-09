@@ -156,6 +156,16 @@ export class Room05_Archive implements RoomScenario {
     greenLight.position.set(0, 4.0, 0);
     this.group.add(greenLight);
 
+    // Re-entry state restoration
+    if (this.drawerOpen) {
+      if (this.drawer104Mesh) {
+        this.drawer104Mesh.position.z += 0.45;
+      }
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.visible = true;
+      }
+    }
+
     return this.group;
   }
 
@@ -168,6 +178,16 @@ export class Room05_Archive implements RoomScenario {
     this.drawer104Mesh = null;
   }
 
+  private readonly cabinetLore: Record<string, string> = {
+    prop_cabinet_0: 'Cabinet 042: "Subject 042: Cerebral alignment incomplete. Immersion discontinued."',
+    prop_cabinet_1: 'Cabinet 067: "Subject 067: Vocal cords excised. Subject non-compliant."',
+    prop_cabinet_2: 'Cabinet 088: "Subject 088: Transferred to Audiology Vault for acoustic desensitization."',
+    prop_cabinet_3: 'Cabinet 099: "Subject 099: Records missing. Master index points to Subject 104 in Cabinet 7."',
+    prop_cabinet_4: 'Cabinet 101: "Subject 101: Memory wiped. Sleep cycle stabilized in Ward 02."',
+    prop_cabinet_5: 'Cabinet 102: "Subject 102: Relocated to Hydrotherapy sub-waterline facility."',
+    prop_cabinet_6: 'Cabinet 103: "Subject 103: Dossier archived. Cipher key retrieved."'
+  };
+
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
     const audio = AudioEngine.getInstance();
@@ -177,7 +197,15 @@ export class Room05_Archive implements RoomScenario {
       return true;
     }
 
-    if (objectId.startsWith('prop_cabinet_') || objectId === 'prop_drawer_104') {
+    if (objectId in this.cabinetLore) {
+      audio.playTumblerClick();
+      bus.emit('ui:subtitle_changed', {
+        text: this.cabinetLore[objectId]
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_cabinet_7' || objectId === 'prop_drawer_104') {
       audio.playTumblerClick();
 
       if (!this.drawerOpen) {

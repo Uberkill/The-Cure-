@@ -194,6 +194,17 @@ export class Room02_SleepWard implements RoomScenario {
     light2.position.set(0, 3.8, 3);
     this.group.add(light2);
 
+    // Re-entry state restoration
+    if (this.trolleyUnlocked) {
+      this.digits = [1, 0, 4];
+      this.digitMeshes.forEach((mesh, idx) => {
+        mesh.rotation.z = this.digits[idx] * ((Math.PI * 2) / 10);
+      });
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.visible = true;
+      }
+    }
+
     return this.group;
   }
 
@@ -234,9 +245,26 @@ export class Room02_SleepWard implements RoomScenario {
       return true;
     }
 
-    if (objectId.startsWith('prop_dial_') || objectId === 'prop_trolley_lock') {
+    if (objectId === 'prop_trolley_lock') {
       audio.playTumblerClick();
-      const dialIdx = objectId.startsWith('prop_dial_') ? parseInt(objectId.split('_')[2], 10) : 0;
+      bus.emit('ui:subtitle_changed', {
+        text: `Dispensary Cart Lock: [ ${this.digits[0]} - ${this.digits[1]} - ${this.digits[2]} ]. Click individual dials 1, 2, and 3 to cycle digits.`
+      });
+      return true;
+    }
+
+    if (objectId.startsWith('prop_dial_')) {
+      if (this.trolleyUnlocked) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'Dispensary Cart is unlocked [ 1 - 0 - 4 ]. The tray is extended.'
+        });
+        return true;
+      }
+
+      audio.playTumblerClick();
+      const dialIdx = parseInt(objectId.split('_')[2], 10);
+      if (isNaN(dialIdx) || dialIdx < 0 || dialIdx > 2) return true;
+
       this.digits[dialIdx] = (this.digits[dialIdx] + 1) % 10;
 
       // Animate dial rotation

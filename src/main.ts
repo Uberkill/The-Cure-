@@ -135,12 +135,8 @@ class VaultApp {
           this.cameraDirector.resetForScenario(defaultPreset);
         }
 
-        // Exclusive target lock for Velvet Lounge payphone
-        if (targetRoomId === 'velvet_lounge') {
-          this.raycastManager.setExclusiveTarget('prop_lounge_payphone');
-        } else {
-          this.raycastManager.setExclusiveTarget(null);
-        }
+        // Clear any exclusive interaction locks
+        this.raycastManager.setExclusiveTarget(null);
 
         // Display chapter title card (4 seconds duration)
         this.eventBus.emit('ui:chapter_display', {

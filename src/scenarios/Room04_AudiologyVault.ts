@@ -104,6 +104,7 @@ export class Room04_AudiologyVault implements RoomScenario {
     paintingFrame.position.set(0, 2.4, -5.85);
     const paintingCanvas = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.6, 0.06), new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.9 }));
     paintingCanvas.position.set(0, 2.4, -5.83);
+    paintingCanvas.name = 'prop_audiology_score';
     this.group.add(paintingFrame);
     this.group.add(paintingCanvas);
 
@@ -163,6 +164,14 @@ export class Room04_AudiologyVault implements RoomScenario {
     ampLight.position.set(-2.0, 2.5, -1.0);
     this.group.add(ampLight);
 
+    // Re-entry state restoration
+    if (this.ampTuned) {
+      this.currentToneFreq = 741;
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.visible = true;
+      }
+    }
+
     return this.group;
   }
 
@@ -174,6 +183,9 @@ export class Room04_AudiologyVault implements RoomScenario {
     this.crystalMesh = null;
   }
 
+  private readonly solfeggioFrequencies = [528, 590, 652, 714, 741, 852];
+  private freqIndex: number = 0;
+
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
     const audio = AudioEngine.getInstance();
@@ -183,21 +195,38 @@ export class Room04_AudiologyVault implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'prop_audiology_score') {
+      audio.playToneAlignmentSweep(440);
+      bus.emit('ui:subtitle_changed', {
+        text: 'Graphic Acoustic Score: "Acoustic Decoupling Protocol: 741 Hz Solfeggio Frequency dissolves psychic dampening."'
+      });
+      return true;
+    }
+
     if (objectId === 'prop_amplifier_monolith' || objectId === 'prop_amp_stack' || objectId === 'prop_speaker_cone') {
-      this.currentToneFreq = (this.currentToneFreq + 47) % 300 + 550;
+      if (this.ampTuned) {
+        audio.playToneAlignmentSweep(741);
+        bus.emit('ui:subtitle_changed', {
+          text: 'The amplifier vibrates in steady 741 Hz Solfeggio resonance. The speaker diaphragm is fully decoupled.'
+        });
+        return true;
+      }
+
+      this.freqIndex = (this.freqIndex + 1) % this.solfeggioFrequencies.length;
+      this.currentToneFreq = this.solfeggioFrequencies[this.freqIndex];
       audio.playToneAlignmentSweep(this.currentToneFreq);
 
       bus.emit('ui:subtitle_changed', {
-        text: `Amplifier Harmonic Sweep: ${this.currentToneFreq} Hz. Matching 741 Hz will trigger speaker diaphragm resonance.`
+        text: `Amplifier Harmonic Sweep: ${this.currentToneFreq} Hz. Calibrate to 741 Hz Solfeggio to vibrate diaphragm.`
       });
 
-      // Target resonance frequency: 741 Hz (within 15 Hz)
-      if (Math.abs(this.currentToneFreq - 741) < 25 && !this.ampTuned) {
+      // Target resonance frequency: 741 Hz
+      if (this.currentToneFreq === 741 && !this.ampTuned) {
         this.ampTuned = true;
         audio.playTumblerClick();
         if (this.crystalMesh) this.crystalMesh.visible = true;
         bus.emit('ui:subtitle_changed', {
-          text: 'Resonance achieved at 741 Hz. The speaker cone vibrates violently and dislodges an Amethyst crystal.'
+          text: 'Resonance achieved at 741 Hz! The speaker cone vibrates violently and dislodges an Amethyst crystal.'
         });
       }
       return true;

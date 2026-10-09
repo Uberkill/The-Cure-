@@ -201,6 +201,20 @@ export class Room03_Hydrotherapy implements RoomScenario {
     coldSpot.castShadow = true;
     this.group.add(coldSpot);
 
+    // Re-entry state restoration
+    if (this.manifoldBalanced) {
+      if (this.drainLidMesh) {
+        this.drainLidMesh.position.x += 0.25;
+      }
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.visible = true;
+      }
+      this.valveRotations = [2, 1, 3];
+      this.valveMeshes.forEach((mesh, idx) => {
+        mesh.rotation.z = this.valveRotations[idx] * (Math.PI / 2);
+      });
+    }
+
     return this.group;
   }
 
@@ -214,6 +228,13 @@ export class Room03_Hydrotherapy implements RoomScenario {
     this.drainLidMesh = null;
   }
 
+  private calculatePressure(): number {
+    const diff0 = (this.valveRotations[0] - 2 + 4) % 4;
+    const diff1 = (this.valveRotations[1] - 1 + 4) % 4;
+    const diff2 = (this.valveRotations[2] - 3 + 4) % 4;
+    return diff0 * 25 + diff1 * 35 + diff2 * 15;
+  }
+
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
     const audio = AudioEngine.getInstance();
@@ -223,26 +244,52 @@ export class Room03_Hydrotherapy implements RoomScenario {
       return true;
     }
 
-    if (objectId.startsWith('prop_tub_')) {
+    if (objectId === 'prop_tub_1') {
       audio.playWaterDrip();
       bus.emit('ui:subtitle_changed', {
-        text: 'The porcelain tubs are bone dry. A faint, coppery smell hangs in the vapor, though no water flows.'
+        text: 'Tub 1 Stencil: "Intake Valve A calibration: Half-turn (Pos 2). Relief Valve B: Quarter-turn (Pos 1)."'
       });
       return true;
     }
 
-    if (objectId.startsWith('prop_valve_') || objectId === 'prop_manifold') {
-      const valveIdx = objectId.startsWith('prop_valve_') ? parseInt(objectId.split('_')[2], 10) : 0;
+    if (objectId === 'prop_tub_2' || objectId.startsWith('prop_tub_')) {
+      audio.playWaterDrip();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Tub 2 Stencil: "Drain Valve C calibration: Three-quarter turn (Pos 3). Target: 0.0 PSI for drain release."'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_manifold') {
+      audio.playTumblerClick();
+      const currentPressure = this.calculatePressure();
+      bus.emit('ui:subtitle_changed', {
+        text: `Manifold Pressure Gauge: ${currentPressure} PSI. Calibrate Valves A, B, and C to depressurize to 0 PSI.`
+      });
+      return true;
+    }
+
+    if (objectId.startsWith('prop_valve_')) {
+      if (this.manifoldBalanced) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The manifold is locked at 0.0 PSI. The floor drain hatch is already open.'
+        });
+        return true;
+      }
+
+      const valveIdx = parseInt(objectId.split('_')[2], 10);
+      if (isNaN(valveIdx) || valveIdx < 0 || valveIdx > 2) return true;
+
       this.valveRotations[valveIdx] = (this.valveRotations[valveIdx] + 1) % 4;
       if (this.valveMeshes[valveIdx]) {
         this.valveMeshes[valveIdx].rotation.z += Math.PI / 2;
       }
       audio.playTumblerClick();
 
-      // Check balance: valves at [2, 1, 3] balances pressure to 0 PSI
-      const pressure = Math.abs((this.valveRotations[0] * 30 + this.valveRotations[1] * 15 + this.valveRotations[2] * 45) % 100);
+      const pressure = this.calculatePressure();
+      const valveNames = ['A (Intake)', 'B (Relief)', 'C (Drain)'];
       bus.emit('ui:subtitle_changed', {
-        text: `Manifold Pressure: ${pressure} PSI. Rotate valves A, B, and C until system depressurizes to 0 PSI.`
+        text: `Valve ${valveNames[valveIdx]} rotated. Manifold Pressure: ${pressure} PSI.`
       });
 
       if (pressure === 0 && !this.manifoldBalanced) {
@@ -255,7 +302,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
           this.crystalMesh.visible = true;
         }
         bus.emit('ui:subtitle_changed', {
-          text: 'Pressure drops to 0.0 PSI. The floor drain hatch pops open, exposing an Oxidized Bronze crystal.'
+          text: 'Pressure reaches 0.0 PSI. The floor drain hatch pops open, exposing an Oxidized Bronze crystal.'
         });
       }
       return true;

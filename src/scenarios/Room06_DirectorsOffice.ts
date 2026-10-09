@@ -48,7 +48,9 @@ export class Room06_DirectorsOffice implements RoomScenario {
 
   private group: THREE.Group | null = null;
   private crystalMesh: THREE.Mesh | null = null;
+  private secretDrawerMesh: THREE.Mesh | null = null;
   private crystalCollected: boolean = false;
+  private drawerUnlocked: boolean = false;
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
@@ -106,6 +108,13 @@ export class Room06_DirectorsOffice implements RoomScenario {
 
     deskGroup.add(phoneGroup);
 
+    // Secret Mahogany Drawer
+    const drawerMat = new THREE.MeshStandardMaterial({ color: 0x140c08, roughness: 0.4 });
+    this.secretDrawerMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.12, 0.6), drawerMat);
+    this.secretDrawerMesh.position.set(0.6, 0.88, 0.1);
+    this.secretDrawerMesh.name = 'prop_director_drawer';
+    deskGroup.add(this.secretDrawerMesh);
+
     // Memory Crystal 05 (The Glowing Celadon Core)
     const crystalGeo = new THREE.DodecahedronGeometry(0.14, 0);
     const crystalMat = new THREE.MeshPhysicalMaterial({
@@ -117,11 +126,13 @@ export class Room06_DirectorsOffice implements RoomScenario {
       emissiveIntensity: 0.6
     });
     this.crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
-    this.crystalMesh.position.set(0.6, 1.14, 0.1);
+    this.crystalMesh.position.set(0.6, 1.02, 0.1);
     this.crystalMesh.name = 'crystal_05_celadon';
     this.crystalMesh.castShadow = true;
+    this.crystalMesh.visible = false;
     deskGroup.add(this.crystalMesh);
 
+    deskGroup.add(phoneGroup);
     this.group.add(deskGroup);
 
     // Single Harsh Surgical Downward Spotlight
@@ -130,6 +141,17 @@ export class Room06_DirectorsOffice implements RoomScenario {
     spot.target = deskTop;
     spot.castShadow = true;
     this.group.add(spot);
+
+    // Re-entry state restoration
+    if (this.drawerUnlocked) {
+      if (this.secretDrawerMesh) {
+        this.secretDrawerMesh.position.z += 0.45;
+      }
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.position.z += 0.45;
+        this.crystalMesh.visible = true;
+      }
+    }
 
     return this.group;
   }
@@ -140,6 +162,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
       this.group = null;
     }
     this.crystalMesh = null;
+    this.secretDrawerMesh = null;
   }
 
   public onObjectClick(objectId: string): boolean {
@@ -151,11 +174,40 @@ export class Room06_DirectorsOffice implements RoomScenario {
       return true;
     }
 
-    if (objectId === 'prop_void_phone' || objectId === 'prop_director_desk') {
+    if (objectId === 'prop_director_desk' || objectId === 'prop_director_drawer') {
+      audio.playTumblerClick();
+      if (!this.drawerUnlocked) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The heavy mahogany executive desk is locked with a magnetic relay. An unplugged rotary telephone rests on the surface.'
+        });
+      } else {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The executive desk drawer is unsealed. The black void stretches endlessly into the distance.'
+        });
+      }
+      return true;
+    }
+
+    if (objectId === 'prop_void_phone') {
       audio.playHandsetClick();
-      bus.emit('ui:subtitle_changed', {
-        text: 'You lift the heavy receiver. There is no dial tone. Only close, faint wet breathing directly against the microphone.'
-      });
+      if (!this.drawerUnlocked) {
+        this.drawerUnlocked = true;
+        audio.playPneumaticHiss();
+        if (this.secretDrawerMesh) {
+          this.secretDrawerMesh.position.z += 0.45;
+        }
+        if (this.crystalMesh) {
+          this.crystalMesh.position.z += 0.45;
+          this.crystalMesh.visible = true;
+        }
+        bus.emit('ui:subtitle_changed', {
+          text: 'You lift the heavy receiver. Faint, wet breathing echoes. A magnetic relay clicks open a secret mahogany drawer, revealing the Celadon Core!'
+        });
+      } else {
+        bus.emit('ui:subtitle_changed', {
+          text: 'You lift the receiver. Only shallow, rhythmic breathing against the microphone. The secret drawer remains extended.'
+        });
+      }
       return true;
     }
 
@@ -169,7 +221,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
           label: 'Glowing Celadon Core'
         });
         bus.emit('ui:subtitle_changed', {
-          text: 'Memory Crystal 05 (Glowing Celadon Core) secured. All 5 fragments recovered. Return to the Central Hub for synthesis.'
+          text: 'Memory Crystal 05 (Glowing Celadon Core) secured. All 5 fragments recovered! Return to the Central Hub for synthesis.'
         });
       }
       return true;

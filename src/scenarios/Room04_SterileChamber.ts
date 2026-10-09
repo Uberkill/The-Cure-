@@ -123,6 +123,7 @@ export class Room04_SterileChamber implements RoomScenario {
       exitDoor.position.z = exitDoor.userData.animEnd !== undefined ? exitDoor.userData.animEnd : -4.35;
     }
     if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
+      this.corridorDoorOpen = true;
       (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
       const door = this.entities.corridorDoor;
       door.rotation.y = door.userData.animEnd !== undefined ? door.userData.animEnd : -Math.PI / 2.2;
@@ -269,11 +270,11 @@ export class Room04_SterileChamber implements RoomScenario {
   }
 
   private getNextSpokeRoomId(): string {
-    const stage = GameState.getInstance().getStage();
-    if (stage <= GameStage.ACT_2_CRYSTAL_1_RECOVERED) return 'sleep_ward';
-    if (stage <= GameStage.ACT_3_CRYSTAL_2_RECOVERED) return 'hydrotherapy';
-    if (stage <= GameStage.ACT_4_CRYSTAL_3_RECOVERED) return 'audiology';
-    if (stage <= GameStage.ACT_5_CRYSTAL_4_RECOVERED) return 'archive';
+    const gameState = GameState.getInstance();
+    if (!gameState.isCrystalPatched('crystal_01_quartz')) return 'sleep_ward';
+    if (!gameState.isCrystalPatched('crystal_02_bronze')) return 'hydrotherapy';
+    if (!gameState.isCrystalPatched('crystal_03_amethyst')) return 'audiology';
+    if (!gameState.isCrystalPatched('crystal_04_obsidian')) return 'archive';
     return 'directors_office';
   }
 
@@ -391,7 +392,15 @@ export class Room04_SterileChamber implements RoomScenario {
         if (!GameState.getInstance().hasItem('prop_key')) {
           bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
           bus.emit('ui:subtitle_changed', { text: 'The pressure seal is released, but the mechanical cipher lock requires a heavy brass key.' });
-          // Optional: play locked sound
+          return true;
+        }
+
+        const pending = GameState.getInstance().getPendingCrystal();
+        if (pending) {
+          bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+          bus.emit('ui:subtitle_changed', {
+            text: 'A memory crystal is recovered. Slot it into the CRT oscilloscope at the central desk before proceeding deeper into the facility.'
+          });
           return true;
         }
         
