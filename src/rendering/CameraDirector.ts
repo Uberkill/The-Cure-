@@ -110,14 +110,20 @@ export class CameraDirector {
   public moveToPreset(preset: CameraPreset, durationMs: number = 1000): void {
     if (this.isTransitioning) return;
     
-    this.isTransitioning = true;
-    this.controls.enabled = false;
-    this.eventBus.emit('camera:transition_start', {});
-
     const startPos = this.camera.position.clone();
     const endPos = preset.position.clone();
     const startTarget = this.controls.target.clone();
     const endTarget = preset.target.clone();
+
+    // Skip transition if already at the preset
+    if (startPos.distanceTo(endPos) < 0.05 && startTarget.distanceTo(endTarget) < 0.05) {
+      this.isTransitioning = false;
+      return;
+    }
+
+    this.isTransitioning = true;
+    this.controls.enabled = false;
+    this.eventBus.emit('camera:transition_start', {});
 
 
 

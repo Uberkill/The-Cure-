@@ -165,8 +165,31 @@ export class UIManager {
     });
 
     window.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !this.modalSettingsEl.classList.contains('hidden')) {
-        closeSettings();
+      if (e.key === 'Escape') {
+        let handled = false;
+        if (!this.modalSettingsEl.classList.contains('hidden')) {
+          closeSettings();
+          handled = true;
+        }
+        
+        const dossierEl = document.getElementById('modal-dossier');
+        if (dossierEl && !dossierEl.classList.contains('hidden')) {
+          dossierEl.classList.add('hidden');
+          this.eventBus.emit('ui:modal_closed', {});
+          handled = true;
+        }
+
+        const inspectEl = document.getElementById('modal-inspect');
+        if (inspectEl && !inspectEl.classList.contains('hidden')) {
+          inspectEl.classList.add('hidden');
+          this.eventBus.emit('inspect:close', {});
+          handled = true;
+        }
+
+        if (!handled) {
+          // If no modal was open, back out of cinematic views
+          this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview' });
+        }
       }
     });
 
