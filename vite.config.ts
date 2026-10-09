@@ -7,12 +7,12 @@ const DevEditorPlugin = () => ({
   configureServer(server) {
     server.middlewares.use('/api/upload-asset', (req, res) => {
       if (req.method === 'POST') {
-        const url = new URL(req.url, http://);
+        const url = new URL(req.url, `http://${req.headers.host}`);
         const filename = url.searchParams.get('filename') || 'upload.bin';
         const type = url.searchParams.get('type') || 'textures';
         
         const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-        const targetDir = path.resolve(__dirname, public/assets/);
+        const targetDir = path.resolve(__dirname, `public/assets/${type}`);
         if (!fs.existsSync(targetDir)) {
           fs.mkdirSync(targetDir, { recursive: true });
         }
@@ -24,7 +24,7 @@ const DevEditorPlugin = () => ({
         
         writeStream.on('finish', () => {
           res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ success: true, path: /assets// }));
+          res.end(JSON.stringify({ success: true, path: `/assets/${type}/${safeName}` }));
         });
         
         writeStream.on('error', (err) => {
