@@ -192,3 +192,48 @@ Create `src/ui/screens/DiegeticScreenBase.ts` providing standard:
 2. **Unmatched First Impression**: Act I hooks the player in under 4 minutes with a ringing telephone, a hypnotic voice, a heavy brass shunt, a live Tektronix Lissajous wave, and a concussive blastdoor release.
 3. **Visceral Emotional Variety**: Act II shifts into somatic dread with catatonic patients and glowing UV blacklight; Act III introduces tactile industrial hydraulics and fluid equilibrium.
 4. **Bulletproof Technical Integrity**: Discrete integer mechanics, fail-safe reset levers, procedural Web Audio generation, and strict TypeScript state serialization guarantee 100% test determinism.
+
+
+---
+
+## 3. The 8-Act Hub-and-Spoke Narrative Structure (Synthesized)
+*Note: The old 'escape room' mechanical structure (recovering crystals to fix a door) has been fully absorbed and recontextualized into The Cure framework. The player is not fixing a door to escape; they are passing diagnostic calibrations to prove they are ready to carry The Cure.*
+
+```
+[THE HUB: THE SURFACE] (Room 04: Sterile Reception & CRT Terminal)
+         │
+         ├───> [ACT II: THE SLEEP WARD] (First Descent ──> Crystal 1: Quartz)
+         │           │
+         │           └───> Return to Hub: Patch CRT Node 1 (Audio Log 1)
+         │
+         ├───> [ACT III: THE HYDROTHERAPY ROOM] (Second Descent ──> Crystal 2: Drained Brass)
+         │           │
+         │           └───> Return to Hub: Patch CRT Node 2 (Audio Log 2)
+         │
+         ├───> [ACT IV: THE AUDIOLOGY VAULT] (Reality Fracture ──> Crystal 3: Amplifier Cone)
+         │           │
+         │           └───> Return to Hub: Patch CRT Node 3 (Audio Log 3)
+         │
+         ├───> [ACT V: THE ARCHIVE] (Deep Sickness ──> Crystal 4: Pitch-Black Jagged)
+         │           │
+         │           └───> Return to Hub: The Hub Decays (Audio Log 4)
+         │
+         └───> [ACT VI: THE DIRECTOR'S OFFICE] (The Core ──> Crystal 5: Glowing Heart)
+                     │
+                     └───> [ACT VII: THE SYNTHESIS] (All 5 Crystals Patched ──> Hub Blackout)
+                                 │
+                                 └───> [ACT VIII: THE ESCAPE / DEPLOYMENT] (The 1950s Subway)
+```
+
+### The Five Memory Crystals as Living Psychic Organs
+The recovered crystals are not inanimate gemstones; they are crystallized neurological memory fragments from the subjects who failed the calibration:
+
+| Specimen | Artifact Name | Source Subject | Neurological Trauma | Reward Audio Log |
+|---|---|---|---|---|
+| **Crystal 01** | Prismatic Quartz | Subject 101 | Motor tremors, limbic weeping, terror | Tape 01: The Discovery of Limbic Decoupling (1973) |
+| **Crystal 02** | Oxidized Bronze | Subject 102 | Severed vocal cords, silent screaming | Tape 02: Flesh as the Infection |
+| **Crystal 03** | Fractured Amethyst | Subject 103 | Auditory hallucinations, phase psychosis | Tape 03: The Synthesis of Silence |
+| **Crystal 04** | Pitch-Black Obsidian | The Archive (001–100) | The Collective Residue ("We are Legion") | Tape 04: The Carrier is Ready |
+| **Crystal 05** | Glowing Celadon Core | The Director | The Eradication of Conscience | Tape 05: The Final Inoculation |
+
+With every crystal recovered and slotted into the central CRT console, the pristine alabaster walls of the Hub bruise and discolor. The visual corruption is the side-effect of Subject 104 successfully digesting the trauma of others and erasing it from their own mind.

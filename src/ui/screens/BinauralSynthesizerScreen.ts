@@ -2,13 +2,9 @@ import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act04AudiologyState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
 import { CrystalId } from '../../types';
-
-interface ChladniParticle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-}
+import { BINAURAL_HTML_TEMPLATE } from './binaural/BinauralTemplate';
+import { BinauralAudio } from './binaural/BinauralAudio';
+import { ChladniRenderer } from './binaural/ChladniRenderer';
 
 export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04AudiologyState> {
   public readonly id: string = 'screen-binaural-synthesizer';
@@ -22,16 +18,11 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
   };
 
   private audioEngine: AudioEngine;
-  private canvas: HTMLCanvasElement | null = null;
-  private ctx: CanvasRenderingContext2D | null = null;
-  private animFrameId: number | null = null;
-  private particles: ChladniParticle[] = [];
-
-  private audioCtx: AudioContext | null = null;
-  private oscNode: OscillatorNode | null = null;
-  private gainNode: GainNode | null = null;
+  private binauralAudio: BinauralAudio;
+  private renderer: ChladniRenderer | null = null;
   private solveTimeoutId: number | null = null;
 
+  // DOM Elements
   private sliderHornLeftEl: HTMLInputElement | null = null;
   private sliderHornRightEl: HTMLInputElement | null = null;
   private sliderFreqEl: HTMLInputElement | null = null;
@@ -44,22 +35,7 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
   public constructor() {
     super();
     this.audioEngine = AudioEngine.getInstance();
-    this.initParticles();
-  }
-
-  private initParticles(): void {
-    this.particles = [];
-    const count = 180;
-    for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = Math.sqrt(Math.random()) * 0.9;
-      this.particles.push({
-        x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
-        vx: 0,
-        vy: 0
-      });
-    }
+    this.binauralAudio = new BinauralAudio();
   }
 
   protected createModalElement(): HTMLElement {
@@ -67,67 +43,21 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     el.id = this.id;
     el.className = 'overlay-screen diegetic-screen-overlay hidden';
     el.setAttribute('data-testid', 'screen-binaural-synthesizer');
-    el.innerHTML = `
-      <div class="diegetic-housing binaural-housing">
-        <div class="diegetic-header">
-          <span class="diegetic-model">BINAURAL PHASE SYNTHESIZER // VAULT 04 • ACOUSTIC ATTENUATION</span>
-          <button class="diegetic-btn-close" id="btn-close-binaural" aria-label="Step back">DISENGAGE</button>
-        </div>
-        <div class="diegetic-body">
-          <div class="binaural-main-panel">
-            <div class="chladni-viewport-container">
-              <span class="viewport-title">CHLADNI SAND NODAL RESONANCE PLATE</span>
-              <canvas id="chladni-canvas" data-testid="chladni-canvas" width="360" height="360"></canvas>
-              <div class="chladni-glare-overlay"></div>
-            </div>
-
-            <div class="acoustic-controls-rack">
-              <div class="horns-cluster">
-                <div class="control-lane">
-                  <label for="slider-horn-left">LEFT AZIMUTH HORN [DEG]</label>
-                  <input type="range" min="0" max="180" value="0" id="slider-horn-left" data-testid="slider-horn-left">
-                  <span class="readout-pill" id="label-horn-left" data-testid="label-horn-left">0&deg;</span>
-                </div>
-                <div class="control-lane">
-                  <label for="slider-horn-right">RIGHT AZIMUTH HORN [DEG]</label>
-                  <input type="range" min="0" max="180" value="180" id="slider-horn-right" data-testid="slider-horn-right">
-                  <span class="readout-pill" id="label-horn-right" data-testid="label-horn-right">180&deg;</span>
-                </div>
-              </div>
-
-              <div class="phase-freq-cluster">
-                <div class="control-lane">
-                  <label>WAVE INTERACTION PHASE</label>
-                  <button class="btn-phase-toggle" id="btn-toggle-phase" data-testid="btn-toggle-phase">
-                    PHASE: 0&deg; [IN-PHASE]
-                  </button>
-                </div>
-                <div class="control-lane">
-                  <label for="slider-carrier-freq">SOLFEGGIO CARRIER FREQUENCY [HZ]</label>
-                  <input type="range" min="300" max="900" value="600" id="slider-carrier-freq" data-testid="slider-carrier-freq">
-                  <span class="readout-pill" id="label-carrier-freq" data-testid="label-carrier-freq">600 HZ</span>
-                </div>
-              </div>
-
-              <div class="unseal-action-lane">
-                <button class="btn-unseal-monolith" id="btn-unseal-monolith" data-testid="btn-unseal-monolith" disabled>
-                  ACOUSTIC DISSONANCE ACTIVE &bull; DESTRUCTIVE NULL REQUIRED
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    el.innerHTML = BINAURAL_HTML_TEMPLATE;
 
     const btnClose = el.querySelector('#btn-close-binaural');
     btnClose?.addEventListener('click', () => this.close());
 
-    this.canvas = el.querySelector('#chladni-canvas');
-    if (this.canvas) {
-      this.ctx = this.canvas.getContext('2d');
+    const canvas = el.querySelector('#chladni-canvas') as HTMLCanvasElement;
+    if (canvas) {
+      this.renderer = new ChladniRenderer(canvas);
     }
 
+    this.bindDomElements(el);
+    return el;
+  }
+
+  private bindDomElements(el: HTMLElement): void {
     this.sliderHornLeftEl = el.querySelector('#slider-horn-left');
     this.sliderHornRightEl = el.querySelector('#slider-horn-right');
     this.sliderFreqEl = el.querySelector('#slider-carrier-freq');
@@ -164,8 +94,6 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
       if (!this.state.acousticNullAchieved) return;
       this.handleSolveTrigger();
     });
-
-    return el;
   }
 
   private checkNullCondition(): boolean {
@@ -177,18 +105,9 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
   }
 
   private updateResonance(): void {
-    this.ensureAudio();
+    this.binauralAudio.ensureAudio(this.state.carrierFreqHz);
     const isNull = this.checkNullCondition();
-
-    // Audio frequency and gain updates
-    if (this.oscNode && this.audioCtx && this.gainNode) {
-      this.oscNode.frequency.setTargetAtTime(this.state.carrierFreqHz, this.audioCtx.currentTime, 0.05);
-
-      // Gain drops to 0 when in true acoustic null
-      const targetGain = isNull ? 0.0 : 0.04;
-      this.gainNode.gain.setTargetAtTime(targetGain, this.audioCtx.currentTime, 0.08);
-    }
-
+    this.binauralAudio.updateResonance(this.state.carrierFreqHz, isNull);
     this.syncDom();
 
     if (isNull && !this.state.acousticNullAchieved) {
@@ -218,139 +137,15 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     }, 1200);
   }
 
-  private ensureAudio(): void {
-    try {
-      if (!this.audioCtx) {
-        const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-        if (!AudioCtxClass) return;
-        this.audioCtx = new AudioCtxClass();
-      }
-
-      if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume().catch(() => {});
-      }
-
-      if (!this.oscNode && this.audioCtx) {
-        this.oscNode = this.audioCtx.createOscillator();
-        this.gainNode = this.audioCtx.createGain();
-        this.oscNode.type = 'triangle';
-        this.oscNode.frequency.setValueAtTime(this.state.carrierFreqHz, this.audioCtx.currentTime);
-        this.gainNode.gain.setValueAtTime(0.04, this.audioCtx.currentTime);
-        this.oscNode.connect(this.gainNode);
-        this.gainNode.connect(this.audioCtx.destination);
-        this.oscNode.start();
-      }
-    } catch {
-      // AudioContext unavailable in headless environments
-    }
-  }
-
-  private teardownAudio(): void {
-    try {
-      if (this.oscNode) {
-        this.oscNode.stop();
-        this.oscNode.disconnect();
-        this.oscNode = null;
-      }
-      if (this.gainNode) {
-        this.gainNode.disconnect();
-        this.gainNode = null;
-      }
-      if (this.audioCtx && this.audioCtx.state !== 'closed') {
-        this.audioCtx.close().catch(() => {});
-        this.audioCtx = null;
-      }
-    } catch {
-      // Safe no-op
-    }
-  }
-
-  private startRenderLoop(): void {
-    if (this.animFrameId) return;
-
-    const render = () => {
-      this.drawChladniPlate();
-      this.animFrameId = requestAnimationFrame(render);
-    };
-    render();
-  }
-
-  private stopRenderLoop(): void {
-    if (this.animFrameId !== null) {
-      cancelAnimationFrame(this.animFrameId);
-      this.animFrameId = null;
-    }
-  }
-
-  private drawChladniPlate(): void {
-    if (!this.ctx || !this.canvas) return;
-    const ctx = this.ctx;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-    const cx = w / 2;
-    const cy = h / 2;
-    const r = w * 0.45;
-
-    // Dark background fade
-    ctx.fillStyle = 'rgba(12, 16, 14, 0.3)';
-    ctx.fillRect(0, 0, w, h);
-
-    // Circular plate border
-    ctx.strokeStyle = '#2d3830';
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI * 2);
-    ctx.stroke();
-
-    const isNull = this.checkNullCondition();
-    const freqFactor = (this.state.carrierFreqHz - 300) / 600;
-    const m = 3 + Math.floor(freqFactor * 4);
-    const n = 2 + Math.floor(freqFactor * 3);
-
-    // Update and draw sand particles
-    ctx.fillStyle = isNull ? '#a78bfa' : '#4ade80';
-
-    for (const p of this.particles) {
-      if (!isNull) {
-        // High modal agitation
-        const field = Math.sin(n * Math.PI * p.x) * Math.cos(m * Math.PI * p.y) -
-                      Math.cos(m * Math.PI * p.x) * Math.sin(n * Math.PI * p.y);
-        const jitter = (Math.random() - 0.5) * 0.04;
-        p.vx += field * 0.005 + jitter * 0.1;
-        p.vy += field * 0.005 + jitter * 0.1;
-        p.vx *= 0.85;
-        p.vy *= 0.85;
-      } else {
-        // Settled into clean nodal mandala
-        const targetX = Math.round(p.x * 4) / 4;
-        const targetY = Math.round(p.y * 4) / 4;
-        p.vx = (targetX - p.x) * 0.08;
-        p.vy = (targetY - p.y) * 0.08;
-      }
-
-      p.x += p.vx;
-      p.y += p.vy;
-
-      // Keep within circular plate
-      const dist = Math.sqrt(p.x * p.x + p.y * p.y);
-      if (dist > 0.9) {
-        p.x = (p.x / dist) * 0.88;
-        p.y = (p.y / dist) * 0.88;
-      }
-
-      const screenX = cx + p.x * r;
-      const screenY = cy + p.y * r;
-
-      ctx.beginPath();
-      ctx.arc(screenX, screenY, isNull ? 2.0 : 1.5, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
   protected onOpened(): void {
     this.syncDom();
-    this.ensureAudio();
-    this.startRenderLoop();
+    this.binauralAudio.ensureAudio(this.state.carrierFreqHz);
+    if (this.renderer) {
+      this.renderer.start(() => ({
+        freqHz: this.state.carrierFreqHz,
+        isNull: this.checkNullCondition()
+      }));
+    }
   }
 
   protected onClosed(): void {
@@ -358,8 +153,8 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;
     }
-    this.stopRenderLoop();
-    this.teardownAudio();
+    if (this.renderer) this.renderer.stop();
+    this.binauralAudio.teardownAudio();
   }
 
   protected handleKeyDown(e: KeyboardEvent): void {
@@ -394,15 +189,9 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
       this.sliderFreqEl.disabled = isLocked;
     }
 
-    if (this.labelHornLeftEl) {
-      this.labelHornLeftEl.textContent = `${this.state.leftHornAngleDeg}°`;
-    }
-    if (this.labelHornRightEl) {
-      this.labelHornRightEl.textContent = `${this.state.rightHornAngleDeg}°`;
-    }
-    if (this.labelFreqEl) {
-      this.labelFreqEl.textContent = `${this.state.carrierFreqHz} HZ`;
-    }
+    if (this.labelHornLeftEl) this.labelHornLeftEl.textContent = `${this.state.leftHornAngleDeg}°`;
+    if (this.labelHornRightEl) this.labelHornRightEl.textContent = `${this.state.rightHornAngleDeg}°`;
+    if (this.labelFreqEl) this.labelFreqEl.textContent = `${this.state.carrierFreqHz} HZ`;
 
     if (this.btnPhaseEl) {
       this.btnPhaseEl.disabled = isLocked;

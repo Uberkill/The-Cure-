@@ -341,10 +341,16 @@ server.listen(PORT, async () => {
     const teardownHealth = await page.evaluate(() => {
       const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
       const screen = sc.binauralScreen;
+      
+      // Support both the monolithic (legacy) and decoupled architectures for testing
+      const animFrameId = screen.renderer ? screen.renderer.animFrameId : screen.animFrameId;
+      const audioCtx = screen.binauralAudio ? screen.binauralAudio.audioCtx : screen.audioCtx;
+      const oscNode = screen.binauralAudio ? screen.binauralAudio.oscNode : screen.oscNode;
+
       return {
-        animFrameId: screen.animFrameId,
-        audioCtxClosedOrNull: !screen.audioCtx || screen.audioCtx.state === 'closed',
-        oscNodeNull: screen.oscNode === null,
+        animFrameId: animFrameId,
+        audioCtxClosedOrNull: !audioCtx || audioCtx.state === 'closed',
+        oscNodeNull: oscNode === null,
         hasCrystal: window.__VAULT_APP__.gameState.hasCrystal('crystal_03_amethyst')
       };
     });

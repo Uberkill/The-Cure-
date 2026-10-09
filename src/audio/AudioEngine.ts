@@ -401,39 +401,11 @@ export class AudioEngine {
   }
 
   public speakTerminalMessage(onDone?: () => void): void {
-    const text = 'The exit is open. The cure is spreading. Thank you for your compliance.';
-
-    let resolved = false;
-    const safeDone = () => {
-      if (!resolved) {
-        resolved = true;
-        if (onDone) onDone();
-      }
-    };
-
-    // Safety timeout: in headless browsers or systems without TTS voices, speech synthesis might hang or never fire onend
-    const safetyTimer = window.setTimeout(safeDone, 3600);
-
-    if ('speechSynthesis' in window) {
-      try {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.pitch = 0.72;
-        utterance.rate = 0.82;
-        utterance.volume = 1.0;
-
-        utterance.onend = () => {
-          window.clearTimeout(safetyTimer);
-          safeDone();
-        };
-        utterance.onerror = () => {
-          window.clearTimeout(safetyTimer);
-          safeDone();
-        };
-        window.speechSynthesis.speak(utterance);
-      } catch {
-        // Fallback handled by safetyTimer
-      }
-    }
+    // Removed Web Speech API (TTS) voice per user request. 
+    // Replaced with a silent suspenseful delay before the finale blast.
+    window.setTimeout(() => {
+      if (onDone) onDone();
+    }, 3600);
   }
 
   public play528HzSonicBlast(durationSeconds: number = 4.0): void {
