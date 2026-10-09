@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor, GameStage, DecayLevel } from '../types';
 import { ProceduralRoom04, Room04Entities } from '../entities/ProceduralRoom04';
 import { EventBus } from '../core/EventBus';
@@ -161,10 +161,11 @@ export class Room04_SterileChamber implements RoomScenario {
     
     // Dynamic import to avoid circular dependencies
     const { EditorServerSync } = await import('../editor/EditorServerSync');
-    const layout = EditorServerSync.getFallbackLayout();
-    
-    this.entities!.group.traverse((child) => {
-      const meshLayout = layout[child.name] as any;
+    const layout = await EditorServerSync.fetchLayout();
+      
+      this.entities!.group.traverse((child) => {
+        let meshLayout = layout[child.name] as any;
+        if (!meshLayout && layout.overrides) meshLayout = layout.overrides[child.name];
       if (meshLayout && meshLayout.x !== undefined) {
         child.position.set(meshLayout.x, meshLayout.y, meshLayout.z);
         child.rotation.set(meshLayout.rx, meshLayout.ry, meshLayout.rz);
@@ -185,12 +186,36 @@ export class Room04_SterileChamber implements RoomScenario {
     const { EditorPrefabs } = await import('../editor/EditorPrefabs');
     if (layout.prefabs && Array.isArray(layout.prefabs)) {
       for (const p of layout.prefabs) {
-        const prefab = EditorPrefabs.spawn(p.type);
+        let prefab;
+          if (p.type === 'CustomModel') {
+            prefab = EditorPrefabs.spawnCustomModel(p.modelUrl, p.id);
+          } else {
+            prefab = EditorPrefabs.spawn(p.type);
+          }
         prefab.userData.prefabId = p.id;
         prefab.position.set(p.transform.x, p.transform.y, p.transform.z);
         prefab.rotation.set(p.transform.rx, p.transform.ry, p.transform.rz);
         prefab.scale.set(p.transform.sx, p.transform.sy, p.transform.sz);
-        if (p.transform.animation) {
+        if (p.lightColor !== undefined && prefab.userData.isLight) {
+            const l = prefab.children.find((c: any) => c.isLight) as any;
+            if (l) {
+              l.color.setHex(p.lightColor);
+              l.intensity = p.lightIntensity;
+            }
+          }
+          if (p.paintingUrl) {
+            prefab.userData.paintingUrl = p.paintingUrl;
+            const canvasMesh = prefab.children[1] as any;
+            if (canvasMesh && canvasMesh.material) {
+              const loader = new (await import('three')).TextureLoader();
+              loader.load(p.paintingUrl, (tex) => {
+                canvasMesh.material.map = tex;
+                canvasMesh.material.color.setHex(0xffffff);
+                canvasMesh.material.needsUpdate = true;
+              });
+            }
+          }
+          if (p.transform.animation) {
           prefab.userData.animType = p.transform.animation.type;
           prefab.userData.animAxis = p.transform.animation.axis;
           prefab.userData.animStart = p.transform.animation.start;

@@ -1,7 +1,42 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { createRoom04Materials } from '../entities/room04/Room04Materials';
 
 export class EditorPrefabs {
+
+  public static spawnCustomModel(url: string, name: string): THREE.Group {
+    const group = new THREE.Group();
+    group.name = name + '_' + Math.random().toString(36).substr(2, 9);
+    group.userData = {
+      isPrefab: true,
+      prefabType: 'CustomModel',
+      prefabId: group.name,
+      modelUrl: url
+    };
+
+    // Add a placeholder box while loading
+    const geo = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    const mat = new THREE.MeshStandardMaterial({ color: 0xa855f7, wireframe: true });
+    const mesh = new THREE.Mesh(geo, mat);
+    group.add(mesh);
+
+    // Assuming we have ModelLoader or just GLTFLoader
+    import('three/examples/jsm/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
+      const loader = new GLTFLoader();
+      loader.load(url, (gltf) => {
+        group.remove(mesh);
+        gltf.scene.traverse((c: any) => {
+          if (c.isMesh) {
+            c.castShadow = true;
+            c.receiveShadow = true;
+          }
+        });
+        group.add(gltf.scene);
+      });
+    });
+
+    return group;
+  }
+
   public static generateUUID(): string {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = Math.random() * 16 | 0;
@@ -109,6 +144,25 @@ export class EditorPrefabs {
           leaf.castShadow = true;
           group.add(leaf);
         }
+        break;
+      }
+      case 'PointLight': {
+        const light = new THREE.PointLight(0xffffff, 1, 10);
+        light.castShadow = true;
+        const sphere = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        group.add(light);
+        group.add(sphere);
+        group.userData.isLight = true;
+        break;
+      }
+      case 'SpotLight': {
+        const slight = new THREE.SpotLight(0xffffff, 1, 15, Math.PI/6, 0.5, 1);
+        slight.castShadow = true;
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.1, 0.2, 16), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        cone.rotation.x = -Math.PI / 2;
+        group.add(slight);
+        group.add(cone);
+        group.userData.isLight = true;
         break;
       }
       case 'Clock': {

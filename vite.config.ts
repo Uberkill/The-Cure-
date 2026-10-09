@@ -5,6 +5,39 @@ import path from 'path';
 const DevEditorPlugin = () => ({
   name: 'dev-editor-plugin',
   configureServer(server) {
+    server.middlewares.use('/api/upload-asset', (req, res) => {
+      if (req.method === 'POST') {
+        const url = new URL(req.url, http://);
+        const filename = url.searchParams.get('filename') || 'upload.bin';
+        const type = url.searchParams.get('type') || 'textures';
+        
+        const safeName = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const targetDir = path.resolve(__dirname, public/assets/);
+        if (!fs.existsSync(targetDir)) {
+          fs.mkdirSync(targetDir, { recursive: true });
+        }
+        
+        const targetPath = path.join(targetDir, safeName);
+        const writeStream = fs.createWriteStream(targetPath);
+        
+        req.pipe(writeStream);
+        
+        writeStream.on('finish', () => {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: true, path: /assets// }));
+        });
+        
+        writeStream.on('error', (err) => {
+          console.error('Upload Error:', err);
+          res.statusCode = 500;
+          res.end(JSON.stringify({ error: err.message }));
+        });
+      } else {
+        res.statusCode = 405;
+        res.end();
+      }
+    });
+
     server.middlewares.use('/api/save-layout', (req, res) => {
       if (req.method === 'POST') {
         let body = '';

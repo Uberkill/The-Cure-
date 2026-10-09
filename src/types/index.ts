@@ -97,6 +97,7 @@ export interface EventPayloadMap {
   'camera:move_to_hotspot': { hotspotId: string; durationMs?: number };
   'camera:transition_start': Record<string, never>;
   'camera:transition_end': Record<string, never>;
+  'editor:save_environment': { fogColor: string; fogDensity: number; ambColor: string; ambIntensity: number; };
   'inspect:open': { targetMesh?: THREE.Object3D; itemId?: string; title: string; subtitle: string };
   'inspect:close': Record<string, never>;
   'inventory:add': { itemId: string };

@@ -1,4 +1,4 @@
-import { RoomLayoutData } from '../types';
+﻿import { RoomLayoutData } from '../types';
 
 export class EditorServerSync {
   public static async saveLayout(data: RoomLayoutData): Promise<boolean> {
@@ -33,7 +33,16 @@ export class EditorServerSync {
     }
   }
 
-  public static getFallbackLayout(): Partial<RoomLayoutData> {
+  public static async fetchLayout(): Promise<any> {
+    try {
+      const resp = await fetch('/src/data/room_layout.json?t=' + Date.now());
+      if (resp.ok) {
+        return await resp.json();
+      }
+    } catch (err) {
+      console.warn('[Dev Editor] Failed to fetch layout from server. Falling back to LocalStorage.', err);
+    }
+    
     try {
       const stored = localStorage.getItem('vault_editor_layout');
       if (stored) {

@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { Telemetry } from '../core/Telemetry';
+import { EventBus } from '../core/EventBus';
 
 export class SceneManager {
   public scene: THREE.Scene;
@@ -28,8 +29,43 @@ export class SceneManager {
 
     this.container.appendChild(this.renderer.domElement);
     this.setupLighting();
+    this.applySavedEnvironment();
+    
+    EventBus.getInstance().on('editor:save_environment', (env: any) => {
+      if (this.scene.fog) {
+        (this.scene.fog as any).color.set(env.fogColor);
+        (this.scene.fog as any).density = env.fogDensity;
+      }
+      this.scene.background = new THREE.Color(env.fogColor);
+      let amb = this.scene.children.find(c => c.type === 'AmbientLight') as any;
+      if (amb) {
+        amb.color.set(env.ambColor);
+        amb.intensity = env.ambIntensity;
+      }
+    });
     this.setupResizeObserver();
     this.setupContextLossHandler();
+  }
+
+  private async applySavedEnvironment() {
+    try {
+      const { EditorServerSync } = await import('../editor/EditorServerSync');
+      const layout = await EditorServerSync.fetchLayout();
+      if (layout && layout.environment) {
+        if (this.scene.fog) {
+          (this.scene.fog as any).color.set(layout.environment.fogColor);
+          (this.scene.fog as any).density = layout.environment.fogDensity;
+        }
+        this.scene.background = new THREE.Color(layout.environment.fogColor);
+        let amb = this.scene.children.find(c => c.type === 'AmbientLight') as any;
+        if (amb) {
+          amb.color.set(layout.environment.ambColor);
+          amb.intensity = layout.environment.ambIntensity;
+        }
+      }
+    } catch (e) {
+      console.warn("No env layout found", e);
+    }
   }
 
   private setupLighting(): void {

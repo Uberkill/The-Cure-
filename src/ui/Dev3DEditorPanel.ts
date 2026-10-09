@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { DevTransformGizmo } from '../interaction/DevTransformGizmo';
 import { CameraDirector } from '../rendering/CameraDirector';
 import { EditorServerSync } from '../editor/EditorServerSync';
@@ -30,6 +30,7 @@ export class Dev3DEditorPanel {
     this.renderer = renderer;
 
     this.initPanel();
+    this.setupDragAndDrop();
     this.bindGizmoEvents();
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -67,6 +68,7 @@ export class Dev3DEditorPanel {
         <button class="editor-tab active" data-tab="transforms" style="flex:1; padding: 4px; background: #3b4c42; border: 1px solid #5a7566; color: #fff; cursor: pointer; border-radius: 3px;">Trans</button>
         <button class="editor-tab" data-tab="anim" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Anim</button>
         <button class="editor-tab" data-tab="spawner" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Spawn</button>
+        <button class="editor-tab" data-tab="env" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Env</button>
         <button class="editor-tab" data-tab="scenarios" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Scen</button>
         <button class="editor-tab" data-tab="telemetry" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Telem</button>
       </div>
@@ -198,6 +200,10 @@ export class Dev3DEditorPanel {
               <option value="MedicalCart">Medical Cart</option>
               <option value="Typewriter">Typewriter</option>
             </optgroup>
+            <optgroup label="Lighting">
+              <option value="PointLight">Point Light</option>
+              <option value="SpotLight">Spot Light</option>
+            </optgroup>
             <optgroup label="General Prefabs">
               <option value="Painting">Painting</option>
               <option value="Plant">Potted Plant</option>
@@ -208,7 +214,35 @@ export class Dev3DEditorPanel {
         <button id="dev-btn-spawn" style="width: 100%; padding: 8px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 4px; cursor: pointer;">Spawn Prefab</button>
       </div>
 
-      <!-- TAB CONTENT: SCENARIOS -->
+      <!-- TAB CONTENT: ENVIRONMENT -->
+        <div id="tab-env" class="editor-tab-content" style="display: none;">
+          <div style="margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 8px; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px;">
+            <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Atmosphere (Fog)</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span>Color</span>
+              <input type="color" id="dev-env-fog-color" value="#000000" style="background:none; border:none; width: 40px; height: 24px; cursor: pointer;">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Density</span>
+              <input type="range" id="dev-env-fog-density" min="0" max="0.1" step="0.001" value="0.02" style="flex:1; margin-left:8px; accent-color: #00ff88;">
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 8px; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px;">
+            <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Ambient Light</label>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+              <span>Color</span>
+              <input type="color" id="dev-env-amb-color" value="#ffffff" style="background:none; border:none; width: 40px; height: 24px; cursor: pointer;">
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Intensity</span>
+              <input type="range" id="dev-env-amb-intensity" min="0" max="2" step="0.05" value="0.5" style="flex:1; margin-left:8px; accent-color: #00ff88;">
+            </div>
+          </div>
+          <button id="dev-btn-env-save" style="width: 100%; padding: 6px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; cursor: pointer;">Apply & Save Environment</button>
+        </div>
+
+        <!-- TAB CONTENT: SCENARIOS -->
       <div id="tab-scenarios" class="editor-tab-content" style="display: none;">
         <label style="display: block; margin-bottom: 6px; color: #88928b;">Jump Scenario</label>
         <button class="dev-btn-scenario" data-room="room_04" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Hub (Room 04)</button>
@@ -423,10 +457,56 @@ export class Dev3DEditorPanel {
 
     // Save to Server
     document.getElementById('dev-btn-save-server')?.addEventListener('click', async () => {
-      const data: any = { prefabs: [] };
+      const data: any = { 
+          prefabs: [],
+          overrides: {},
+          environment: {
+            fogColor: (document.getElementById('dev-env-fog-color') as HTMLInputElement)?.value || '#000000',
+            fogDensity: parseFloat((document.getElementById('dev-env-fog-density') as HTMLInputElement)?.value || '0.02'),
+            ambColor: (document.getElementById('dev-env-amb-color') as HTMLInputElement)?.value || '#ffffff',
+            ambIntensity: parseFloat((document.getElementById('dev-env-amb-intensity') as HTMLInputElement)?.value || '0.5')
+          }
+        };
       // Gather all prefabs currently in the scene to prevent wiping others
       this.scene.traverse(child => {
-        if (child.userData && child.userData.isPrefab) {
+        if (child.userData) {
+          if (child.userData.isPrefab) {
+            const pEntry: any = {
+              id: child.userData.prefabId,
+              type: child.userData.prefabType,
+              transform: {
+                x: child.position.x, y: child.position.y, z: child.position.z,
+                rx: child.rotation.x, ry: child.rotation.y, rz: child.rotation.z,
+                sx: child.scale.x, sy: child.scale.y, sz: child.scale.z
+              }
+            };
+            if (child.userData.modelUrl) pEntry.modelUrl = child.userData.modelUrl;
+            if (child.userData.paintingUrl) pEntry.paintingUrl = child.userData.paintingUrl;
+            if (child.userData.animStart !== undefined) pEntry.animStart = child.userData.animStart;
+            if (child.userData.animEnd !== undefined) pEntry.animEnd = child.userData.animEnd;
+            if (child.userData.animTrigger) pEntry.animTrigger = child.userData.animTrigger;
+            if (child.userData.animDuration) pEntry.animDuration = child.userData.animDuration;
+            
+            // Serialize light properties if it's a light prefab
+            if (child.userData.isLight) {
+              const l = child.children.find((c: any) => c.isLight) as any;
+              if (l) {
+                pEntry.lightColor = l.color.getHex();
+                pEntry.lightIntensity = l.intensity;
+              }
+            }
+            
+            data.prefabs.push(pEntry);
+          } else if (child.name && child.userData.isModified) {
+             data.overrides[child.name] = {
+                x: child.position.x, y: child.position.y, z: child.position.z,
+                rx: child.rotation.x, ry: child.rotation.y, rz: child.rotation.z,
+                sx: child.scale.x, sy: child.scale.y, sz: child.scale.z
+             };
+          }
+        }
+        // Dummy if block to satisfy old regex target end
+        if (false) {
           const pEntry: any = {
             id: child.userData.prefabId,
             type: child.userData.prefabType,
@@ -436,6 +516,9 @@ export class Dev3DEditorPanel {
               sx: child.scale.x, sy: child.scale.y, sz: child.scale.z
               }
             };
+            if (child.userData.modelUrl) {
+              pEntry.modelUrl = child.userData.modelUrl;
+            }
             if (child.userData.paintingUrl) {
               pEntry.paintingUrl = child.userData.paintingUrl;
             }
@@ -543,10 +626,171 @@ export class Dev3DEditorPanel {
         });
       });
 
+      document.getElementById('dev-btn-env-save')?.addEventListener('click', () => {
+        const fogColor = (document.getElementById('dev-env-fog-color') as HTMLInputElement).value;
+        const fogDensity = parseFloat((document.getElementById('dev-env-fog-density') as HTMLInputElement).value);
+        const ambColor = (document.getElementById('dev-env-amb-color') as HTMLInputElement).value;
+        const ambIntensity = parseFloat((document.getElementById('dev-env-amb-intensity') as HTMLInputElement).value);
+        
+        // Apply instantly to current scene
+        if (this.scene.fog) {
+          (this.scene.fog as any).color.set(fogColor);
+          (this.scene.fog as any).density = fogDensity;
+        }
+        
+        let ambientLight = this.scene.children.find(c => c.type === 'AmbientLight') as any;
+        if (ambientLight) {
+          ambientLight.color.set(ambColor);
+          ambientLight.intensity = ambIntensity;
+        }
+
+        // Save to server
+        import('../core/EventBus').then(({ EventBus }) => {
+          EventBus.getInstance().emit('editor:save_environment', {
+            fogColor, fogDensity, ambColor, ambIntensity
+          });
+          document.getElementById('dev-btn-save-server')?.click(); // piggy back the master save
+        });
+        
+        this.showToast('Environment updated', 'success');
+      });
+
       document.getElementById('dev-chk-snap')?.addEventListener('change', (e) => {
         const checked = (e.target as HTMLInputElement).checked;
         this.devGizmo.setSnapping(checked);
       });
+  }
+
+  public showToast(msg: string, type: 'success' | 'error' | 'info' = 'info') {
+    const toast = document.createElement('div');
+    toast.style.position = 'fixed';
+    toast.style.bottom = '20px';
+    toast.style.left = '50%';
+    toast.style.transform = 'translateX(-50%)';
+    toast.style.padding = '8px 16px';
+    toast.style.borderRadius = '24px';
+    toast.style.fontFamily = 'monospace';
+    toast.style.fontSize = '12px';
+    toast.style.zIndex = '99999';
+    toast.style.color = '#fff';
+    toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.5)';
+    toast.style.transition = 'opacity 0.3s ease';
+    toast.innerText = msg;
+    
+    if (type === 'success') toast.style.background = '#059669';
+    if (type === 'error') toast.style.background = '#dc2626';
+    if (type === 'info') toast.style.background = '#2563eb';
+    
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  private setupDragAndDrop(): void {
+    const canvas = document.querySelector('canvas');
+    if (!canvas) return;
+
+    canvas.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      if (this.panelContainer && this.panelContainer.style.display !== 'none') {
+        e.dataTransfer!.dropEffect = 'copy';
+      }
+    });
+
+    canvas.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      if (!this.panelContainer || this.panelContainer.style.display === 'none') return;
+      
+      const file = e.dataTransfer?.files[0];
+      if (!file) return;
+
+      const rect = canvas.getBoundingClientRect();
+      const mouse = {
+        x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
+        y: -((e.clientY - rect.top) / rect.height) * 2 + 1
+      };
+
+      import('three').then(async (THREE) => {
+        const rc = new THREE.Raycaster();
+        rc.setFromCamera(mouse as any, this.cameraDirector.camera);
+        const intersects = rc.intersectObjects(this.scene.children, true);
+        
+        let targetPainting = null;
+        let dropPoint = intersects.length > 0 ? intersects[0].point : new THREE.Vector3(0,0,0);
+
+        for (const hit of intersects) {
+          let curr = hit.object;
+          while (curr && curr.parent && curr.name !== 'scene') {
+            if (curr.userData && curr.userData.prefabType === 'Painting') {
+              targetPainting = curr;
+              break;
+            }
+            curr = curr.parent;
+          }
+          if (targetPainting) break;
+        }
+
+        const isImage = file.type.startsWith('image/');
+        const isModel = file.name.endsWith('.glb') || file.name.endsWith('.gltf');
+        const type = isModel ? 'models' : 'textures';
+
+        try {
+          const res = await fetch(`/api/upload-asset?filename=${encodeURIComponent(file.name)}&type=${type}`, {
+            method: 'POST',
+            body: file
+          });
+          const data = await res.json();
+          
+          if (data.success) {
+            this.showToast(`Uploaded: ${file.name}`, 'success');
+            
+            if (isImage && targetPainting) {
+              targetPainting.userData.paintingUrl = data.path;
+              const canvasMesh = targetPainting.children[1] as any;
+              if (canvasMesh && canvasMesh.material) {
+                const loader = new THREE.TextureLoader();
+                loader.load(data.path, (texture) => {
+                  canvasMesh.material.map = texture;
+                  canvasMesh.material.color.setHex(0xffffff);
+                  canvasMesh.material.needsUpdate = true;
+                });
+              }
+            } else if (isModel) {
+              import('../editor/EditorPrefabs').then(({ EditorPrefabs }) => {
+                // We'll add spawnCustomModel to EditorPrefabs next
+                const newMesh = EditorPrefabs.spawnCustomModel ? EditorPrefabs.spawnCustomModel(data.path, file.name) : EditorPrefabs.spawn('Painting');
+                newMesh.position.copy(dropPoint);
+                this.scene.add(newMesh);
+                this.showToast(`Spawned custom model: ${file.name}`, 'success');
+              });
+            } else if (isImage && !targetPainting) {
+                import('../editor/EditorPrefabs').then(({ EditorPrefabs }) => {
+                  const newMesh = EditorPrefabs.spawn('Painting');
+                  newMesh.position.copy(dropPoint);
+                  newMesh.userData.paintingUrl = data.path;
+                  const canvasMesh = newMesh.children[1] as any;
+                  if (canvasMesh && canvasMesh.material) {
+                    const loader = new THREE.TextureLoader();
+                    loader.load(data.path, (texture) => {
+                      canvasMesh.material.map = texture;
+                      canvasMesh.material.color.setHex(0xffffff);
+                      canvasMesh.material.needsUpdate = true;
+                    });
+                  }
+                  this.scene.add(newMesh);
+                });
+            }
+            
+            document.getElementById('dev-btn-save-server')?.click();
+          }
+        } catch (err) {
+          console.error(err);
+          this.showToast('Upload failed', 'error');
+        }
+      });
+    });
   }
 
   private bindGizmoEvents(): void {
@@ -628,6 +872,10 @@ export class Dev3DEditorPanel {
     };
 
     this.devGizmo.onTransformChange = (objects: THREE.Object3D[]) => {
+      objects.forEach(obj => {
+        if (!obj.userData) obj.userData = {};
+        obj.userData.isModified = true;
+      });
       if (this.isUpdatingFromUI) return;
       if (objects.length === 1 && this.posXInput && this.posYInput && this.posZInput) {
         this.isUpdatingFromUI = true;

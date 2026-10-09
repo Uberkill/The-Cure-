@@ -71,12 +71,24 @@ export class Room99_Sandbox implements RoomScenario {
       const { EditorPrefabs } = await import('../editor/EditorPrefabs');
       if (layout.prefabs && Array.isArray(layout.prefabs)) {
         for (const p of layout.prefabs) {
-          const prefab = EditorPrefabs.spawn(p.type);
+          let prefab;
+          if (p.type === 'CustomModel') {
+            prefab = EditorPrefabs.spawnCustomModel(p.modelUrl, p.id);
+          } else {
+            prefab = EditorPrefabs.spawn(p.type);
+          }
           prefab.userData.prefabId = p.id;
           prefab.position.set(p.transform.x, p.transform.y, p.transform.z);
           prefab.rotation.set(p.transform.rx, p.transform.ry, p.transform.rz);
           prefab.scale.set(p.transform.sx, p.transform.sy, p.transform.sz);
-          if (p.paintingUrl) {
+          if (p.lightColor !== undefined && prefab.userData.isLight) {
+              const l = prefab.children.find((c: any) => c.isLight) as any;
+              if (l) {
+                l.color.setHex(p.lightColor);
+                l.intensity = p.lightIntensity;
+              }
+            }
+            if (p.paintingUrl) {
             prefab.userData.paintingUrl = p.paintingUrl;
             const canvasMesh = prefab.children[1] as any;
             if (canvasMesh && canvasMesh.material) {
