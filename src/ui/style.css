@@ -647,8 +647,15 @@ body, html {
 .hidden {
   display: none !important;
 }
-.canvas-blur { filter: blur(30px) brightness(0.1); transition: filter 4s ease-in, brightness 4s ease-in; }
-.canvas-focus { filter: blur(0px) brightness(1); transition: filter 5s ease-out, brightness 5s ease-out; }
+
+.fade-out-children > * {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease-out;
+}
+
+.canvas-blur { filter: blur(20px) brightness(0.2); transition: filter 0.5s ease-out, brightness 0.5s ease-out; }
+.canvas-focus { filter: blur(0px) brightness(1); transition: filter 0.6s ease-out, brightness 0.6s ease-out; }
 
 .inventory-bar {
   position: absolute;

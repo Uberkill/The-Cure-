@@ -63,10 +63,20 @@ export class ScreenManager {
        window.close();
     });
 
-    btnStart?.addEventListener('click', () => {
+    let isStarting = false;
+
+    const initiateStart = () => {
+      if (isStarting) return;
+      isStarting = true;
+
+      if (btnStart instanceof HTMLButtonElement) {
+        btnStart.disabled = true;
+        btnStart.blur();
+      }
+
       this.audioEngine.ensureContext();
       this.audioEngine.playPneumaticHiss();
-      
+
       if (isTest) {
         this.mainMenuEl.classList.add('hidden');
         document.querySelector('canvas')?.classList.remove('canvas-blur');
@@ -75,36 +85,25 @@ export class ScreenManager {
         return;
       }
 
-      // Smooth white flash transition to wake up in room
-      this.mainMenuEl.style.transition = 'background-color 2s ease-out, opacity 3s ease-out 2s';
-      this.mainMenuEl.style.backgroundColor = '#ffffff';
-      
-      // Hide the menu content elements during the flash
+      this.mainMenuEl.style.pointerEvents = 'none';
       this.mainMenuEl.classList.add('fade-out-children');
-      
+      this.mainMenuEl.style.transition = 'opacity 0.4s ease-out';
+      this.mainMenuEl.style.opacity = '0';
+
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+        canvas.classList.remove('canvas-blur');
+        canvas.classList.add('canvas-focus');
+      }
+
       this.cinematicTimeouts.push(setTimeout(() => {
-        this.mainMenuEl.style.opacity = '0';
-        
-        this.cinematicTimeouts.push(setTimeout(() => {
-          this.mainMenuEl.classList.add('hidden');
-        }, 3000)); // Wait for the 3s opacity transition to finish
-        
-        // Start fading in 3D canvas
-        document.querySelector('canvas')?.classList.remove('canvas-blur');
-        document.querySelector('canvas')?.classList.add('canvas-focus');
-        
-        // Wake up looking at ceiling, then pan down slowly
-        this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'ceiling', durationMs: 0 });
-        
-        this.cinematicTimeouts.push(setTimeout(() => {
-          this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview', durationMs: 7000 });
-        }, 100));
-        
-        this.cinematicTimeouts.push(setTimeout(() => {
-          this.switchView('chamber');
-        }, 7000));
-      }, 2000));
-    });
+        this.mainMenuEl.classList.add('hidden');
+        this.switchView('chamber');
+        this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview', durationMs: 1200 });
+      }, 400));
+    };
+
+    btnStart?.addEventListener('click', initiateStart);
   }
 
   private setupListeners(): void {
