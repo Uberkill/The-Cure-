@@ -174,6 +174,32 @@ export class GameState {
     return true;
   }
 
+  public setDevStage(stage: GameStage): void {
+    const previousStage = this.currentStage;
+    this.currentStage = stage;
+    this.telemetry.record('info', `Dev stage synchronized: ${previousStage} -> ${stage}`);
+
+    if (stage === GameStage.ACT_1_HUB_AWAKEN) {
+      this.collectedCrystals.clear();
+      this.patchedCrystals.clear();
+      this.pendingCrystalToPatch = null;
+    } else if (stage === GameStage.ACT_7_SYNTHESIS_BLACKOUT || stage === GameStage.ACT_8_VELVET_LOUNGE) {
+      this.patchedCrystals = new Set([
+        'crystal_01_quartz',
+        'crystal_02_bronze',
+        'crystal_03_amethyst',
+        'crystal_04_obsidian',
+        'crystal_05_celadon'
+      ]);
+      this.pendingCrystalToPatch = null;
+    }
+
+    this.eventBus.emit('game:stage_transition', {
+      from: previousStage,
+      to: stage
+    });
+  }
+
   public getStage(): GameStage {
     return this.currentStage;
   }

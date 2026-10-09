@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { Telemetry } from './core/Telemetry';
 import { EventBus } from './core/EventBus';
 import { GameState } from './core/GameState';
+import { GameStage } from './types';
 import { AudioEngine } from './audio/AudioEngine';
 import { MusicTrackManager } from './audio/MusicTrackManager';
 import { SceneManager } from './rendering/SceneManager';
@@ -118,8 +119,25 @@ class VaultApp {
   }
 
   private setupScenarioRouting(): void {
-    this.eventBus.on('scenario:switch_room', async ({ targetRoomId }) => {
+    this.eventBus.on('scenario:switch_room', async ({ targetRoomId, isDevJump }: { targetRoomId: string; isDevJump?: boolean }) => {
       this.telemetry.record('info', `Switching scenario to: ${targetRoomId}`);
+
+      if (isDevJump) {
+        const stageMap: Record<string, GameStage> = {
+          room_04: GameStage.ACT_1_HUB_AWAKEN,
+          sleep_ward: GameStage.ACT_2_SLEEP_WARD,
+          hydrotherapy: GameStage.ACT_3_HYDROTHERAPY,
+          audiology: GameStage.ACT_4_AUDIOLOGY,
+          archive: GameStage.ACT_5_ARCHIVE,
+          directors_office: GameStage.ACT_6_DIRECTORS_OFFICE,
+          synthesis_blackout: GameStage.ACT_7_SYNTHESIS_BLACKOUT,
+          velvet_lounge: GameStage.ACT_8_VELVET_LOUNGE
+        };
+        const mappedStage = stageMap[targetRoomId];
+        if (mappedStage) {
+          GameState.getInstance().setDevStage(mappedStage);
+        }
+      }
 
       const nextScenario = this.scenarioRegistry.getScenario(targetRoomId);
       if (nextScenario) {

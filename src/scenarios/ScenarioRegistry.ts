@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { RoomScenario } from '../types';
 import { Telemetry } from '../core/Telemetry';
 import { Room04_SterileChamber } from './Room04_SterileChamber';
@@ -7,6 +7,7 @@ import { Room03_Hydrotherapy } from './Room03_Hydrotherapy';
 import { Room04_AudiologyVault } from './Room04_AudiologyVault';
 import { Room05_Archive } from './Room05_Archive';
 import { Room06_DirectorsOffice } from './Room06_DirectorsOffice';
+import { Room07_SynthesisChamber } from './Room07_SynthesisChamber';
 import { Room08_VelvetLounge } from './Room08_VelvetLounge';
 import { Room99_Sandbox } from './Room99_Sandbox';
 import { AudioEngine } from '../audio/AudioEngine';
@@ -63,6 +64,7 @@ export class ScenarioRegistry {
     this.scenarios.set('audiology', new Room04_AudiologyVault());
     this.scenarios.set('archive', new Room05_Archive());
     this.scenarios.set('directors_office', new Room06_DirectorsOffice());
+    this.scenarios.set('synthesis_blackout', new Room07_SynthesisChamber());
     this.scenarios.set('velvet_lounge', new Room08_VelvetLounge());
     this.scenarios.set('sandbox', new Room99_Sandbox());
   }

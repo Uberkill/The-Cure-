@@ -86,6 +86,7 @@ server.listen(PORT, async () => {
         'audiology',
         'archive',
         'directors_office',
+        'synthesis_blackout',
         'velvet_lounge'
       ];
 

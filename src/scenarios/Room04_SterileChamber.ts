@@ -83,12 +83,12 @@ export class Room04_SterileChamber implements RoomScenario {
     }
   };
 
-  private entities: Room04Entities | null = null;
-  private unsubscribers: Array<() => void> = [];
-  private audioElement: AudioEngine;
-  private decayManager: HubDecayManager;
+  protected entities: Room04Entities | null = null;
+  protected unsubscribers: Array<() => void> = [];
+  protected audioElement: AudioEngine;
+  protected decayManager: HubDecayManager;
 
-  private exitBlownOpen: boolean = false;
+  protected exitBlownOpen: boolean = false;
 
   public constructor() {
     this.audioElement = AudioEngine.getInstance();
@@ -101,12 +101,13 @@ export class Room04_SterileChamber implements RoomScenario {
     this.setupEventListeners();
 
     // Reapply progressive decay based on authoritative GameState stage
-    const stage = GameState.getInstance().getStage();
+    const gs = GameState.getInstance();
+    const stage = gs.getStage();
     let decayLevel: DecayLevel = 0;
-    if (stage >= GameStage.ACT_5_PATCH_4_COMPLETE) decayLevel = 4;
-    else if (stage >= GameStage.ACT_4_PATCH_3_COMPLETE) decayLevel = 3;
-    else if (stage >= GameStage.ACT_3_PATCH_2_COMPLETE) decayLevel = 2;
-    else if (stage >= GameStage.ACT_2_PATCH_1_COMPLETE) decayLevel = 1;
+    if (gs.isCrystalPatched('crystal_04_obsidian')) decayLevel = 4;
+    else if (gs.isCrystalPatched('crystal_03_amethyst')) decayLevel = 3;
+    else if (gs.isCrystalPatched('crystal_02_bronze')) decayLevel = 2;
+    else if (gs.isCrystalPatched('crystal_01_quartz')) decayLevel = 1;
     this.decayManager.setDecayLevel(decayLevel, this.entities.group);
 
     // Dev layout overrides MUST be applied BEFORE stage-specific overrides
@@ -380,8 +381,8 @@ export class Room04_SterileChamber implements RoomScenario {
     this.corridorDoorOpen = false;
   }
 
-  private isTransitioning: boolean = false;
-  private corridorDoorOpen: boolean = false;
+  protected isTransitioning: boolean = false;
+  protected corridorDoorOpen: boolean = false;
 
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();

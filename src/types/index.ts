@@ -77,7 +77,7 @@ export interface EventPayloadMap {
   'input:object_clicked': { objectId: string; point?: THREE.Vector3 };
   'input:object_hovered': { objectId: string | null; label: string };
   'game:stage_transition': { from: GameStage; to: GameStage };
-  'scenario:switch_room': { targetRoomId: string; doorThresholdId?: string };
+  'scenario:switch_room': { targetRoomId: string; doorThresholdId?: string; isDevJump?: boolean };
   'scenario:room_loaded': { roomId: string; actTitle: string };
   'puzzle:item_collected': { itemId: string };
   'puzzle:crystal_collected': { crystalId: CrystalId; label: string };

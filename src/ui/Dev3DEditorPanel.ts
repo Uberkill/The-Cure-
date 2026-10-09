@@ -244,15 +244,20 @@ export class Dev3DEditorPanel {
 
         <!-- TAB CONTENT: SCENARIOS -->
       <div id="tab-scenarios" class="editor-tab-content" style="display: none;">
-        <label style="display: block; margin-bottom: 6px; color: #88928b;">Jump Scenario</label>
-        <button class="dev-btn-scenario" data-room="room_04" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Hub (Room 04)</button>
-        <button class="dev-btn-scenario" data-room="sleep_ward" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Sleep Ward (Act II)</button>
-        <button class="dev-btn-scenario" data-room="hydrotherapy" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Hydrotherapy (Act III)</button>
-        <button class="dev-btn-scenario" data-room="audiology" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Audiology (Act IV)</button>
-          <button class="dev-btn-scenario" data-room="archive" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Archive (Act V)</button>
-          <button class="dev-btn-scenario" data-room="directors_office" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Director's Office (Act VI)</button>
-          <button class="dev-btn-scenario" data-room="velvet_lounge" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Velvet Lounge (Act VIII)</button>
-          <button class="dev-btn-scenario" data-room="sandbox" style="width: 100%; padding: 8px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 4px; margin-top: 12px; font-weight: bold; cursor: pointer;">Empty Sandbox Scene</button>
+        <label style="display: block; margin-bottom: 8px; color: #88928b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Narrative Acts (1 – 8)</label>
+        <button class="dev-btn-scenario" data-room="room_04" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act I] Room 01: The Sterile Chamber</button>
+        <button class="dev-btn-scenario" data-room="sleep_ward" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act II] Room 02: The Sleep Ward</button>
+        <button class="dev-btn-scenario" data-room="hydrotherapy" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act III] Room 03: The Hydrotherapy Room</button>
+        <button class="dev-btn-scenario" data-room="audiology" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act IV] Room 04: The Audiology Vault</button>
+        <button class="dev-btn-scenario" data-room="archive" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act V] Room 05: The Archive</button>
+        <button class="dev-btn-scenario" data-room="directors_office" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act VI] Room 06: The Director's Office</button>
+        <button class="dev-btn-scenario" data-room="synthesis_blackout" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act VII] Room 07: The Synthesis Chamber</button>
+        <button class="dev-btn-scenario" data-room="velvet_lounge" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act VIII] Room 08: The Velvet Lounge</button>
+
+        <div style="margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1);">
+          <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Auxiliary Workspace</label>
+          <button class="dev-btn-scenario" data-room="sandbox" style="width: 100%; padding: 8px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 4px; font-weight: bold; cursor: pointer;">[Sandbox] Freeform 3D Workspace</button>
+        </div>
       </div>
 
       <!-- TAB CONTENT: TELEMETRY -->
@@ -630,7 +635,7 @@ export class Dev3DEditorPanel {
         if (room) {
           this.devGizmo.detach();
           import('../core/EventBus').then(({ EventBus }) => {
-            EventBus.getInstance().emit('scenario:switch_room', { targetRoomId: room });
+            EventBus.getInstance().emit('scenario:switch_room', { targetRoomId: room, isDevJump: true });
           });
         }
       });

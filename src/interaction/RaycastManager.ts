@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { EventBus } from '../core/EventBus';
+import { GameState } from '../core/GameState';
+import { GameStage } from '../types';
 
 export class RaycastManager {
   private raycaster: THREE.Raycaster;
@@ -133,6 +135,14 @@ export class RaycastManager {
   }
 
   private getInteractionLabel(name: string): string {
+    if (name === 'prop_door' || name === 'exit_airlock_passage') {
+      const stage = GameState.getInstance().getStage();
+      if (stage === GameStage.ACT_7_SYNTHESIS_BLACKOUT || stage === GameStage.ACT_8_VELVET_LOUNGE) {
+        return '[ENTER: VELVET LOUNGE]';
+      }
+      return '[CLICK TO INSPECT EXIT BLASTDOOR]';
+    }
+
     const labels: Record<string, string> = {
       // Hub
       prop_envelope: '[CLICK TO UNSEAL DOSSIER]',
@@ -140,7 +150,6 @@ export class RaycastManager {
       prop_key: '[CLICK TO EXAMINE KEY]',
       prop_vault: '[CLICK TO INSPECT VAULT & CRT]',
       prop_oscilloscope: '[CLICK TO INSPECT CRT OSCILLOSCOPE]',
-      prop_door: '[CLICK TO INSPECT EXIT BLASTDOOR]',
       prop_telephone: '[CLICK TO LISTEN TO RECEIVER]',
       door_corridor: '[ENTER: OBSERVATION CORRIDOR]',
       door_corridor_passage: '[ENTER: OBSERVATION CORRIDOR]',
