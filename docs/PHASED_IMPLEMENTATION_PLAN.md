@@ -113,24 +113,25 @@ Establish the common type system, state hydration contracts, and diegetic hardwa
 - **Edge Cases**: Dragging multiple shunts simultaneously causing state race conditions.
 - **E2E Assertions**: Assert total resistance mathematical sum; verify blastdoor hydraulic release animation.
 
-### Case 8: Act VIII - The Velvet Lounge & Subway
-- **Mechanics**: `prop_mirror_station` reflection alignment -> Switchboard patch Trunk 104 to Line 4 -> Final payphone debrief.
-- **Edge Cases**: Payphone clicked before switchboard patched; early game exit.
-- **E2E Assertions**: Assert switchboard graph connections; verify 528Hz climax tone destruction of scene.
+### Case 8: Act VIII - The Velvet Lounge & Climax
+- **Mechanics**: `prop_switchboard` / `prop_lounge_mirror` decanter reflection alignment -> Switchboard patch Trunk 104 to Line 4 -> Final payphone debrief and 528 Hz sonic blast.
+- **Edge Cases**: Payphone clicked before switchboard patched; decanter paradox removed; duplicate audio trigger prevention.
+- **E2E Assertions**: Assert switchboard graph connections; verify 528 Hz climax tone; verify `#view-terminal-blackout` view transition.
 
-**Git Loop Execution**: Run `test_pair_4_e2e.js`. Commit on pass; branch on fail.
+**Git Loop Execution**: Run `node tests/test_pair_4_e2e.js` and `node tests/test_phase4_edge_cases.js`. Commit on pass; branch on fail.
 
 ---
 
-## Phase 5: Master Verification & Performance Hardening
+## Phase 5: Master Verification, Deep Edge Cases & Performance Hardening
 
 ### Objective
-Execute the full unified test suite to guarantee global determinism and memory stability across all 8 acts.
+Execute the full unified test suite and deep edge-case fuzzing across all 8 acts to guarantee global determinism, memory stability, and zero regressions.
 
-### The Final Loop
-1. `npm run typecheck`: Zero errors.
-2. `npm run build`: Production bundle builds under size budgets.
+### Execution Ledger
+1. `npm run typecheck`: Zero errors across all TypeScript definitions.
+2. `npm run build`: Production bundle builds cleanly in ~1.5s under size budgets.
 3. `npm run test:models`: All 8 chambers audited for valid geometry, zero coplanar Z-fighting.
 4. `npm run test:perf`: 60 FPS verified, draw calls < 220, memory delta = 0 across 20 rapid room traversals.
-5. `npm run test:all`: Full suite passing deterministically.
-6. **Final Commit**: `git commit -m "chore: verify global determinism and WebGL performance"`
+5. `npm run test:deep-edge`: Deep edge cases fuzzed across Acts III–VIII (fluid conservation laws, out-of-bounds input clamping, sliding buffer window, breaker reset hotkeys, and decanter parity invariance).
+6. `npm run test:all`: Full 20+ suite matrix passing deterministically with 0 console errors.
+7. **Final Commit**: Completed with zero emojis, strict typing, and high-signal commit log.
