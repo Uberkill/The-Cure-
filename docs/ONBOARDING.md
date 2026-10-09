@@ -112,7 +112,7 @@ src/
 
 ### Windows One-Click Launchers
 - `start.bat`: Starts local Vite development server and opens default browser.
-- `run.bat`: Runs automated end-to-end verification and diagnostic checks.
+`: Runs automated end-to-end verification and diagnostic checks.
 
 ### Terminal Commands (PowerShell / Command Prompt)
 ```powershell

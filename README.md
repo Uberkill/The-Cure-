@@ -15,7 +15,6 @@ For strict UI guidelines, Editorial constraints, and aesthetic standards, see:
 
 ### 1. Launch via Windows Batch Launcher
 Double click `start.bat` to launch the local Vite development server and open the browser.
-Double click `run.bat` to run automated verification checks.
 
 ### 2. Manual Commands
 ```powershell
