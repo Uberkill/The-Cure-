@@ -23,6 +23,7 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
   private tumblerEls: HTMLElement[] = [];
   private btnUnlockDrawerEl: HTMLElement | null = null;
   private pulseIntervalId: number | null = null;
+  private solveTimeoutId: number | null = null;
 
   public constructor() {
     super();
@@ -198,6 +199,13 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       this.btnUnlockDrawerEl.textContent = 'DRAWER UNSEALED • CRYSTAL RELEASED';
     }
 
+    if (this.sliderEl) {
+      this.sliderEl.disabled = true;
+    }
+    this.tumblerEls.forEach((el) => {
+      if (el) el.style.pointerEvents = 'none';
+    });
+
     this.eventBus.emit('puzzle:crystal_collected', {
       crystalId: 'crystal_01_quartz' as CrystalId,
       label: 'Prismatic Quartz'
@@ -207,8 +215,9 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       text: 'The stainless dispensary drawer unlatches with an airlock hiss. Memory Crystal 01 (Prismatic Quartz) is secured.'
     });
 
-    window.setTimeout(() => {
+    this.solveTimeoutId = window.setTimeout(() => {
       this.close();
+      this.solveTimeoutId = null;
     }, 1200);
   }
 
@@ -218,6 +227,10 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
   }
 
   protected onClosed(): void {
+    if (this.solveTimeoutId !== null) {
+      window.clearTimeout(this.solveTimeoutId);
+      this.solveTimeoutId = null;
+    }
     if (this.pulseIntervalId !== null) {
       window.clearInterval(this.pulseIntervalId);
       this.pulseIntervalId = null;
@@ -229,9 +242,13 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
   private syncDom(): void {
     if (this.sliderEl) {
       this.sliderEl.value = String(this.state.ivDripBpm);
+      this.sliderEl.disabled = this.state.cartUnlocked;
     }
     this.tumblerEls.forEach((el, idx) => {
-      if (el) el.textContent = this.state.tumblerGlyphs[idx];
+      if (el) {
+        el.textContent = this.state.tumblerGlyphs[idx];
+        el.style.pointerEvents = this.state.cartUnlocked ? 'none' : 'auto';
+      }
     });
     this.updatePeristalticRate();
   }

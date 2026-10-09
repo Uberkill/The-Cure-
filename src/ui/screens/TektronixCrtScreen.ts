@@ -27,6 +27,7 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   private dialFrequencyEl: HTMLInputElement | null = null;
   private labelFrequencyEl: HTMLElement | null = null;
   private btnKnifeSwitchEl: HTMLButtonElement | null = null;
+  private solveTimeoutId: number | null = null;
 
   protected createModalElement(): HTMLElement {
     const el = document.createElement('div');
@@ -160,6 +161,12 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
       this.btnKnifeSwitchEl.disabled = true;
       this.btnKnifeSwitchEl.textContent = 'RELAY ENGAGED';
     }
+    if (this.dialFrequencyEl) {
+      this.dialFrequencyEl.disabled = true;
+    }
+    if (this.slotShuntEl) {
+      this.slotShuntEl.style.pointerEvents = 'none';
+    }
 
     this.eventBus.emit('puzzle:switch_thrown', {});
     GameState.getInstance().transitionTo(GameStage.ACT_1_HUB_CORRIDOR_OPEN);
@@ -167,8 +174,9 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
       text: 'Knife switch thrown. Relay coil snaps shut. The forward observation corridor pressure seal unlatches with a concussive gasp.'
     });
 
-    window.setTimeout(() => {
+    this.solveTimeoutId = window.setTimeout(() => {
       this.close();
+      this.solveTimeoutId = null;
     }, 800);
   }
 
@@ -225,6 +233,10 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   }
 
   protected onClosed(): void {
+    if (this.solveTimeoutId !== null) {
+      window.clearTimeout(this.solveTimeoutId);
+      this.solveTimeoutId = null;
+    }
     this.stopCanvasRenderLoop();
     this.teardownAudio();
   }
@@ -236,14 +248,17 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
       if (this.state.brassShuntInserted) {
         this.slotShuntEl.textContent = 'BRASS SHUNT SEATED';
         this.slotShuntEl.classList.add('installed');
+        this.slotShuntEl.style.pointerEvents = this.state.knifeSwitchThrown ? 'none' : 'auto';
       } else {
         this.slotShuntEl.textContent = 'EMPTY [CLICK TO INSERT]';
         this.slotShuntEl.classList.remove('installed');
+        this.slotShuntEl.style.pointerEvents = 'auto';
       }
     }
 
     if (this.dialFrequencyEl) {
       this.dialFrequencyEl.value = String(this.state.frequencyHz);
+      this.dialFrequencyEl.disabled = this.state.knifeSwitchThrown;
     }
 
     if (this.labelFrequencyEl) {

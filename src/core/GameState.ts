@@ -109,6 +109,7 @@ export class GameState {
 
       case 'prop_vault':
       case 'prop_oscilloscope':
+      case 'vault_crt_screen':
         this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
         if (this.pendingCrystalToPatch) {
           this.eventBus.emit('puzzle:crt_patch_opened', { crystalId: this.pendingCrystalToPatch });

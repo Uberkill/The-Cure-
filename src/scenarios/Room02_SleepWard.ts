@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor, CrystalId } from '../types';
 import { EventBus } from '../core/EventBus';
+import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
 import { DispensaryCartScreen } from '../ui/screens/DispensaryCartScreen';
 
@@ -70,6 +71,7 @@ export class Room02_SleepWard implements RoomScenario {
   private uvLights: THREE.PointLight[] = [];
   private uvStencilMesh: THREE.Mesh | null = null;
   private dispensaryScreen: DispensaryCartScreen;
+  private unsubscribers: Array<() => void> = [];
 
   public constructor() {
     this.dispensaryScreen = new DispensaryCartScreen();
@@ -77,6 +79,32 @@ export class Room02_SleepWard implements RoomScenario {
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
+
+    const hasCrystal = GameState.getInstance().hasCrystal('crystal_01_quartz');
+    if (hasCrystal) {
+      this.trolleyUnlocked = true;
+      this.crystalCollected = true;
+      this.digits = [1, 0, 4];
+    } else {
+      this.trolleyUnlocked = false;
+      this.crystalCollected = false;
+      this.digits = [0, 0, 0];
+    }
+
+    const unsub = EventBus.getInstance().on('puzzle:crystal_collected', (payload) => {
+      if (payload.crystalId === 'crystal_01_quartz') {
+        this.trolleyUnlocked = true;
+        this.crystalCollected = true;
+        if (this.crystalMesh) {
+          this.crystalMesh.visible = false;
+        }
+        this.digits = [1, 0, 4];
+        this.digitMeshes.forEach((mesh, idx) => {
+          mesh.rotation.z = (Math.PI * 2 * this.digits[idx]) / 10;
+        });
+      }
+    });
+    this.unsubscribers.push(unsub);
 
     // Architectural Shell: Long Clinical Ward
     const matWall = new THREE.MeshStandardMaterial({ color: 0xedf0eb, roughness: 0.5 });
@@ -240,6 +268,7 @@ export class Room02_SleepWard implements RoomScenario {
     for (let i = 0; i < 3; i++) {
       const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.03, 16), matBrass);
       dial.rotation.x = Math.PI / 2;
+      dial.rotation.z = (Math.PI * 2 * this.digits[i]) / 10;
       dial.position.set(-0.2 + i * 0.2, 0.75, 0.42);
       dial.name = `prop_dial_${i}`;
       trolleyGroup.add(dial);
@@ -261,7 +290,7 @@ export class Room02_SleepWard implements RoomScenario {
     this.crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
     this.crystalMesh.position.set(0, 1.05, 0);
     this.crystalMesh.name = 'crystal_01_quartz';
-    this.crystalMesh.visible = false;
+    this.crystalMesh.visible = this.trolleyUnlocked && !this.crystalCollected;
     trolleyGroup.add(this.crystalMesh);
 
     this.group.add(trolleyGroup);
@@ -329,6 +358,8 @@ export class Room02_SleepWard implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    this.unsubscribers.forEach(u => u());
+    this.unsubscribers = [];
     this.dispensaryScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
@@ -356,6 +387,13 @@ export class Room02_SleepWard implements RoomScenario {
     }
 
     if (objectId === 'prop_trolley' || objectId === 'prop_trolley_lock') {
+      if (this.crystalCollected || GameState.getInstance().hasCrystal('crystal_01_quartz')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'Dispensary Cart is unlocked [ 1 - 0 - 4 ]. The stainless tray is unsealed and empty. Memory Crystal 01 has been secured.'
+        });
+        return true;
+      }
       audio.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
       this.dispensaryScreen.open();
@@ -423,7 +461,7 @@ export class Room02_SleepWard implements RoomScenario {
     }
 
     if (objectId === 'crystal_01_quartz') {
-      if (!this.crystalCollected) {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_01_quartz')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         audio.playTumblerClick();

@@ -123,7 +123,8 @@ export class RaycastManager {
           if (
             curr.name.startsWith('prop_') ||
             curr.name.startsWith('door_') ||
-            curr.name.startsWith('crystal_')
+            curr.name.startsWith('crystal_') ||
+            curr.name === 'vault_crt_screen'
           ) {
             return curr;
           }
@@ -150,6 +151,7 @@ export class RaycastManager {
       prop_key: '[CLICK TO EXAMINE KEY]',
       prop_vault: '[CLICK TO INSPECT VAULT & CRT]',
       prop_oscilloscope: '[CLICK TO INSPECT CRT OSCILLOSCOPE]',
+      vault_crt_screen: '[CLICK TO INSPECT CRT OSCILLOSCOPE]',
       prop_telephone: '[CLICK TO LISTEN TO RECEIVER]',
       prop_brass_shunt: '[COLLECT: MACHINED BRASS SHUNT]',
       door_corridor: '[ENTER: OBSERVATION CORRIDOR]',
