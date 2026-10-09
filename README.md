@@ -6,6 +6,9 @@ Aesthetic direction: Bauhaus Modernist Psychological Horror (*A Cure for Wellnes
 For comprehensive technical onboarding, architecture breakdown, and MCP guide, see:
 **[docs/ONBOARDING.md](docs/ONBOARDING.md)**
 
+For strict UI guidelines, Anti-AI Slop rules, and aesthetic standards, see:
+**[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**
+
 ---
 
 ## Quickstart
@@ -54,6 +57,12 @@ node tests/test_interactions_and_overlays.js
 
 # 5. Test full 8-Act narrative descent from Hub to Velvet Lounge
 node tests/test_full_descent_e2e.js
+
+# 6. Verify 0 VRAM memory leaks during infinite rapid scene transitions
+npm run test:memory
+
+# 7. Spam-click event lock validation and camera transition state integrity
+npm run test:click
 ```
 
 ---

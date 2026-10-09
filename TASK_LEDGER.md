@@ -57,5 +57,7 @@
 - [x] **TASK-019**: Reticle hover prompt matrix, frequency resonance tuning, settings modal accessibility
 - [x] **TASK-020**: Elimination of swallowed exceptions, Wiggum AST audit 0 findings
 - [x] **TASK-021**: Ceramic green tile sRGB calibration, ceiling luminaire, and surgical lighting restoration
-
-- TASK-022: Fixed 3D Room Z-Fighting (corridor and exit reveals, dado junctions), implemented physically swinging corridor door with click-to-enter raycast tracking, restored void black passage planes, and verified interactive Dev 3D Editor composite assemblies and HUD integration.
+- [x] **TASK-022**: Z-Fighting fixes, physically swinging corridor door physics, void passage planes
+- [x] **TASK-023**: Main Menu pill-button overhaul, Setting modal Z-index bugfix, and DESIGN_SYSTEM.md formalization
+- [x] **TASK-024**: Global inventory subsystem UI restoration, Take Item UI unhiding, and cascading progression locks
+- [x] **TASK-025**: Playwright ES Module HTTP server rewrite, rapid click resilience (input locking), and WebGL memory leak VRAM validation

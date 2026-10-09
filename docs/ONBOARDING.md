@@ -1,5 +1,12 @@
 # The Vault: Room 04 - Technical Onboarding & Architecture Guide
 
+
+## 0. Critical Agent Directives (MUST READ)
+1. **Windows OS Automation:** The built-in rowser_subagent fails on Windows. You **must** use raw Node.js Playwright scripts (as seen in 	ests/) or the chrome-devtools-mcp server for UI testing.
+2. **Zero-Emoji & Anti-AI Slop Guardrails:** Emojis are strictly prohibited in source code, commits, and logs. Do not use generic AI UI aesthetics. Read DESIGN_SYSTEM.md before modifying any HTML or CSS.
+3. **Senior Technical Reviewer Rule:** When formulating multi-step execution plans, you must invoke the Senior Technical Reviewer subagent to audit the plan.
+4. **Self-Documenting Code:** Prioritize strict TypeScript typing over redundant prose comments. No "what" comments, only "why" comments.
+
 ## 1. Project Overview & Aesthetic Identity
 
 "The Vault: Room 04" is an interactive 3D psychological thriller web application built with Three.js, Vite, and TypeScript.
@@ -52,6 +59,13 @@ src/
 │   └── Room08_VelvetLounge.ts # Act VIII Lynchian climax with sole ringing payphone
 ├── interaction/
 │   ├── RaycastManager.ts      # Cursor hover reticle & drag-vs-click separation (<6px / <500ms)
+│   ├── InspectionManager.ts   # Isolated WebGL 3D turntable for inspecting items (Brass Key)
+│   └── DevTransformGizmo.ts   # In-Engine 3D transform tool for Dev Mode
+├── editor/
+│   ├── Dev3DEditorPanel.ts    # React-like DOM Dev tool for multi-select and live persistence
+│   ├── EditorServerSync.ts    # Local API hooks to auto-save layout.json
+│   ├── EditorVisualizers.ts   # Raycast hover bounding box visualizers
+│   └── EditorPrefabs.ts       # Spawners for clocks, lights, and set dressing
 │   └── InspectionManager.ts   # Isolated WebGL 3D turntable for inspecting items (Brass Key)
 └── ui/
     ├── ScreenManager.ts       # View state router (title, chamber, dossier, inspect, debrief)
@@ -144,6 +158,12 @@ node test_interactions_and_overlays.js
 
 # 5. Full 8-Act Hub-and-Spoke Narrative Descent E2E
 node test_full_descent_e2e.js
+
+# 6. Verify 0 VRAM memory leaks during infinite rapid scene transitions
+npm run test:memory
+
+# 7. Spam-click event lock validation and camera transition state integrity
+npm run test:click
 ```
 
 ---
