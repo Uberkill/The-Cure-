@@ -31,7 +31,7 @@ export type CrystalId =
 
 export type DecayLevel = 0 | 1 | 2 | 3 | 4;
 
-export type ViewState = 'boot' | 'intro' | 'chamber' | 'dossier' | 'crt_patcher' | 'settings' | 'debrief' | 'terminal_blackout';
+export type ViewState = 'boot' | 'chamber' | 'dossier' | 'crt_patcher' | 'settings' | 'debrief' | 'terminal_blackout';
 
 export interface GameSettings {
   masterVolume: number;

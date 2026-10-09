@@ -73,7 +73,7 @@ server.listen(PORT, async () => {
 
   try {
     console.log('--- Step 1: Loading Room 04 & Verifying Audio Startup State ---');
-    await page.goto(`http://localhost:${PORT}`);
+    await page.goto(`http://localhost:${PORT}/?test=true`);
     await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
 
     // Verify btn-drone does not have active class

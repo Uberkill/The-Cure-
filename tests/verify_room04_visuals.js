@@ -51,7 +51,7 @@ server.listen(PORT, async () => {
   page.on('pageerror', (err) => console.error(`[Error] ${err.message}`));
 
   try {
-    await page.goto(`http://localhost:${PORT}`);
+    await page.goto(`http://localhost:${PORT}/?test=true`);
     await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
 
     // Begin intake

@@ -70,7 +70,7 @@ server.listen(PORT, async () => {
 
   try {
     console.log('--- Step 1: Application Bootstrap ---');
-    await page.goto(`http://localhost:${PORT}`);
+    await page.goto(`http://localhost:${PORT}/?test=true`);
     await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
     await page.click('#btn-begin-intake');
     await page.waitForTimeout(600);

@@ -71,31 +71,9 @@
   <!-- View: Terminal Boot -->
   <div class="overlay-screen" id="view-terminal-boot" style="background-color: #030403; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center;">
     <div id="terminal-text-container" style="font-family: var(--font-mono); color: var(--color-crt-phosphor); font-size: 14px; line-height: 1.8; text-transform: uppercase; white-space: pre-wrap; text-align: left; width: 400px; min-height: 120px; text-shadow: 0 0 4px var(--color-crt-phosphor);"></div>
-    <button class="pill-btn hidden" id="btn-initiate-recovery" style="margin-top: 40px; padding: 12px 32px; font-size: 12px; background: transparent; color: var(--color-crt-phosphor); border: 1px solid var(--color-crt-phosphor); text-shadow: 0 0 4px var(--color-crt-phosphor); box-shadow: 0 0 10px rgba(74, 219, 133, 0.2) inset;">
-      INITIATE RECOVERY
+    <button class="pill-btn hidden" id="btn-begin-intake" style="margin-top: 40px; padding: 12px 32px; font-size: 12px; background: transparent; color: var(--color-crt-phosphor); border: 1px solid var(--color-crt-phosphor); text-shadow: 0 0 4px var(--color-crt-phosphor); box-shadow: 0 0 10px rgba(74, 219, 133, 0.2) inset;">
+      > MANUAL OVERRIDE [CLICK]
     </button>
-  </div>
-
-  <!-- View: Intro Gate -->
-  <div class="overlay-screen hidden" id="view-intro">
-    <div class="dossier-paper" style="text-align: center;">
-      <div class="dossier-header">ST. JUDE SECTOR 04 • COGNITIVE INTAKE</div>
-      <h2 class="dossier-title">The Sterile Chamber</h2>
-      <p style="font-family: var(--font-serif); font-style: italic; font-size: 16px; margin-bottom: 24px; color: var(--ink-secondary);">
-        "Equilibrium requires absolute stillness."
-      </p>
-      <p style="font-family: var(--font-mono); font-size: 11px; line-height: 1.8; color: var(--ink-muted); margin-bottom: 32px;">
-        Subject 104 admitted for mandatory stabilization.<br><br>
-        <strong style="color: var(--ink-primary);">CONTROLS:</strong><br>
-        • <strong style="color: var(--ink-secondary);">LEFT CLICK + DRAG</strong> to Orbit<br>
-        • <strong style="color: var(--ink-secondary);">SCROLL WHEEL</strong> to Zoom<br>
-        • <strong style="color: var(--ink-secondary);">CLICK OBJECTS</strong> to Inspect / Zoom In<br>
-        • <strong style="color: var(--ink-secondary);">PRESS [ ESC ]</strong> to Zoom Out / Close Menus
-      </p>
-      <button class="pill-btn" id="btn-begin-intake" style="margin: 0 auto; padding: 12px 32px; font-size: 12px; background: var(--color-sage-deep); color: #ffffff;">
-        BEGIN COGNITIVE INTAKE
-      </button>
-    </div>
   </div>
 
   <!-- Modal: Dossier Reader -->
@@ -128,7 +106,16 @@ ALIGNMENT PROTOCOL REQUIREMENTS:
 REMINDER TO SUBJECT:
 Your presence in Room 04 is voluntary in accordance with Syndicate Emergency Decree 12. Resistance is a symptom of incomplete stabilization.
 Alignment precedes release.</div>
-      <button class="pill-btn" id="btn-close-dossier">Return to Chamber</button>
+
+      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.1); font-family: var(--font-mono); font-size: 11px; line-height: 1.8; color: var(--ink-muted);">
+        <strong style="color: var(--ink-primary);">APPROVED PATIENT CONTROLS:</strong><br>
+        • <strong style="color: var(--ink-secondary);">LEFT CLICK + DRAG</strong> to Orbit / Look<br>
+        • <strong style="color: var(--ink-secondary);">SCROLL WHEEL</strong> to Zoom<br>
+        • <strong style="color: var(--ink-secondary);">CLICK OBJECTS</strong> to Inspect<br>
+        • <strong style="color: var(--ink-secondary);">PRESS [ ESC ]</strong> to Step Back / Close
+      </div>
+
+      <button class="pill-btn" id="btn-close-dossier" style="margin-top: 20px;">Return to Chamber</button>
     </div>
   </div>
 

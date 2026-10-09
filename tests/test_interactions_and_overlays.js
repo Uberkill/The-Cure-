@@ -58,7 +58,7 @@ server.listen(PORT, async () => {
 
   try {
     console.log('--- Step 1: Loading Application ---');
-    await page.goto(`http://localhost:${PORT}`);
+    await page.goto(`http://localhost:${PORT}/?test=true`);
     await page.waitForSelector('#btn-begin-intake', { state: 'visible' });
 
     console.log('--- Step 2: Intake Gate Dismissal ---');
