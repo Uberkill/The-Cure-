@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor, CrystalId } from '../types';
 import { EventBus } from '../core/EventBus';
+import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
+import { BinauralSynthesizerScreen } from '../ui/screens/BinauralSynthesizerScreen';
 
 export class Room04_AudiologyVault implements RoomScenario {
   public id = 'audiology';
@@ -51,9 +53,38 @@ export class Room04_AudiologyVault implements RoomScenario {
   private crystalCollected: boolean = false;
   private ampTuned: boolean = false;
   private currentToneFreq: number = 600;
+  private binauralScreen: BinauralSynthesizerScreen;
+  private unsubscribers: Array<() => void> = [];
+
+  public constructor() {
+    this.binauralScreen = new BinauralSynthesizerScreen();
+  }
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
+
+    const hasCrystal = GameState.getInstance().hasCrystal('crystal_03_amethyst');
+    if (hasCrystal) {
+      this.ampTuned = true;
+      this.crystalCollected = true;
+      this.currentToneFreq = 741;
+    } else {
+      this.ampTuned = false;
+      this.crystalCollected = false;
+      this.currentToneFreq = 600;
+    }
+
+    const unsub = EventBus.getInstance().on('puzzle:crystal_collected', (payload) => {
+      if (payload.crystalId === 'crystal_03_amethyst') {
+        this.ampTuned = true;
+        this.crystalCollected = true;
+        this.currentToneFreq = 741;
+        if (this.crystalMesh) {
+          this.crystalMesh.visible = false;
+        }
+      }
+    });
+    this.unsubscribers.push(unsub);
 
     // Warped Non-Euclidean Wall Materials
     const matWall = new THREE.MeshStandardMaterial({ color: 0x1f2421, roughness: 0.8 });
@@ -176,6 +207,9 @@ export class Room04_AudiologyVault implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    this.unsubscribers.forEach(u => u());
+    this.unsubscribers = [];
+    this.binauralScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -203,7 +237,22 @@ export class Room04_AudiologyVault implements RoomScenario {
       return true;
     }
 
-    if (objectId === 'prop_amplifier_monolith' || objectId === 'prop_amp_stack' || objectId === 'prop_speaker_cone') {
+    if (objectId === 'prop_amplifier_monolith') {
+      if (this.ampTuned || GameState.getInstance().hasCrystal('crystal_03_amethyst')) {
+        audio.playToneAlignmentSweep(741);
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'monolith' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The amplifier vibrates in steady 741 Hz Solfeggio resonance. Diaphragm decoupled and Memory Crystal 03 secured.'
+        });
+        return true;
+      }
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'monolith' });
+      this.binauralScreen.open();
+      return true;
+    }
+
+    if (objectId === 'prop_amp_stack' || objectId === 'prop_speaker_cone') {
       if (this.ampTuned) {
         audio.playToneAlignmentSweep(741);
         bus.emit('ui:subtitle_changed', {
@@ -233,7 +282,7 @@ export class Room04_AudiologyVault implements RoomScenario {
     }
 
     if (objectId === 'crystal_03_amethyst') {
-      if (!this.crystalCollected) {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_03_amethyst')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         audio.playTumblerClick();

@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor, CrystalId } from '../types';
 import { EventBus } from '../core/EventBus';
+import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
+import { HydraulicManifoldScreen } from '../ui/screens/HydraulicManifoldScreen';
 
 export class Room03_Hydrotherapy implements RoomScenario {
   public id = 'hydrotherapy';
@@ -64,9 +66,44 @@ export class Room03_Hydrotherapy implements RoomScenario {
   private valveRotations = [0, 0, 0];
   private valveMeshes: THREE.Mesh[] = [];
   private drainLidMesh: THREE.Mesh | null = null;
+  private manifoldScreen: HydraulicManifoldScreen;
+  private unsubscribers: Array<() => void> = [];
+
+  public constructor() {
+    this.manifoldScreen = new HydraulicManifoldScreen();
+  }
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
+
+    const hasCrystal = GameState.getInstance().hasCrystal('crystal_02_bronze');
+    if (hasCrystal) {
+      this.manifoldBalanced = true;
+      this.crystalCollected = true;
+      this.valveRotations = [2, 1, 3];
+    } else {
+      this.manifoldBalanced = false;
+      this.crystalCollected = false;
+      this.valveRotations = [0, 0, 0];
+    }
+
+    const unsub = EventBus.getInstance().on('puzzle:crystal_collected', (payload) => {
+      if (payload.crystalId === 'crystal_02_bronze') {
+        this.manifoldBalanced = true;
+        this.crystalCollected = true;
+        if (this.drainLidMesh) {
+          this.drainLidMesh.position.x = 0.25;
+        }
+        if (this.crystalMesh) {
+          this.crystalMesh.visible = false;
+        }
+        this.valveRotations = [2, 1, 3];
+        this.valveMeshes.forEach((mesh, idx) => {
+          mesh.rotation.z = this.valveRotations[idx] * (Math.PI / 2);
+        });
+      }
+    });
+    this.unsubscribers.push(unsub);
 
     const matHexTile = new THREE.MeshStandardMaterial({ color: 0x2e4e4a, roughness: 0.2, metalness: 0.1 });
     const matWall = new THREE.MeshStandardMaterial({ color: 0xccd5cc, roughness: 0.6 });
@@ -219,6 +256,9 @@ export class Room03_Hydrotherapy implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    this.unsubscribers.forEach(u => u());
+    this.unsubscribers = [];
+    this.manifoldScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -261,11 +301,16 @@ export class Room03_Hydrotherapy implements RoomScenario {
     }
 
     if (objectId === 'prop_manifold') {
+      if (this.manifoldBalanced || GameState.getInstance().hasCrystal('crystal_02_bronze')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'manifold' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'Hydrostatic manifold locked at 0.0 PSI. Floor drain hatch unsealed and Memory Crystal 02 secured.'
+        });
+        return true;
+      }
       audio.playTumblerClick();
-      const currentPressure = this.calculatePressure();
-      bus.emit('ui:subtitle_changed', {
-        text: `Manifold Pressure Gauge: ${currentPressure} PSI. Calibrate Valves A, B, and C to depressurize to 0 PSI.`
-      });
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'manifold' });
+      this.manifoldScreen.open();
       return true;
     }
 
@@ -309,7 +354,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
     }
 
     if (objectId === 'crystal_02_bronze') {
-      if (!this.crystalCollected) {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_02_bronze')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         audio.playTumblerClick();

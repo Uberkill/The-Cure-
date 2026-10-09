@@ -300,3 +300,362 @@
   background: #172b1e;
 }
 
+/* Act III: Hydraulic Manifold Housing & Bourdon Gauge */
+.manifold-housing {
+  background: #171d1b;
+  border-color: #2b3935;
+}
+
+.manifold-top-readout {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  justify-content: space-around;
+  background: #101514;
+  padding: 20px;
+  border-radius: 6px;
+  border: 1px solid #24302c;
+}
+
+.bourdon-gauge-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.gauge-title {
+  font-size: 10px;
+  color: #72847d;
+  letter-spacing: 0.12em;
+}
+
+.bourdon-dial {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #1a221f 60%, #0d1210 100%);
+  border: 4px solid #364641;
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9), 0 4px 10px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gauge-needle {
+  position: absolute;
+  width: 3px;
+  height: 48px;
+  background: #ef4444;
+  bottom: 50%;
+  left: calc(50% - 1.5px);
+  transform-origin: bottom center;
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  box-shadow: 0 0 4px rgba(239, 68, 68, 0.6);
+}
+
+.gauge-center-cap {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #c28833;
+  border: 2px solid #5a411a;
+  z-index: 2;
+}
+
+.gauge-readout-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.1em;
+}
+
+.sight-tubes-bank {
+  display: flex;
+  gap: 20px;
+}
+
+.sight-tube-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.tube-label {
+  font-size: 9px;
+  color: #72847d;
+  letter-spacing: 0.1em;
+}
+
+.sight-glass-well {
+  width: 28px;
+  height: 120px;
+  background: #090e0c;
+  border: 2px solid #2d3b37;
+  border-radius: 14px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.water-column {
+  width: 100%;
+  background: linear-gradient(180deg, #38bdf8, #0284c7);
+  transition: height 0.3s ease;
+  box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+}
+
+.tube-readout {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+}
+
+.manifold-controls-apron {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.valves-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.valve-wheel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  background: #1c2421;
+  border: 2px solid #364641;
+  border-radius: 6px;
+  color: #c28833;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.valve-wheel:hover:not([disabled]) {
+  background: #25312d;
+  border-color: #c28833;
+}
+
+.valve-wheel .valve-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.valve-wheel .valve-action {
+  font-size: 9px;
+  color: #8b9991;
+}
+
+.manifold-actions-row {
+  display: flex;
+  gap: 12px;
+}
+
+.emergency-dump-lever {
+  flex: 1;
+  padding: 12px;
+  background: #3a1616;
+  border: 1px solid #7f1d1d;
+  color: #f87171;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.emergency-dump-lever:hover:not([disabled]) {
+  background: #4c1d1d;
+}
+
+.btn-unseal-drain {
+  flex: 1;
+  padding: 12px;
+  background: #19201d;
+  border: 1px solid #364641;
+  color: #8b9991;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-unseal-drain.ready {
+  background: #164e63;
+  border-color: #38bdf8;
+  color: #e0f2fe;
+}
+
+.btn-unseal-drain.unlocked {
+  background: #14532d;
+  border-color: #4ade80;
+  color: #f0fdf4;
+}
+
+/* Act IV: Binaural Synthesizer Housing & Chladni Viewport */
+.binaural-housing {
+  background: #171b1d;
+  border-color: #2b3337;
+}
+
+.binaural-main-panel {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  align-items: center;
+}
+
+@media (max-width: 760px) {
+  .binaural-main-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chladni-viewport-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: #0d1112;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid #232b2f;
+  position: relative;
+}
+
+.viewport-title {
+  font-size: 9px;
+  color: #728087;
+  letter-spacing: 0.12em;
+}
+
+#chladni-canvas {
+  width: 320px;
+  height: 320px;
+  background: #080c0d;
+  border-radius: 50%;
+  box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95), 0 0 10px rgba(74, 222, 128, 0.1);
+}
+
+.chladni-glare-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
+}
+
+.acoustic-controls-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.horns-cluster, .phase-freq-cluster {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #121618;
+  padding: 14px;
+  border-radius: 6px;
+  border: 1px solid #21292d;
+}
+
+.control-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-lane label {
+  font-size: 10px;
+  color: #728087;
+  letter-spacing: 0.1em;
+}
+
+.control-lane input[type="range"] {
+  width: 100%;
+  accent-color: #a78bfa;
+  cursor: pointer;
+}
+
+.readout-pill {
+  font-size: 12px;
+  color: #a78bfa;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.btn-phase-toggle {
+  padding: 10px 16px;
+  background: #1c2226;
+  border: 1px solid #323d44;
+  border-radius: 4px;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+}
+
+.btn-phase-toggle:hover:not([disabled]) {
+  background: #273138;
+}
+
+.btn-phase-toggle.inverted {
+  background: #3b1f5e;
+  border-color: #a78bfa;
+  color: #e9d5ff;
+}
+
+.unseal-action-lane {
+  margin-top: 4px;
+}
+
+.btn-unseal-monolith {
+  width: 100%;
+  padding: 14px;
+  background: #19201d;
+  border: 1px solid #364641;
+  color: #8b9991;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-unseal-monolith.ready {
+  background: #4c1d95;
+  border-color: #a78bfa;
+  color: #f5f3ff;
+}
+
+.btn-unseal-monolith.unlocked {
+  background: #14532d;
+  border-color: #4ade80;
+  color: #f0fdf4;
+}
+
