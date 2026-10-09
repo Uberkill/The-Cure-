@@ -659,3 +659,713 @@
   color: #f0fdf4;
 }
 
+
+/* ==========================================================================
+   ACT V: OPTICAL MICROFICHE VIEWER & PNEUMATIC DISPATCH TERMINAL
+   ========================================================================== */
+
+.microfiche-housing {
+  max-width: 840px;
+}
+
+.microfiche-console-layout {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 20px;
+}
+
+.microfiche-projector-bay {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.projector-bezel {
+  background: #090e0c;
+  border: 3px solid #233129;
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.9);
+}
+
+.projection-screen {
+  background: #0d1611;
+  border: 1px solid #1f2d25;
+  border-radius: 4px;
+  min-height: 220px;
+  padding: 16px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.projection-glass-glare {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), transparent);
+  pointer-events: none;
+}
+
+.microfilm-document {
+  color: #86efac;
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-size: 11px;
+  line-height: 1.6;
+  letter-spacing: 0.05em;
+  transition: filter 0.15s ease, opacity 0.15s ease;
+}
+
+.doc-header {
+  border-bottom: 1px solid #284433;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.doc-classification {
+  font-size: 9px;
+  color: #f59e0b;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+.doc-title {
+  font-size: 13px;
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.doc-highlight {
+  color: #38bdf8;
+  font-weight: 700;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+
+.doc-note {
+  margin-top: 10px;
+  font-size: 9px;
+  color: #94a3b8;
+  border-left: 2px solid #38bdf8;
+  padding-left: 6px;
+}
+
+.film-unmounted-notice {
+  text-align: center;
+  color: #64748b;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  line-height: 1.6;
+}
+
+.projector-controls-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.btn-mount-film {
+  padding: 10px;
+  background: #19221d;
+  border: 1px solid #364641;
+  color: #c28833;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-mount-film:hover:not([disabled]) {
+  background: #243029;
+  border-color: #c28833;
+}
+
+.btn-mount-film.active {
+  background: #2e3d23;
+  border-color: #84cc16;
+  color: #d9f99d;
+}
+
+.optic-focus-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.focus-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.focus-input-row input[type="range"] {
+  flex: 1;
+}
+
+.btn-focus-step {
+  padding: 6px 12px;
+  background: #18201c;
+  border: 1px solid #2d3b36;
+  color: #94a3b8;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn-focus-step:hover {
+  background: #25332c;
+  color: #e2e8f0;
+}
+
+.focus-readout-pill {
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.focus-readout-pill.focused {
+  color: #4ade80;
+  font-weight: 700;
+}
+
+.pneumatic-dispatch-bay {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: #111815;
+  border: 1px solid #23312b;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.bay-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  border-bottom: 1px solid #1f2d26;
+  padding-bottom: 8px;
+}
+
+.bay-title {
+  font-size: 10px;
+  color: #94a3b8;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+}
+
+.hopper-status {
+  font-size: 11px;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+.sector-matrix {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.matrix-label {
+  font-size: 9px;
+  color: #64748b;
+  letter-spacing: 0.08em;
+}
+
+.sector-buttons-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.btn-sector {
+  padding: 8px 4px;
+  background: #18201d;
+  border: 1px solid #2d3b36;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-sector:hover {
+  background: #23302b;
+  color: #e2e8f0;
+}
+
+.btn-sector.active {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  color: #dbeafe;
+}
+
+.station-selector-lane {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.station-input-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.station-input-row input {
+  width: 60px;
+  padding: 6px 10px;
+  background: #090e0c;
+  border: 1px solid #2d3b36;
+  border-radius: 4px;
+  color: #4ade80;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.coordinate-pill {
+  padding: 6px 12px;
+  background: #090e0c;
+  border: 1px solid #38bdf8;
+  border-radius: 4px;
+  color: #38bdf8;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.btn-pneumatic-launch {
+  width: 100%;
+  padding: 12px;
+  background: #1c2b24;
+  border: 1px solid #3d5849;
+  color: #86efac;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pneumatic-launch:hover:not([disabled]) {
+  background: #283d33;
+  border-color: #4ade80;
+  color: #f0fdf4;
+}
+
+/* ==========================================================================
+   ACT VI: NAGRA REEL-TO-REEL TAPE DECK & EXECUTIVE CLOCK CONSOLE
+   ========================================================================== */
+
+.wiretap-housing {
+  max-width: 860px;
+}
+
+.wiretap-console-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 20px;
+}
+
+.tape-deck-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #101614;
+  border: 2px solid #23302a;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.deck-top-spools {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #1f2c25;
+}
+
+.spool-housing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.spool-hub {
+  width: 70px;
+  height: 70px;
+  background: #1c2522;
+  border: 3px solid #64748b;
+  border-radius: 50%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+.spool-spoke {
+  position: absolute;
+  width: 4px;
+  height: 100%;
+  background: #475569;
+}
+
+.spool-spoke:nth-child(1) { transform: rotate(0deg); }
+.spool-spoke:nth-child(2) { transform: rotate(60deg); }
+.spool-spoke:nth-child(3) { transform: rotate(120deg); }
+
+@keyframes spin-normal {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-half {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-rewind {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+
+.spool-hub.spinning-normal {
+  animation: spin-normal 2.2s linear infinite;
+}
+
+.spool-hub.spinning-half {
+  animation: spin-half 4.5s linear infinite;
+}
+
+.spool-hub.spinning-rewind {
+  animation: spin-rewind 0.7s linear infinite;
+}
+
+.spool-label {
+  font-size: 8px;
+  color: #64748b;
+  letter-spacing: 0.1em;
+}
+
+.deck-vu-meter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #141c19;
+  border: 1px solid #2b3933;
+  border-radius: 4px;
+  padding: 6px 12px;
+}
+
+.vu-title {
+  font-size: 8px;
+  color: #718096;
+  letter-spacing: 0.08em;
+}
+
+.vu-needle-slot {
+  width: 60px;
+  height: 24px;
+  background: #090e0c;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+}
+
+.vu-needle {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  height: 20px;
+  background: #f59e0b;
+  transform-origin: bottom center;
+  transform: rotate(-15deg);
+  transition: transform 0.1s ease;
+}
+
+.vu-scale {
+  font-size: 7px;
+  color: #4a5568;
+}
+
+.tape-transcript-bay {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bay-sublabel {
+  font-size: 9px;
+  color: #64748b;
+  letter-spacing: 0.08em;
+}
+
+.tape-transcript-text {
+  min-height: 60px;
+  background: #090e0c;
+  border: 1px solid #1f2c25;
+  border-radius: 4px;
+  padding: 10px;
+  font-family: var(--font-mono, 'Courier New', monospace);
+  font-size: 11px;
+  line-height: 1.5;
+  color: #4ade80;
+}
+
+.tape-transport-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.transport-buttons {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.btn-transport {
+  padding: 8px;
+  background: #1c2522;
+  border: 1px solid #33433d;
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-transport:hover {
+  background: #25332e;
+  border-color: #64748b;
+}
+
+.speed-selector-cluster {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.speed-title {
+  font-size: 9px;
+  color: #64748b;
+}
+
+.btn-speed {
+  padding: 6px 10px;
+  background: #18201d;
+  border: 1px solid #2d3b35;
+  color: #94a3b8;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-speed.active {
+  background: #1e3a8a;
+  border-color: #3b82f6;
+  color: #dbeafe;
+}
+
+.executive-clock-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: #121815;
+  border: 2px solid #28372f;
+  border-radius: 6px;
+  padding: 14px;
+}
+
+.clock-escapement-bay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid #202d26;
+  padding-bottom: 12px;
+}
+
+.clock-face-display {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  background: #090e0c;
+  border: 2px solid #c28833;
+  border-radius: 6px;
+  padding: 8px 24px;
+}
+
+.clock-time-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fbbf24;
+  letter-spacing: 0.08em;
+  font-family: var(--font-mono, monospace);
+}
+
+.clock-meridiem {
+  font-size: 11px;
+  color: #c28833;
+  font-weight: 600;
+}
+
+.clock-controls-grid {
+  display: flex;
+  gap: 16px;
+}
+
+.clock-control-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.col-title {
+  font-size: 8px;
+  color: #64748b;
+}
+
+.btn-row {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-clock-step {
+  padding: 6px 10px;
+  background: #1c2522;
+  border: 1px solid #33433d;
+  color: #cbd5e1;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-clock-step:hover {
+  background: #273630;
+  color: #f1f5f9;
+}
+
+.rotary-phone-bay {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dialed-readout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #090e0c;
+  border: 1px solid #23312a;
+  border-radius: 4px;
+  padding: 6px 10px;
+}
+
+.dialed-label {
+  font-size: 9px;
+  color: #64748b;
+}
+
+.dialed-buffer {
+  font-size: 13px;
+  font-weight: 700;
+  color: #38bdf8;
+  letter-spacing: 0.15em;
+  font-family: var(--font-mono, monospace);
+}
+
+.btn-clear-dial {
+  padding: 2px 6px;
+  background: #1c2420;
+  border: 1px solid #33433b;
+  color: #94a3b8;
+  font-size: 9px;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.rotary-dial-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.btn-rotary-digit {
+  padding: 8px 0;
+  background: #1a221f;
+  border: 1px solid #2e3c36;
+  color: #e2e8f0;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.btn-rotary-digit:hover {
+  background: #26332e;
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.safe-unlatch-lane {
+  margin-top: 4px;
+}
+
+.btn-unlatch-safe {
+  width: 100%;
+  padding: 12px;
+  background: #19201d;
+  border: 1px solid #364641;
+  color: #8b9991;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-unlatch-safe.ready {
+  background: #78350f;
+  border-color: #f59e0b;
+  color: #fef3c7;
+}
+
+.btn-unlatch-safe.unlocked {
+  background: #14532d;
+  border-color: #4ade80;
+  color: #f0fdf4;
+}

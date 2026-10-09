@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor, CrystalId } from '../types';
 import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
+import { MicroficheViewerScreen } from '../ui/screens/MicroficheViewerScreen';
+import { GameState } from '../core/GameState';
 
 export class Room05_Archive implements RoomScenario {
   public id = 'archive';
@@ -33,9 +35,20 @@ export class Room05_Archive implements RoomScenario {
         target: new THREE.Vector3(-1.0, 1.2, -0.8)
       }
     },
+    microfiche: {
+      id: 'microfiche',
+      name: 'III. Microfiche Terminal',
+      position: new THREE.Vector3(1.6, 1.4, -1.2),
+      interactionPrompt: '[ACCESS OPTICAL READER]',
+      cameraPreset: {
+        name: 'microfiche',
+        position: new THREE.Vector3(1.6, 1.5, -0.2),
+        target: new THREE.Vector3(1.6, 1.1, -1.2)
+      }
+    },
     door: {
       id: 'door',
-      name: 'III. Hub Corridor',
+      name: 'IV. Hub Corridor',
       position: new THREE.Vector3(0, 1.8, 5.5),
       interactionPrompt: '[RETURN: CENTRAL HUB]',
       cameraPreset: {
@@ -51,9 +64,32 @@ export class Room05_Archive implements RoomScenario {
   private crystalCollected: boolean = false;
   private drawerOpen: boolean = false;
   private drawer104Mesh: THREE.Mesh | null = null;
+  private microficheScreen: MicroficheViewerScreen = new MicroficheViewerScreen();
+  private unsubscribers: (() => void)[] = [];
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
+
+    // Rehydrate state from GameState
+    this.drawerOpen = GameState.getInstance().hasCrystal('crystal_04_obsidian');
+    this.crystalCollected = this.drawerOpen;
+
+    const bus = EventBus.getInstance();
+    this.unsubscribers.push(
+      bus.on('puzzle:crystal_collected', (payload) => {
+        const data = payload as { crystalId?: string };
+        if (data.crystalId === 'crystal_04_obsidian') {
+          this.drawerOpen = true;
+          this.crystalCollected = true;
+          if (this.drawer104Mesh) {
+            this.drawer104Mesh.position.z += 0.45;
+          }
+          if (this.crystalMesh) {
+            this.crystalMesh.visible = false;
+          }
+        }
+      })
+    );
 
     const matCab = new THREE.MeshStandardMaterial({ color: 0x283629, roughness: 0.6, metalness: 0.3 });
     const matWall = new THREE.MeshStandardMaterial({ color: 0x162018, roughness: 0.8 });
@@ -151,6 +187,38 @@ export class Room05_Archive implements RoomScenario {
       this.group!.add(cabGroup);
     });
 
+    // Dedicated Microfiche Reader Console Table
+    const readerDesk = new THREE.Group();
+    readerDesk.position.set(1.6, 0, -1.2);
+    readerDesk.name = 'prop_microfiche_reader';
+
+    // Stand base
+    const standMat = new THREE.MeshStandardMaterial({ color: 0x1e2822, roughness: 0.7 });
+    const stand = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.85, 0.8), standMat);
+    stand.position.y = 0.425;
+    stand.castShadow = true;
+    readerDesk.add(stand);
+
+    // Microfilm projector hood
+    const hood = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.45, 0.5), new THREE.MeshStandardMaterial({ color: 0x2b3831, roughness: 0.5 }));
+    hood.position.set(0, 1.05, 0);
+    readerDesk.add(hood);
+
+    // Illuminated screen face
+    const screenFace = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.45, 0.35),
+      new THREE.MeshStandardMaterial({
+        color: 0x22c55e,
+        emissive: 0x15803d,
+        emissiveIntensity: 0.6,
+        roughness: 0.2
+      })
+    );
+    screenFace.position.set(0, 1.05, 0.251);
+    readerDesk.add(screenFace);
+
+    this.group.add(readerDesk);
+
     // Sickly Chemical Green Overhead Lighting
     const greenLight = new THREE.PointLight(0x4ade80, 1.4, 12);
     greenLight.position.set(0, 4.0, 0);
@@ -170,6 +238,9 @@ export class Room05_Archive implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    this.unsubscribers.forEach(u => u());
+    this.unsubscribers = [];
+    this.microficheScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -194,6 +265,20 @@ export class Room05_Archive implements RoomScenario {
 
     if (objectId === 'door_return_hub') {
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      return true;
+    }
+
+    if (objectId === 'prop_microfiche_reader') {
+      if (this.drawerOpen || GameState.getInstance().hasCrystal('crystal_04_obsidian')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'microfiche' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The microfiche directory indicates Sector GAMMA-07 dispatch completed. Obsidian crystal secured.'
+        });
+        return true;
+      }
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'microfiche' });
+      this.microficheScreen.open();
       return true;
     }
 
@@ -229,7 +314,7 @@ export class Room05_Archive implements RoomScenario {
     }
 
     if (objectId === 'crystal_04_obsidian') {
-      if (!this.crystalCollected) {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_04_obsidian')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         audio.playTumblerClick();

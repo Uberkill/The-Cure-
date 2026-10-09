@@ -2,6 +2,8 @@ import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor, CrystalId } from '../types';
 import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
+import { WiretapTapeDeckScreen } from '../ui/screens/WiretapTapeDeckScreen';
+import { GameState } from '../core/GameState';
 
 export class Room06_DirectorsOffice implements RoomScenario {
   public id = 'directors_office';
@@ -51,15 +53,39 @@ export class Room06_DirectorsOffice implements RoomScenario {
   private secretDrawerMesh: THREE.Mesh | null = null;
   private crystalCollected: boolean = false;
   private drawerUnlocked: boolean = false;
+  private wiretapScreen: WiretapTapeDeckScreen = new WiretapTapeDeckScreen();
+  private unsubscribers: (() => void)[] = [];
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
+
+    // Rehydrate state from GameState
+    this.drawerUnlocked = GameState.getInstance().hasCrystal('crystal_05_celadon');
+    this.crystalCollected = this.drawerUnlocked;
+
+    const bus = EventBus.getInstance();
+    this.unsubscribers.push(
+      bus.on('puzzle:crystal_collected', (payload) => {
+        const data = payload as { crystalId?: string };
+        if (data.crystalId === 'crystal_05_celadon') {
+          this.drawerUnlocked = true;
+          this.crystalCollected = true;
+          if (this.secretDrawerMesh) {
+            this.secretDrawerMesh.position.z += 0.45;
+          }
+          if (this.crystalMesh) {
+            this.crystalMesh.visible = false;
+          }
+        }
+      })
+    );
 
     // Pitch-black void materials
     const matVoid = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const matMahogany = new THREE.MeshStandardMaterial({ color: 0x1f140e, roughness: 0.35 });
     const matPhone = new THREE.MeshStandardMaterial({ color: 0xe5e1d8, roughness: 0.4 });
     const matBrass = new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.85, roughness: 0.25 });
+    const matAluminum = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.8, roughness: 0.3 });
 
     // Infinite Dark Floor
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), matVoid);
@@ -108,6 +134,21 @@ export class Room06_DirectorsOffice implements RoomScenario {
 
     deskGroup.add(phoneGroup);
 
+    // Nagra SN Reel-to-Reel Tape Deck on Desk
+    const tapeDeckGroup = new THREE.Group();
+    tapeDeckGroup.position.set(0.0, 1.02, -0.15);
+    tapeDeckGroup.name = 'prop_tape_deck';
+
+    const deckBody = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.1, 0.4), new THREE.MeshStandardMaterial({ color: 0x222b27, roughness: 0.5 }));
+    tapeDeckGroup.add(deckBody);
+
+    [-0.14, 0.14].forEach(xOff => {
+      const reel = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.02, 24), matAluminum);
+      reel.position.set(xOff, 0.06, 0);
+      tapeDeckGroup.add(reel);
+    });
+    deskGroup.add(tapeDeckGroup);
+
     // Secret Mahogany Drawer
     const drawerMat = new THREE.MeshStandardMaterial({ color: 0x140c08, roughness: 0.4 });
     this.secretDrawerMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.12, 0.6), drawerMat);
@@ -132,7 +173,6 @@ export class Room06_DirectorsOffice implements RoomScenario {
     this.crystalMesh.visible = false;
     deskGroup.add(this.crystalMesh);
 
-    deskGroup.add(phoneGroup);
     this.group.add(deskGroup);
 
     // Single Harsh Surgical Downward Spotlight
@@ -157,6 +197,9 @@ export class Room06_DirectorsOffice implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    this.unsubscribers.forEach(u => u());
+    this.unsubscribers = [];
+    this.wiretapScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -174,11 +217,25 @@ export class Room06_DirectorsOffice implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'prop_tape_deck') {
+      if (this.drawerUnlocked || GameState.getInstance().hasCrystal('crystal_05_celadon')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'desk' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The reel-to-reel deck is unspooled. Carriage clock set to 11:03. Celadon Core crystal secured.'
+        });
+        return true;
+      }
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'desk' });
+      this.wiretapScreen.open();
+      return true;
+    }
+
     if (objectId === 'prop_director_desk' || objectId === 'prop_director_drawer') {
       audio.playTumblerClick();
       if (!this.drawerUnlocked) {
         bus.emit('ui:subtitle_changed', {
-          text: 'The heavy mahogany executive desk is locked with a magnetic relay. An unplugged rotary telephone rests on the surface.'
+          text: 'The heavy mahogany executive desk is locked with a magnetic relay. An unplugged rotary telephone and wiretap tape deck rest on the surface.'
         });
       } else {
         bus.emit('ui:subtitle_changed', {
@@ -212,7 +269,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
     }
 
     if (objectId === 'crystal_05_celadon') {
-      if (!this.crystalCollected) {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_05_celadon')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         audio.playTumblerClick();
