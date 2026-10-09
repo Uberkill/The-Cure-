@@ -27,10 +27,10 @@ export class CameraDirector {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.target.copy(this.baseTarget);
-    this.controls.minPolarAngle = Math.PI / 6;
+    this.controls.minPolarAngle = 0.1; // Loosened from Math.PI/6 to prevent twisting on steep presets (e.g. envelope)
     this.controls.maxPolarAngle = Math.PI / 2.08;
-    this.controls.minDistance = 1.2;
-    this.controls.maxDistance = 6.4;
+    this.controls.minDistance = 0.5; // Loosened from 1.2 to prevent bounding-back on closeups (e.g. telephone)
+    this.controls.maxDistance = 8.0;
 
     this.controls.addEventListener('start', () => {
       this.isUserOrbiting = true;
@@ -107,6 +107,8 @@ export class CameraDirector {
   }
 
   public moveToPreset(preset: CameraPreset, durationMs: number = 1000): void {
+    if (this.isTransitioning) return;
+    
     this.isTransitioning = true;
     this.controls.enabled = false;
     this.eventBus.emit('camera:transition_start', {});
@@ -135,8 +137,8 @@ export class CameraDirector {
       } else {
         this.camera.position.copy(endPos);
         this.controls.target.copy(endTarget);
+        this.controls.enabled = true; // Must be true BEFORE update() so it doesn't return early!
         this.controls.update(); // Sync OrbitControls internal spherical state to prevent jerking
-        this.controls.enabled = true;
         this.isTransitioning = false;
         this.eventBus.emit('camera:transition_end', {});
       }

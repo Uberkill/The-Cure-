@@ -344,6 +344,7 @@ export class Dev3DEditorPanel {
 
     // Save to Server
     document.getElementById('dev-btn-save-server')?.addEventListener('click', async () => {
+      const data: any = { prefabs: [] };
       // Gather all prefabs currently in the scene to prevent wiping others
       this.scene.traverse(child => {
         if (child.userData && child.userData.isPrefab) {
