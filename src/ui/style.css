@@ -648,6 +648,5 @@ body, html {
 .hidden {
   display: none !important;
 }
-. c a n v a s - b l u r   {   f i l t e r :   b l u r ( 3 0 p x )   b r i g h t n e s s ( 0 . 1 ) ;   t r a n s i t i o n :   f i l t e r   4 s   e a s e - i n ,   b r i g h t n e s s   4 s   e a s e - i n ;   } 
- . c a n v a s - f o c u s   {   f i l t e r :   b l u r ( 0 p x )   b r i g h t n e s s ( 1 ) ;   t r a n s i t i o n :   f i l t e r   5 s   e a s e - o u t ,   b r i g h t n e s s   5 s   e a s e - o u t ;   }  
- 
+.canvas-blur { filter: blur(30px) brightness(0.1); transition: filter 4s ease-in, brightness 4s ease-in; }
+.canvas-focus { filter: blur(0px) brightness(1); transition: filter 5s ease-out, brightness 5s ease-out; }
