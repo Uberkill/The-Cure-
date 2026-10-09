@@ -1,8 +1,19 @@
-import * as THREE from 'three';
+﻿import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox.js';
 import { RaycastManager } from './RaycastManager';
+
+
+export interface TransformSnapshot {
+  objects: {
+    uuid: string;
+    object: THREE.Object3D;
+    position: THREE.Vector3;
+    rotation: THREE.Euler;
+    scale: THREE.Vector3;
+  }[];
+}
 
 export class DevTransformGizmo {
   private scene: THREE.Scene;
@@ -26,6 +37,8 @@ export class DevTransformGizmo {
 
   private selectionBox: SelectionBox;
   private marqueeDiv: HTMLDivElement;
+  private history: TransformSnapshot[] = [];
+  private currentSnapshot: TransformSnapshot | null = null;
   private isMarqueeDragging: boolean = false;
   private marqueeStartPoint = new THREE.Vector2();
   
@@ -118,12 +131,32 @@ export class DevTransformGizmo {
       this.orbitControls.enabled = !isDragging;
       this.raycastManager.setEnabled(!isDragging && !this.isEnabled);
 
-      if (!isDragging && this.selectedObjects.length > 0) {
-        if (this.onTransformChange) {
-          this.onTransformChange(this.selectedObjects);
+      if (isDragging) {
+        // Drag started - capture snapshot
+        this.currentSnapshot = {
+          objects: this.selectedObjects.map(obj => ({
+            uuid: obj.uuid,
+            object: obj,
+            position: obj.position.clone(),
+            rotation: obj.rotation.clone(),
+            scale: obj.scale.clone()
+          }))
+        };
+      } else {
+        // Drag ended
+        if (this.currentSnapshot) {
+          this.history.push(this.currentSnapshot);
+          if (this.history.length > 50) this.history.shift(); // Max 50 undos
+          this.currentSnapshot = null;
         }
-        // Update start states for next drag
-        this.cacheStartStates();
+
+        if (this.selectedObjects.length > 0) {
+          if (this.onTransformChange) {
+            this.onTransformChange(this.selectedObjects);
+          }
+          // Update start states for next drag
+          this.cacheStartStates();
+        }
       }
     });
 
@@ -313,6 +346,11 @@ export class DevTransformGizmo {
       }
     }
 
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z')) {
+      this.undo();
+      return;
+    }
+    
     if (e.key === 'w' || e.key === 'W') {
       this.setMode('translate');
       this.showToast('Gizmo Mode: Translate (Move)');
@@ -341,6 +379,36 @@ export class DevTransformGizmo {
     } else if (e.key === 'Escape') {
       this.detach();
       this.showToast('Deselected object');
+    }
+  }
+
+  public undo(): void {
+    const snapshot = this.history.pop();
+    if (snapshot) {
+      for (const item of snapshot.objects) {
+        if (item.object) {
+          item.object.position.copy(item.position);
+          item.object.rotation.copy(item.rotation);
+          item.object.scale.copy(item.scale);
+        }
+      }
+      
+      // Update dummy box position if multi-selecting
+      if (this.selectedObjects.length > 1) {
+        const center = new THREE.Vector3();
+        this.selectedObjects.forEach(obj => center.add(obj.position));
+        center.divideScalar(this.selectedObjects.length);
+        this.dummyPivot.position.copy(center);
+        this.dummyPivot.rotation.set(0, 0, 0);
+        this.dummyPivot.scale.set(1, 1, 1);
+      }
+      
+      if (this.onTransformChange) {
+        this.onTransformChange(this.selectedObjects);
+      }
+      this.showToast('Undo transform');
+    } else {
+      this.showToast('Nothing to undo');
     }
   }
 
@@ -528,3 +596,6 @@ export class DevTransformGizmo {
     this.marqueeDiv.remove();
   }
 }
+
+
+

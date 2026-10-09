@@ -200,6 +200,7 @@ export class Dev3DEditorPanel {
           <button class="dev-btn-scenario" data-room="archive" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Archive (Act V)</button>
           <button class="dev-btn-scenario" data-room="directors_office" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Director's Office (Act VI)</button>
           <button class="dev-btn-scenario" data-room="velvet_lounge" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Velvet Lounge (Act VIII)</button>
+          <button class="dev-btn-scenario" data-room="sandbox" style="width: 100%; padding: 8px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 4px; margin-top: 12px; font-weight: bold; cursor: pointer;">Empty Sandbox Scene</button>
       </div>
 
       <!-- TAB CONTENT: TELEMETRY -->
@@ -641,6 +642,10 @@ export class Dev3DEditorPanel {
     }
   }
 }
+
+
+
+
 
 
 

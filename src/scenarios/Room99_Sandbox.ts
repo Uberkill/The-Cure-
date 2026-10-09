@@ -64,6 +64,37 @@ export class Room99_Sandbox implements RoomScenario {
     originMark.name = 'sandbox_origin';
     this.group.add(originMark);
 
+    // Load saved prefabs
+    try {
+      const resp = await fetch('/src/data/room_layout.json');
+      const layout = await resp.json();
+      const { EditorPrefabs } = await import('../editor/EditorPrefabs');
+      if (layout.prefabs && Array.isArray(layout.prefabs)) {
+        for (const p of layout.prefabs) {
+          const prefab = EditorPrefabs.spawn(p.type);
+          prefab.userData.prefabId = p.id;
+          prefab.position.set(p.transform.x, p.transform.y, p.transform.z);
+          prefab.rotation.set(p.transform.rx, p.transform.ry, p.transform.rz);
+          prefab.scale.set(p.transform.sx, p.transform.sy, p.transform.sz);
+          if (p.paintingUrl) {
+            prefab.userData.paintingUrl = p.paintingUrl;
+            const canvasMesh = prefab.children[1] as any;
+            if (canvasMesh && canvasMesh.material) {
+              const loader = new THREE.TextureLoader();
+              loader.load(p.paintingUrl, (tex) => {
+                canvasMesh.material.map = tex;
+                canvasMesh.material.color.setHex(0xffffff);
+                canvasMesh.material.needsUpdate = true;
+              });
+            }
+          }
+          this.group.add(prefab);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not load layout.json in sandbox', err);
+    }
+
     scene.add(this.group);
     return this.group;
   }
@@ -81,4 +112,5 @@ export class Room99_Sandbox implements RoomScenario {
     if (origin) origin.rotation.y += delta * 0.2;
   }
 }
+
 
