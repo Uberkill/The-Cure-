@@ -6,7 +6,7 @@ Aesthetic direction: Bauhaus Modernist Psychological Horror (*A Cure for Wellnes
 For comprehensive technical onboarding, architecture breakdown, and MCP guide, see:
 **[docs/ONBOARDING.md](docs/ONBOARDING.md)**
 
-For strict UI guidelines, Anti-AI Slop rules, and aesthetic standards, see:
+For strict UI guidelines, Editorial constraints, and aesthetic standards, see:
 **[DESIGN_SYSTEM.md](DESIGN_SYSTEM.md)**
 
 ---
@@ -67,19 +67,3 @@ npm run test:click
 
 ---
 
-## Knowledge Graph (Graphify)
-
-The codebase has been indexed into a persistent, queryable knowledge graph in `graphify-out/`:
-- `graphify-out/graph.json` - Unified graph (325 nodes, 671 edges)
-- `graphify-out/GRAPH_REPORT.md` - Community detection architecture report
-- `graphify-out/graph.html` - Interactive force-directed visualization
-- `graphify-out/GRAPH_TREE.html` - Collapsible D3 hierarchy tree
-
-Query the graph from CLI:
-```powershell
-python -m graphify query "How does GameState manage room transitions?"
-```
-Rebuild the graph after structural changes:
-```powershell
-python run_graphify_pipeline.py
-```

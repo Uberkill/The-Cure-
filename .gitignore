@@ -1,20 +1,30 @@
-# Dependencies
+﻿# Dependencies
 node_modules/
 
 # Production build outputs
 dist/
 
-# Graphify generated artifacts
+# Graphify generated artifacts (AI indexing)
 graphify-out/
+.graphify_*.json
+run_graphify_pipeline.py
+
+# Task tracking and AI scratchpads
+TASK_LEDGER.md
+TASK_LEDGER.lock
+task_state.json
 
 # Playwright and test screenshots
 screenshots/
 *.png
+*.jpg
+!src/assets/**/*.png
+!src/assets/**/*.jpg
+!public/**/*.png
+!public/**/*.jpg
 
 # Runtime logs and locks
 *.log
-TASK_LEDGER.lock
-task_state.json
 
 # OS files
 .DS_Store
@@ -22,3 +32,11 @@ Thumbs.db
 
 # Exported 3D model outputs
 exported_models/
+
+# Development helper scripts
+patch_*.py
+patch_*.ps1
+patch_*.js
+
+.serena/
+

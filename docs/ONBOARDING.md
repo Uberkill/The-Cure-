@@ -1,12 +1,6 @@
 # The Vault: Room 04 - Technical Onboarding & Architecture Guide
 
 
-## 0. Critical Agent Directives (MUST READ)
-1. **Windows OS Automation:** The built-in rowser_subagent fails on Windows. You **must** use raw Node.js Playwright scripts (as seen in 	ests/) or the chrome-devtools-mcp server for UI testing.
-2. **Zero-Emoji & Anti-AI Slop Guardrails:** Emojis are strictly prohibited in source code, commits, and logs. Do not use generic AI UI aesthetics. Read DESIGN_SYSTEM.md before modifying any HTML or CSS.
-3. **Senior Technical Reviewer Rule:** When formulating multi-step execution plans, you must invoke the Senior Technical Reviewer subagent to audit the plan.
-4. **Self-Documenting Code:** Prioritize strict TypeScript typing over redundant prose comments. No "what" comments, only "why" comments.
-
 ## 1. Project Overview & Aesthetic Identity
 
 "The Vault: Room 04" is an interactive 3D psychological thriller web application built with Three.js, Vite, and TypeScript.
@@ -20,7 +14,7 @@ The narrative and visual design follow a strict Bauhaus Modernist Psychological 
   - Marcel Breuer tubular chrome and smoked teak Bauhaus furniture.
   - Titanium and chalk instrumentation with phosphor green CRT oscilloscope displays.
   - High-contrast clinical shadows via directional key and focused surgical spotlights.
-  - Dark glassmorphic HUD overlays with hairline reticles, Outfit sans-serif typography, and zero generic AI tropes.
+  - Dark glassmorphic HUD overlays with hairline reticles, Outfit sans-serif typography, and zero generic modern UI tropes.
 
 ---
 
@@ -168,52 +162,3 @@ npm run test:click
 
 ---
 
-## 5. Knowledge Graph Navigation (Graphify)
-
-The repository has been indexed using `graphify`. All relationships, AST symbols, dependencies, and community clusters are stored deterministically in `graphify-out/`:
-
-- **`graphify-out/graph.json`:** Unified knowledge graph containing 1,831 nodes and 3,881 edges across 112 communities.
-- **`graphify-out/GRAPH_REPORT.md`:** Comprehensive architectural community report.
-- **`graphify-out/graph.html`:** Interactive force-directed network visualizer.
-- **`graphify-out/GRAPH_TREE.html`:** D3 collapsible hierarchy tree.
-
-### Graphify Query CLI
-Agents can query the codebase knowledge graph directly from terminal:
-```powershell
-# Query any architectural topic
-python -m graphify query "How does GameState manage room transitions?"
-python -m graphify query "What are the dependencies of ProceduralRoom04?"
-python -m graphify query "How is AudioEngine instantiated?"
-
-# Explain a specific node
-python -m graphify explain "ScenarioRegistry"
-
-# Shortest path between two architectural concepts
-python -m graphify path "RaycastManager" "GameState"
-
-# Re-run full pipeline after structural edits
-python run_graphify_pipeline.py
-```
-
----
-
-## 6. Recommended MCP Server Integrations
-
-For subsequent agents working on this codebase, the following MCP servers are configured and recommended:
-
-1. **`serena`**
-   - **Use Case:** Semantic code navigation, AST symbol renaming, diagnostics, and persistent cross-session memory.
-   - **Key Tools:** `find_symbol`, `get_symbols_overview`, `find_implementations`, `get_diagnostics_for_file`, `read_memory`, `write_memory`.
-   - **Memory Anchor:** Read `the_vault_onboarding` for instant contextual recall.
-
-2. **`chrome-devtools-mcp`**
-   - **Use Case:** Headless browser automation, WebGL console error inspection, real-time DOM snapshots, and performance traces on Windows without Linux dependencies.
-   - **Key Tools:** `navigate_page`, `evaluate_script`, `take_screenshot`, `list_console_messages`.
-
-3. **`tdmcp` (TouchDesigner MCP)**
-   - **Use Case:** Physical installation extensions. If the project is expanded into a real-world escape room or interactive museum installation, `tdmcp` can link the web simulation via OSC, Spout, or DMX fixture controls.
-   - **Key Tools:** `connect_max_msp_bridge`, `osc_router_matrix`, `connect_spout_syphon_router`, `create_fixture_control`.
-
-4. **`wiggum-loop`**
-   - **Use Case:** Task ledger management, safe checkpointing, and rollbacks during multi-phase refactoring.
-   - **Key Tools:** `wiggum_safe_checkpoint`, `wiggum_safe_rollback`, `wiggum_add_task`, `wiggum_get_task_ledger`.
