@@ -134,13 +134,38 @@ export class Room02_SleepWard implements RoomScenario {
       // Pillow
       const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.4), new THREE.MeshStandardMaterial({ color: 0xedf0eb }));
       pillow.position.set(0, 0.68, -0.75);
+      if (idx === 3) {
+        // Bed 104 is vacant and disheveled
+        pillow.rotation.y = 0.35;
+        pillow.position.x = 0.15;
+      }
       cotGroup.add(pillow);
 
-      // Patient Clipboard at foot of bed
-      const clipboard = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.04, 0.45), matBrass);
-      clipboard.position.set(0, 0.66, 0.95);
-      clipboard.name = `prop_clipboard_${101 + idx}`;
-      cotGroup.add(clipboard);
+      // Patient Clipboard at foot of bed (High-contrast brass board with white clinical paper sheet)
+      const clipboardGroup = new THREE.Group();
+      clipboardGroup.position.set(0, 0.66, 0.95);
+      clipboardGroup.name = `prop_clipboard_${101 + idx}`;
+
+      const clipboardBoard = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.03, 0.46), matBrass);
+      clipboardBoard.castShadow = true;
+      clipboardGroup.add(clipboardBoard);
+
+      const paperSheet = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.28, 0.40),
+        new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 })
+      );
+      paperSheet.rotation.x = -Math.PI / 2;
+      paperSheet.position.y = 0.016;
+      clipboardGroup.add(paperSheet);
+
+      const metalClip = new THREE.Mesh(
+        new THREE.BoxGeometry(0.12, 0.02, 0.05),
+        matMetal
+      );
+      metalClip.position.set(0, 0.02, -0.18);
+      clipboardGroup.add(metalClip);
+
+      cotGroup.add(clipboardGroup);
 
       this.group!.add(cotGroup);
     });
@@ -231,15 +256,19 @@ export class Room02_SleepWard implements RoomScenario {
       const subjectNum = objectId.split('_')[2];
       if (subjectNum === '101') {
         bus.emit('ui:subtitle_changed', {
-          text: 'Clipboard 101: "Tremors ceased on Day 4. Mirror recognition eliminated. Progressive alignment confirmed."'
+          text: 'Chart 101 [Subject 101]: "Limbic sedation holding. Mirror recognition eliminated. Progressive alignment confirmed."'
         });
       } else if (subjectNum === '102') {
         bus.emit('ui:subtitle_changed', {
-          text: 'Clipboard 102: "Vocal chords surgically desensitized to eliminate nocturnal distress. Sleep cycle stabilized."'
+          text: 'Chart 102 [Subject 102]: "Vocal desensitization complete. Mnemonic quartz crystal secured inside dispensary cart."'
         });
-      } else {
+      } else if (subjectNum === '103') {
         bus.emit('ui:subtitle_changed', {
-          text: 'Clipboard 103: "Intake cipher calibration: Standard Subject Intake Code 1-0-4."'
+          text: 'Chart 103 [Subject 103]: "Dispensary cart tumbler access is keyed to the 3-digit intake number of the transferred subject."'
+        });
+      } else if (subjectNum === '104') {
+        bus.emit('ui:subtitle_changed', {
+          text: 'Chart 104 [Subject 104 • VACANT]: "Cot vacant. Subject transferred to Sterile Reception (Room 04). Patient Intake ID: 104."'
         });
       }
       return true;
@@ -248,7 +277,7 @@ export class Room02_SleepWard implements RoomScenario {
     if (objectId === 'prop_trolley_lock') {
       audio.playTumblerClick();
       bus.emit('ui:subtitle_changed', {
-        text: `Dispensary Cart Lock: [ ${this.digits[0]} - ${this.digits[1]} - ${this.digits[2]} ]. Click individual dials 1, 2, and 3 to cycle digits.`
+        text: `Dispensary Cart Lock [ ${this.digits[0]} - ${this.digits[1]} - ${this.digits[2]} ]: Stenciled label reads: "SEDATIVE DISPENSARY — ENTER 3-DIGIT PATIENT INTAKE ID TO RELEASE DRAWER".`
       });
       return true;
     }

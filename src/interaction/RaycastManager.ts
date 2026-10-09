@@ -156,13 +156,14 @@ export class RaycastManager {
       door_return_hub: '[RETURN: CENTRAL HUB]',
 
       // Sleep Ward
-      prop_trolley_lock: '[ADJUST: 3-DIGIT ROTARY LOCK]',
+      prop_trolley_lock: '[INSPECT DISPENSARY CART & COMBINATION LOCK]',
       prop_dial_0: '[ROTATE TUMBLER 1]',
       prop_dial_1: '[ROTATE TUMBLER 2]',
       prop_dial_2: '[ROTATE TUMBLER 3]',
-      prop_clipboard_101: '[READ: PATIENT 101 CLIPBOARD]',
-      prop_clipboard_102: '[READ: PATIENT 102 CLIPBOARD]',
-      prop_clipboard_103: '[READ: PATIENT 103 CIPHER CLIPBOARD]',
+      prop_clipboard_101: '[READ: SUBJECT 101 MEDICAL CHART]',
+      prop_clipboard_102: '[READ: SUBJECT 102 MEDICAL CHART]',
+      prop_clipboard_103: '[READ: SUBJECT 103 MEDICAL CHART]',
+      prop_clipboard_104: '[READ: SUBJECT 104 (VACANT) CHART]',
       crystal_01_quartz: '[COLLECT: PRISMATIC QUARTZ]',
 
       // Hydrotherapy
