@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+﻿import * as THREE from 'three';
 import { DevTransformGizmo } from '../interaction/DevTransformGizmo';
 import { CameraDirector } from '../rendering/CameraDirector';
 import { EditorServerSync } from '../editor/EditorServerSync';
@@ -54,8 +54,8 @@ export class Dev3DEditorPanel {
 
     panel.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
-        <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • 3D Editor</span>
-        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer;">✕</button>
+        <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 â€¢ 3D Editor</span>
+        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer;">âœ•</button>
       </div>
       <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
         <input type="checkbox" id="dev-chk-visualizers" checked style="accent-color: #00ff88; cursor: pointer;">
@@ -86,17 +86,17 @@ export class Dev3DEditorPanel {
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">X</span>
             <input type="range" id="dev-rot-x" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
-            <span id="dev-rot-x-val" style="width: 35px; text-align: right;">0°</span>
+            <span id="dev-rot-x-val" style="width: 35px; text-align: right;">0Â°</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">Y</span>
             <input type="range" id="dev-rot-y" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
-            <span id="dev-rot-y-val" style="width: 35px; text-align: right;">0°</span>
+            <span id="dev-rot-y-val" style="width: 35px; text-align: right;">0Â°</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">Z</span>
             <input type="range" id="dev-rot-z" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
-            <span id="dev-rot-z-val" style="width: 35px; text-align: right;">0°</span>
+            <span id="dev-rot-z-val" style="width: 35px; text-align: right;">0Â°</span>
           </div>
         </div>
         <button id="dev-btn-save-server" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Save to Server (room_layout.json)</button>
@@ -171,10 +171,22 @@ export class Dev3DEditorPanel {
       <div id="tab-spawner" class="editor-tab-content" style="display: none;">
         <label style="display: block; margin-bottom: 6px; color: #88928b;">Spawn Prefab</label>
         <select id="dev-prefab-select" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; margin-bottom: 12px; border-radius: 3px;">
-          <option value="Painting">Painting</option>
-          <option value="Plant">Potted Plant</option>
-          <option value="Clock">Wall Clock</option>
-        </select>
+            <optgroup label="Main Props">
+              <option value="BauhausDesk">Bauhaus Desk</option>
+              <option value="OfficeChair">Office Chair</option>
+              <option value="FilingCabinet">Filing Cabinet</option>
+              <option value="RotaryPhone">Rotary Phone</option>
+              <option value="SurgicalLight">Surgical Light</option>
+              <option value="MedicalCart">Medical Cart</option>
+              <option value="Typewriter">Typewriter</option>
+            </optgroup>
+            <optgroup label="General Prefabs">
+              <option value="Painting">Painting</option>
+              <option value="Plant">Potted Plant</option>
+              <option value="Clock">Wall Clock</option>
+              <option value="Rug">Crimson Rug</option>
+            </optgroup>
+          </select>
         <button id="dev-btn-spawn" style="width: 100%; padding: 8px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 4px; cursor: pointer;">Spawn Prefab</button>
       </div>
 
@@ -185,6 +197,9 @@ export class Dev3DEditorPanel {
         <button class="dev-btn-scenario" data-room="sleep_ward" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Sleep Ward (Act II)</button>
         <button class="dev-btn-scenario" data-room="hydrotherapy" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Hydrotherapy (Act III)</button>
         <button class="dev-btn-scenario" data-room="audiology" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Audiology (Act IV)</button>
+          <button class="dev-btn-scenario" data-room="archive" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Archive (Act V)</button>
+          <button class="dev-btn-scenario" data-room="directors_office" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Director's Office (Act VI)</button>
+          <button class="dev-btn-scenario" data-room="velvet_lounge" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 6px; cursor: pointer;">Velvet Lounge (Act VIII)</button>
       </div>
 
       <!-- TAB CONTENT: TELEMETRY -->
@@ -235,9 +250,9 @@ export class Dev3DEditorPanel {
             objs[0].rotation.set(rx, ry, rz);
           }
           
-          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
-          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
-          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}Â°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}Â°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}Â°`;
         }
         this.devGizmo.syncTransform();
       }
@@ -485,9 +500,9 @@ export class Dev3DEditorPanel {
           rotXInput.value = (obj.rotation.x * (180 / Math.PI)).toFixed(1);
           rotYInput.value = (obj.rotation.y * (180 / Math.PI)).toFixed(1);
           rotZInput.value = (obj.rotation.z * (180 / Math.PI)).toFixed(1);
-          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
-          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
-          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}Â°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}Â°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}Â°`;
         }
 
         const typeSelect = document.getElementById('dev-anim-type') as HTMLSelectElement;
@@ -537,9 +552,9 @@ export class Dev3DEditorPanel {
           rotXInput.value = (obj.rotation.x * (180 / Math.PI)).toFixed(1);
           rotYInput.value = (obj.rotation.y * (180 / Math.PI)).toFixed(1);
           rotZInput.value = (obj.rotation.z * (180 / Math.PI)).toFixed(1);
-          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}°`;
-          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
-          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
+          document.getElementById('dev-rot-x-val')!.innerText = `${rotXInput.value}Â°`;
+          document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}Â°`;
+          document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}Â°`;
         }
         this.isUpdatingFromUI = false;
       }
@@ -626,3 +641,6 @@ export class Dev3DEditorPanel {
     }
   }
 }
+
+
+
