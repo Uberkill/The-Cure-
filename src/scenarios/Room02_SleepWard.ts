@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor, CrystalId } from '../types';
 import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
+import { DispensaryCartScreen } from '../ui/screens/DispensaryCartScreen';
 
 export class Room02_SleepWard implements RoomScenario {
   public id = 'sleep_ward';
@@ -63,6 +64,16 @@ export class Room02_SleepWard implements RoomScenario {
   private trolleyUnlocked: boolean = false;
   private digits = [0, 0, 0];
   private digitMeshes: THREE.Mesh[] = [];
+
+  private uvActive: boolean = false;
+  private fluorescentLights: THREE.PointLight[] = [];
+  private uvLights: THREE.PointLight[] = [];
+  private uvStencilMesh: THREE.Mesh | null = null;
+  private dispensaryScreen: DispensaryCartScreen;
+
+  public constructor() {
+    this.dispensaryScreen = new DispensaryCartScreen();
+  }
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
@@ -135,13 +146,12 @@ export class Room02_SleepWard implements RoomScenario {
       const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.4), new THREE.MeshStandardMaterial({ color: 0xedf0eb }));
       pillow.position.set(0, 0.68, -0.75);
       if (idx === 3) {
-        // Bed 104 is vacant and disheveled
         pillow.rotation.y = 0.35;
         pillow.position.x = 0.15;
       }
       cotGroup.add(pillow);
 
-      // Patient Clipboard at foot of bed (High-contrast brass board with white clinical paper sheet)
+      // Patient Clipboard at foot of bed
       const clipboardGroup = new THREE.Group();
       clipboardGroup.position.set(0, 0.66, 0.95);
       clipboardGroup.name = `prop_clipboard_${101 + idx}`;
@@ -169,6 +179,52 @@ export class Room02_SleepWard implements RoomScenario {
 
       this.group!.add(cotGroup);
     });
+
+    // Surgical UV Lamp Wall Toggle
+    const uvToggleGroup = new THREE.Group();
+    uvToggleGroup.position.set(-5.88, 1.8, 6.2);
+    uvToggleGroup.name = 'prop_uv_toggle';
+
+    const switchPlate = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.35, 0.22), matMetal);
+    switchPlate.castShadow = true;
+    uvToggleGroup.add(switchPlate);
+
+    const switchLever = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.08, 16), matBrass);
+    switchLever.rotation.z = Math.PI / 3;
+    switchLever.position.set(0.03, 0, 0);
+    uvToggleGroup.add(switchLever);
+
+    this.group.add(uvToggleGroup);
+
+    // Glowing UV Stencil Texture on Tile Wall
+    const stencilCanvas = document.createElement('canvas');
+    stencilCanvas.width = 1024;
+    stencilCanvas.height = 512;
+    const sCtx = stencilCanvas.getContext('2d')!;
+    sCtx.fillStyle = '#000000';
+    sCtx.fillRect(0, 0, 1024, 512);
+    sCtx.fillStyle = '#4ade80';
+    sCtx.font = 'bold 32px monospace';
+    sCtx.fillText('WE ARE THE CURE', 60, 100);
+    sCtx.font = '24px monospace';
+    sCtx.fillText('DO NOT WAKE US // COMPLIANCE IS PEACE', 60, 160);
+    sCtx.fillStyle = '#fbbf24';
+    sCtx.fillText('SEDATIVE INFUSION CALIBRATION: 68 BPM', 60, 240);
+    sCtx.fillText('TRIAD FORMULA: [NITROUS • BROMIDE • VALERIAN]', 60, 310);
+    sCtx.fillStyle = '#60a5fa';
+    sCtx.fillText('SUBJECT 104 TRANSFERRED TO SECTOR 04', 60, 380);
+
+    const stencilTex = new THREE.CanvasTexture(stencilCanvas);
+    const stencilMat = new THREE.MeshBasicMaterial({
+      map: stencilTex,
+      transparent: true,
+      opacity: 0.0,
+      blending: THREE.AdditiveBlending
+    });
+    this.uvStencilMesh = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 2.4), stencilMat);
+    this.uvStencilMesh.position.set(-5.85, 2.4, 0);
+    this.uvStencilMesh.rotation.y = Math.PI / 2;
+    this.group.add(this.uvStencilMesh);
 
     // Stainless Dispensary Trolley
     const trolleyGroup = new THREE.Group();
@@ -219,6 +275,19 @@ export class Room02_SleepWard implements RoomScenario {
     light2.position.set(0, 3.8, 3);
     this.group.add(light2);
 
+    this.fluorescentLights = [light1, light2];
+
+    // UV Blacklights (initialized dim)
+    const uvLight1 = new THREE.PointLight(0x7c3aed, 0, 14);
+    uvLight1.position.set(-2, 3.8, -2);
+    this.group.add(uvLight1);
+
+    const uvLight2 = new THREE.PointLight(0x6366f1, 0, 14);
+    uvLight2.position.set(-2, 3.8, 2);
+    this.group.add(uvLight2);
+
+    this.uvLights = [uvLight1, uvLight2];
+
     // Re-entry state restoration
     if (this.trolleyUnlocked) {
       this.digits = [1, 0, 4];
@@ -233,13 +302,43 @@ export class Room02_SleepWard implements RoomScenario {
     return this.group;
   }
 
+  private toggleUvMode(): void {
+    this.uvActive = !this.uvActive;
+    const audio = AudioEngine.getInstance();
+    audio.playTumblerClick();
+
+    if (this.uvActive) {
+      this.fluorescentLights.forEach(l => { l.intensity = 0.15; });
+      this.uvLights.forEach(l => { l.intensity = 2.4; });
+      if (this.uvStencilMesh) {
+        (this.uvStencilMesh.material as THREE.MeshBasicMaterial).opacity = 0.95;
+      }
+      EventBus.getInstance().emit('ui:subtitle_changed', {
+        text: 'Surgical ultraviolet lamp engaged. Deep indigo blacklight floods the ward. Hidden luminescent chemical markings and frantic handwriting glow across the tile walls.'
+      });
+    } else {
+      this.fluorescentLights.forEach(l => { l.intensity = 1.2; });
+      this.uvLights.forEach(l => { l.intensity = 0.0; });
+      if (this.uvStencilMesh) {
+        (this.uvStencilMesh.material as THREE.MeshBasicMaterial).opacity = 0.0;
+      }
+      EventBus.getInstance().emit('ui:subtitle_changed', {
+        text: 'Ultraviolet lamp disengaged. Cold white fluorescent light restored.'
+      });
+    }
+  }
+
   public teardown(scene: THREE.Scene): void {
+    this.dispensaryScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
     }
     this.digitMeshes = [];
     this.crystalMesh = null;
+    this.uvStencilMesh = null;
+    this.fluorescentLights = [];
+    this.uvLights = [];
   }
 
   public onObjectClick(objectId: string): boolean {
@@ -248,6 +347,18 @@ export class Room02_SleepWard implements RoomScenario {
 
     if (objectId === 'door_return_hub') {
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      return true;
+    }
+
+    if (objectId === 'prop_uv_toggle') {
+      this.toggleUvMode();
+      return true;
+    }
+
+    if (objectId === 'prop_trolley' || objectId === 'prop_trolley_lock') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
+      this.dispensaryScreen.open();
       return true;
     }
 
@@ -274,14 +385,6 @@ export class Room02_SleepWard implements RoomScenario {
       return true;
     }
 
-    if (objectId === 'prop_trolley_lock') {
-      audio.playTumblerClick();
-      bus.emit('ui:subtitle_changed', {
-        text: `Dispensary Cart Lock [ ${this.digits[0]} - ${this.digits[1]} - ${this.digits[2]} ]: Stenciled label reads: "SEDATIVE DISPENSARY — ENTER 3-DIGIT PATIENT INTAKE ID TO RELEASE DRAWER".`
-      });
-      return true;
-    }
-
     if (objectId.startsWith('prop_dial_')) {
       if (this.trolleyUnlocked) {
         bus.emit('ui:subtitle_changed', {
@@ -305,7 +408,7 @@ export class Room02_SleepWard implements RoomScenario {
         text: `Dispensary Cart Tumblers: [ ${this.digits[0]} - ${this.digits[1]} - ${this.digits[2]} ]`
       });
 
-      // Target code is 1-0-4
+      // Target code is 1-0-4 (legacy fallback)
       if (this.digits[0] === 1 && this.digits[1] === 0 && this.digits[2] === 4) {
         if (!this.trolleyUnlocked) {
           this.trolleyUnlocked = true;

@@ -33,6 +33,7 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
 
     this.modalEl.classList.remove('hidden');
     this.bindKeyboardTrapping();
+    this.eventBus.emit('ui:modal_opened', {});
     this.onOpened();
   }
 
@@ -45,6 +46,7 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
     }
 
     this.unbindKeyboardTrapping();
+    this.eventBus.emit('ui:modal_closed', {});
     this.onClosed();
   }
 

@@ -151,11 +151,14 @@ export class RaycastManager {
       prop_vault: '[CLICK TO INSPECT VAULT & CRT]',
       prop_oscilloscope: '[CLICK TO INSPECT CRT OSCILLOSCOPE]',
       prop_telephone: '[CLICK TO LISTEN TO RECEIVER]',
+      prop_brass_shunt: '[COLLECT: MACHINED BRASS SHUNT]',
       door_corridor: '[ENTER: OBSERVATION CORRIDOR]',
       door_corridor_passage: '[ENTER: OBSERVATION CORRIDOR]',
       door_return_hub: '[RETURN: CENTRAL HUB]',
 
       // Sleep Ward
+      prop_uv_toggle: '[TOGGLE: SURGICAL ULTRAVIOLET LAMP]',
+      prop_trolley: '[INSPECT DISPENSARY CART & COMBINATION LOCK]',
       prop_trolley_lock: '[INSPECT DISPENSARY CART & COMBINATION LOCK]',
       prop_dial_0: '[ROTATE TUMBLER 1]',
       prop_dial_1: '[ROTATE TUMBLER 2]',

@@ -17,6 +17,7 @@ export interface Room04Entities {
   cipherKey: THREE.Group;
   crimsonEnvelope: THREE.Mesh;
   telephone: THREE.Group;
+  brassShunt: THREE.Mesh;
   desk: THREE.Group;
   chair: THREE.Group;
   planter: THREE.Group;
@@ -55,6 +56,7 @@ export class ProceduralRoom04 {
     rootGroup.add(props.cipherKey);
     rootGroup.add(props.crimsonEnvelope);
     rootGroup.add(props.telephone);
+    rootGroup.add(props.brassShunt);
 
     return {
       group: rootGroup,
@@ -68,6 +70,7 @@ export class ProceduralRoom04 {
       cipherKey: props.cipherKey,
       crimsonEnvelope: props.crimsonEnvelope,
       telephone: props.telephone,
+      brassShunt: props.brassShunt,
       desk: furniture.deskGroup,
       chair: furniture.chairGroup,
       planter: furniture.planterGroup,

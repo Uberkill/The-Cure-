@@ -33,6 +33,13 @@ export class GameState {
     return this.inventory.includes(itemId);
   }
 
+  public addItem(itemId: string): void {
+    if (!this.inventory.includes(itemId)) {
+      this.inventory.push(itemId);
+      this.eventBus.emit('ui:inventory_updated', { inventory: [...this.inventory] });
+    }
+  }
+
   public getInventory(): string[] {
     return [...this.inventory];
   }

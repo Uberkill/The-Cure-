@@ -6,6 +6,7 @@ import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
 import { HubDecayManager } from '../entities/HubDecayManager';
 import { ModelLoader } from '../loaders/ModelLoader';
+import { TektronixCrtScreen } from '../ui/screens/TektronixCrtScreen';
 
 export class Room04_SterileChamber implements RoomScenario {
   public id = 'room_04';
@@ -89,10 +90,12 @@ export class Room04_SterileChamber implements RoomScenario {
   protected decayManager: HubDecayManager;
 
   protected exitBlownOpen: boolean = false;
+  protected tektronixScreen: TektronixCrtScreen;
 
   public constructor() {
     this.audioElement = AudioEngine.getInstance();
     this.decayManager = HubDecayManager.getInstance();
+    this.tektronixScreen = new TektronixCrtScreen();
   }
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
@@ -115,6 +118,9 @@ export class Room04_SterileChamber implements RoomScenario {
 
     if (GameState.getInstance().hasItem('prop_key') && this.entities.cipherKey) {
       this.entities.cipherKey.visible = false;
+    }
+    if (GameState.getInstance().hasItem('prop_brass_shunt') && this.entities.brassShunt) {
+      this.entities.brassShunt.visible = false;
     }
 
     if (stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
@@ -234,7 +240,14 @@ export class Room04_SterileChamber implements RoomScenario {
   private setupEventListeners(): void {
     const bus = EventBus.getInstance();
 
-    const unsubInv = bus.on('inventory:add', ({ itemId }) => { if (itemId === 'prop_key' && this.entities?.cipherKey) { this.entities.cipherKey.visible = false; } });
+    const unsubInv = bus.on('inventory:add', ({ itemId }) => {
+      if (itemId === 'prop_key' && this.entities?.cipherKey) {
+        this.entities.cipherKey.visible = false;
+      }
+      if (itemId === 'prop_brass_shunt' && this.entities?.brassShunt) {
+        this.entities.brassShunt.visible = false;
+      }
+    });
 
     const unsubStage = bus.on('game:stage_transition', ({ to }) => {
       if (!this.entities) return;
@@ -376,6 +389,7 @@ export class Room04_SterileChamber implements RoomScenario {
   public teardown(_scene: THREE.Scene): void {
     for (const unsub of this.unsubscribers) unsub();
     this.unsubscribers = [];
+    this.tektronixScreen.teardown();
     this.entities = null;
     this.isTransitioning = false;
     this.corridorDoorOpen = false;
@@ -386,6 +400,28 @@ export class Room04_SterileChamber implements RoomScenario {
 
   public onObjectClick(objectId: string): boolean {
     const bus = EventBus.getInstance();
+
+    if (objectId === 'prop_brass_shunt') {
+      if (this.entities?.brassShunt) {
+        this.entities.brassShunt.visible = false;
+      }
+      GameState.getInstance().addItem('prop_brass_shunt');
+      bus.emit('inventory:add', { itemId: 'prop_brass_shunt' });
+      this.audioElement.playTumblerClick();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Cold machined brass shunt acquired. Knurled industrial cylinder designed to seat inside a ceramic fuse terminal.'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_telephone') {
+      this.audioElement.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'telephone' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'A soothing, monotone voice whispers from the receiver: "Who are you? The numbers on the envelope are not a cage; they are your calibration. Complete the circuit on the desk."'
+      });
+      return true;
+    }
 
     if (objectId === 'door_corridor' || objectId === 'door_corridor_passage') {
       const stage = GameState.getInstance().getStage();
@@ -438,7 +474,15 @@ export class Room04_SterileChamber implements RoomScenario {
       return true;
     }
 
-    if (objectId === 'prop_vault' || objectId === 'prop_oscilloscope') {
+    if (objectId === 'prop_oscilloscope' || objectId === 'vault_crt_screen') {
+      const stage = GameState.getInstance().getStage();
+      if (stage === GameStage.ACT_1_HUB_AWAKEN) {
+        this.tektronixScreen.open();
+        return true;
+      }
+    }
+
+    if (objectId === 'prop_vault') {
       return false; // Handled cleanly by GameState without re-emitting or recursion
     }
 

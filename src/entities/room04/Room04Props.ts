@@ -6,6 +6,7 @@ export interface Room04PropsEntities {
   cipherKey: THREE.Group;
   crimsonEnvelope: THREE.Mesh;
   telephone: THREE.Group;
+  brassShunt: THREE.Mesh;
 }
 
 export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntities {
@@ -85,5 +86,12 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
 
   telephone.add(handset);
 
-  return { smallBellJar, cipherKey, crimsonEnvelope, telephone };
+  // Machined Brass Shunt (Center-Right of desk)
+  const brassShunt = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.12, 20), mat.brassGold);
+  brassShunt.position.set(0.35, 0.86, 0.15);
+  brassShunt.rotation.z = Math.PI / 2;
+  brassShunt.castShadow = true;
+  brassShunt.name = 'prop_brass_shunt';
+
+  return { smallBellJar, cipherKey, crimsonEnvelope, telephone, brassShunt };
 }
