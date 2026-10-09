@@ -4,6 +4,7 @@ import { Room04_SterileChamber } from './Room04_SterileChamber';
 import { EventBus } from '../core/EventBus';
 import { GalvanometerGridScreen } from '../ui/screens/GalvanometerGridScreen';
 import { AudioEngine } from '../audio/AudioEngine';
+import { GameState } from '../core/GameState';
 
 export class Room07_SynthesisChamber extends Room04_SterileChamber {
   public override id = 'synthesis_blackout';
@@ -123,6 +124,14 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       this.entities.group.add(gridConsole);
     }
 
+    if (GameState.getInstance().isSynthesisComplete()) {
+      this.galvanometerScreen.hydrate({
+        insertedCrystals: ['crystal_01_quartz', 'crystal_02_bronze', 'crystal_03_amethyst', 'crystal_04_obsidian', 'crystal_05_celadon'],
+        shuntResistances: [100, 100, 100, 100, 100],
+        gridBalanced: true
+      });
+    }
+
     return group;
   }
 
@@ -141,7 +150,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
     }
 
     if (objectId === 'prop_galvanometer_grid') {
-      if (this.galvanometerScreen.getState().gridBalanced) {
+      if (this.galvanometerScreen.getState().gridBalanced || GameState.getInstance().isSynthesisComplete()) {
         bus.emit('camera:move_to_hotspot', { hotspotId: 'grid' });
         bus.emit('ui:subtitle_changed', {
           text: 'The 5-channel circuit bus is balanced at 100 Ohms. Hydraulic blast clamps released.'

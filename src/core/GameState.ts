@@ -15,6 +15,7 @@ export class GameState {
 
   private calibratedFrequency: number = 440;
   private readonly targetFrequency: number = 528;
+  private synthesisComplete: boolean = false;
 
   private constructor() {
     this.eventBus = EventBus.getInstance();
@@ -42,6 +43,10 @@ export class GameState {
 
   public getInventory(): string[] {
     return [...this.inventory];
+  }
+
+  public isSynthesisComplete(): boolean {
+    return this.synthesisComplete;
   }
 
   private setupListeners(): void {
@@ -86,6 +91,10 @@ export class GameState {
           text: 'Primary relay thrown. 528 Hz verified. The forward observation corridor door unseals.'
         });
       }
+    });
+
+    this.eventBus.on('puzzle:synthesis_complete', () => {
+      this.synthesisComplete = true;
     });
   }
 
@@ -191,6 +200,7 @@ export class GameState {
       this.collectedCrystals.clear();
       this.patchedCrystals.clear();
       this.pendingCrystalToPatch = null;
+      this.synthesisComplete = false;
     } else if (stage === GameStage.ACT_7_SYNTHESIS_BLACKOUT || stage === GameStage.ACT_8_VELVET_LOUNGE) {
       this.patchedCrystals = new Set([
         'crystal_01_quartz',
@@ -200,6 +210,9 @@ export class GameState {
         'crystal_05_celadon'
       ]);
       this.pendingCrystalToPatch = null;
+      if (stage === GameStage.ACT_8_VELVET_LOUNGE) {
+        this.synthesisComplete = true;
+      }
     }
 
     this.eventBus.emit('game:stage_transition', {
