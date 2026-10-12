@@ -5,29 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>The Vault • Master Design System &amp; Period Piece Laboratory</title>
 
-  <!-- Typography: Google Fonts with strict local fallbacks -->
+  <!-- Typography: Local system fallbacks prioritized for offline/file:// resilience -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 
-  <!-- Production tokens and reusable widget stylesheets -->
-  <link rel="stylesheet" href="./src/ui/style.css">
-
   <style>
     /* ==========================================================================
-       SHOWCASE LABORATORY STYLES
+       DESIGN TOKENS (Self-contained for file:// and offline standalone viewing)
        ========================================================================== */
+    :root {
+      /* Architectural Surfaces */
+      --color-alabaster: #EDF0EB;
+      --color-alabaster-dim: #E2E7DF;
+      --color-terrazzo-base: #D8DED6;
+      --color-sage-deep: #2D4A3E;
+      --color-sage-accent: #3D5E50;
+      --color-chrome-tubular: #D4D8DB;
+
+      /* Hardware Chassis */
+      --color-chassis-dark: #141816;
+      --color-chassis-panel: #1E2220;
+      --color-chassis-border: #3D4642;
+      --color-teak-smoked: #1F1A18;
+
+      /* Instrument Cathode Phosphors */
+      --color-crt-bg: #080D0A;
+      --color-crt-phosphor: #4ADE80;
+      --color-crt-amber: #FBBF24;
+
+      /* Mechanical Accents */
+      --color-brass-cast: #C28833;
+      --color-brass-bright: #E5A84B;
+
+      /* Warnings & Seals */
+      --color-crimson-wax: #8B1E23;
+      --color-crimson-glow: #B8282E;
+
+      /* Typographic Inks */
+      --ink-primary: #141A21;
+      --ink-secondary: #4A5568;
+      --ink-muted: #718096;
+
+      /* Fonts */
+      --font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
+      --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, Consolas, monospace;
+
+      /* Radius Hierarchy */
+      --radius-sharp: 0px;
+      --radius-xs: 2px;
+      --radius-sm: 4px;
+      --radius-md: 6px;
+      --radius-lg: 8px;
+      --radius-pill: 9999px;
+      --radius-circle: 50%;
+
+      /* Elevation */
+      --elevation-chassis: 0 24px 64px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      --elevation-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+      --elevation-md: 0 4px 16px rgba(0, 0, 0, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body, html {
       width: 100%;
       height: auto;
       min-height: 100vh;
       overflow-y: auto;
       overflow-x: hidden;
-      background-color: var(--color-alabaster, #EDF0EB);
-      color: var(--ink-primary, #141A21);
-      font-family: var(--font-sans, 'Outfit', -apple-system, sans-serif);
-      margin: 0;
-      padding: 0;
+      background-color: var(--color-alabaster);
+      color: var(--ink-primary);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
     }
 
     .showcase-wrapper {
@@ -38,17 +93,17 @@
 
     /* Masthead Banner */
     .showcase-masthead {
-      border-bottom: 2px solid var(--ink-primary, #141A21);
+      border-bottom: 2px solid var(--ink-primary);
       padding-bottom: 32px;
       margin-bottom: 56px;
     }
 
     .showcase-top-tag {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.24em;
       text-transform: uppercase;
-      color: var(--color-sage-deep, #2D4A3E);
+      color: var(--color-sage-deep);
       font-weight: 600;
       margin-bottom: 12px;
       display: flex;
@@ -60,25 +115,25 @@
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--color-crimson-wax, #8B1E23);
+      background: var(--color-crimson-wax);
       display: inline-block;
     }
 
     .showcase-title {
-      font-family: var(--font-serif, Georgia, serif);
-      font-size: 48px;
+      font-family: var(--font-serif);
+      font-size: 46px;
       font-weight: 400;
       line-height: 1.1;
       letter-spacing: -0.01em;
       margin: 0 0 14px 0;
-      color: var(--ink-primary, #141A21);
+      color: var(--ink-primary);
     }
 
     .showcase-sub {
       font-size: 16px;
       line-height: 1.6;
-      color: var(--ink-secondary, #4A5568);
-      max-width: 820px;
+      color: var(--ink-secondary);
+      max-width: 840px;
       margin-bottom: 24px;
     }
 
@@ -89,22 +144,22 @@
     }
 
     .badge-tag {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--font-mono);
       font-size: 10px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       padding: 4px 10px;
-      border-radius: var(--radius-xs, 2px);
+      border-radius: var(--radius-xs);
       background: rgba(20, 26, 33, 0.06);
       border: 1px solid rgba(20, 26, 33, 0.12);
-      color: var(--ink-secondary, #4A5568);
+      color: var(--ink-secondary);
       font-weight: 600;
     }
 
     .badge-tag.highlight {
-      background: var(--color-sage-deep, #2D4A3E);
+      background: var(--color-sage-deep);
       color: #EDF0EB;
-      border-color: var(--color-sage-deep, #2D4A3E);
+      border-color: var(--color-sage-deep);
     }
 
     /* Section Structure */
@@ -122,114 +177,36 @@
     }
 
     .section-title {
-      font-family: var(--font-serif, Georgia, serif);
+      font-family: var(--font-serif);
       font-size: 28px;
       font-weight: 400;
-      color: var(--ink-primary, #141A21);
+      color: var(--ink-primary);
       margin: 0;
     }
 
     .section-num {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.20em;
-      color: var(--color-sage-deep, #2D4A3E);
+      color: var(--color-sage-deep);
       font-weight: 600;
     }
 
-    /* Color Swatch Grid */
-    .color-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
-    }
-
-    .color-card {
-      background: #FFFFFF;
-      border: 1px solid rgba(20, 26, 33, 0.12);
-      border-radius: var(--radius-sm, 4px);
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      display: flex;
-      flex-direction: column;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .color-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .color-preview {
-      height: 84px;
-      width: 100%;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    .color-info {
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
-    .color-name {
-      font-family: var(--font-mono, monospace);
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--ink-primary, #141A21);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .color-hex {
-      font-family: var(--font-mono, monospace);
-      font-size: 11px;
-      color: var(--color-sage-deep, #2D4A3E);
-      letter-spacing: 0.08em;
-    }
-
-    .color-desc {
-      font-size: 12px;
-      line-height: 1.4;
-      color: var(--ink-secondary, #4A5568);
-    }
-
-    .btn-copy-token {
-      background: none;
-      border: 1px solid rgba(20, 26, 33, 0.15);
-      border-radius: var(--radius-xs, 2px);
-      padding: 2px 6px;
-      font-family: var(--font-mono, monospace);
-      font-size: 9px;
-      letter-spacing: 0.1em;
-      cursor: pointer;
-      color: var(--ink-secondary, #4A5568);
-      transition: all 0.15s ease;
-    }
-
-    .btn-copy-token:hover {
-      background: var(--ink-primary, #141A21);
-      color: #FFFFFF;
-      border-color: var(--ink-primary, #141A21);
-    }
-
-    /* Lab Grids */
-    .lab-grid-2 {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 28px;
-    }
-
+    /* Grids */
     .lab-grid-3 {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 24px;
     }
 
+    .lab-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
     @media (max-width: 1024px) {
-      .lab-grid-2, .lab-grid-3 {
+      .lab-grid-3, .lab-grid-2 {
         grid-template-columns: 1fr;
       }
     }
@@ -237,7 +214,7 @@
     .lab-card {
       background: #FFFFFF;
       border: 1px solid rgba(20, 26, 33, 0.12);
-      border-radius: var(--radius-sm, 4px);
+      border-radius: var(--radius-sm);
       padding: 24px;
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
       display: flex;
@@ -246,17 +223,652 @@
     }
 
     .lab-card-title {
-      font-family: var(--font-mono, monospace);
+      font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: var(--color-sage-deep, #2D4A3E);
+      color: var(--color-sage-deep);
       margin: 0;
       padding-bottom: 10px;
       border-bottom: 1px solid rgba(20, 26, 33, 0.10);
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    /* Buttons */
+    .pill-btn {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.10em;
+      text-transform: uppercase;
+      color: var(--ink-primary);
+      background: var(--color-alabaster);
+      border: 1px solid var(--ink-primary);
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .pill-btn:hover {
+      background: var(--ink-primary);
+      color: #FFFFFF;
+      transform: translateY(-1px);
+    }
+
+    .pill-btn.active {
+      background: var(--color-sage-deep);
+      color: #FFFFFF;
+      border-color: var(--color-sage-deep);
+    }
+
+    .pill-btn.pill-btn-danger {
+      border-color: var(--color-crimson-wax);
+      color: var(--color-crimson-wax);
+    }
+
+    .pill-btn.pill-btn-danger:hover {
+      background: var(--color-crimson-wax);
+      color: #FFFFFF;
+    }
+
+    .pill-btn[disabled] {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    /* 1. Bourdon Gauge Widget */
+    .bourdon-gauge-widget {
+      background: var(--color-chassis-panel);
+      border: 2px solid var(--color-chassis-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      box-shadow: var(--elevation-chassis);
+    }
+
+    .bourdon-dial-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+
+    .bourdon-dial-wrap canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .bourdon-dial-glare {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 60%);
+    }
+
+    .bourdon-controls-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .bourdon-readout {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      color: var(--color-crt-phosphor);
+    }
+
+    .bourdon-valve-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .bourdon-valve-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--ink-muted);
+    }
+
+    .bourdon-valve-knob {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--color-brass-cast);
+      border: 2px solid #5F4218;
+      cursor: ns-resize;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+      transition: transform 0.1s ease, box-shadow 0.15s ease;
+      touch-action: none;
+    }
+
+    .bourdon-valve-knob:hover, .bourdon-valve-knob.active {
+      transform: scale(1.08);
+      background: var(--color-brass-bright);
+      box-shadow: 0 0 12px rgba(229, 168, 75, 0.5);
+    }
+
+    /* 2. Strip Chart Recorder Widget */
+    .chart-recorder-widget {
+      background: #141816;
+      border: 2px solid #3D4642;
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .chart-title { color: #8B9991; font-weight: 600; }
+    .chart-status { color: var(--color-crt-amber); }
+
+    .chart-viewport {
+      position: relative;
+      height: 140px;
+      border: 2px solid #233E31;
+      border-radius: var(--radius-xs);
+      overflow: hidden;
+    }
+
+    .chart-viewport canvas { width: 100%; height: 100%; display: block; }
+
+    .chart-stylus-line {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: rgba(139, 30, 35, 0.4);
+      pointer-events: none;
+    }
+
+    .chart-controls { display: flex; gap: 8px; justify-content: flex-end; }
+
+    .chart-btn-speed {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      padding: 4px 10px;
+      border-radius: var(--radius-xs);
+      background: #1E2420;
+      border: 1px solid #3D4642;
+      color: #8B9991;
+      cursor: pointer;
+    }
+
+    .chart-btn-speed:hover { background: #2B342E; color: #FFFFFF; }
+    .chart-btn-speed.active { background: var(--color-sage-deep); color: #FFFFFF; border-color: #4ADE80; }
+
+    /* 3. Tape Transport Widget */
+    .tape-transport-widget {
+      background: #1A1E1C;
+      border: 2px solid #3D4642;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .tape-transport-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+    }
+
+    .tape-transport-title { color: #8B9991; font-weight: 600; }
+
+    .tape-status-badge {
+      padding: 2px 8px;
+      border-radius: var(--radius-xs);
+      background: rgba(255, 255, 255, 0.08);
+      color: #8B9991;
+    }
+
+    .tape-status-badge.active { background: rgba(74, 222, 128, 0.2); color: #4ADE80; }
+    .tape-status-badge.rewind { background: rgba(251, 191, 36, 0.2); color: #FBBF24; }
+
+    .tape-bay { display: flex; justify-content: space-around; align-items: center; }
+    .tape-reel-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+
+    .tape-reel {
+      width: 86px;
+      height: 86px;
+      border-radius: 50%;
+      background: #101412;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .tape-reel-caption {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      color: #718096;
+    }
+
+    .tape-center-bridge { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+
+    .tape-odometer-wrap {
+      background: #0A0D0B;
+      border: 1px solid #233E31;
+      border-radius: 2px;
+      padding: 4px 8px;
+      text-align: center;
+    }
+
+    .tape-odometer-label { font-family: var(--font-mono); font-size: 8px; color: #718096; display: block; }
+    .tape-odometer-digits {
+      font-family: var(--font-mono);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      color: #EDF0EB;
+    }
+
+    .tape-vu-meter {
+      width: 74px;
+      height: 44px;
+      background: #251E14;
+      border: 1px solid #5F4218;
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 10px rgba(251, 191, 36, 0.2);
+    }
+
+    .tape-vu-face {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: linear-gradient(to top, rgba(251, 191, 36, 0.15), transparent);
+    }
+
+    .tape-vu-needle {
+      position: absolute;
+      bottom: -4px;
+      left: 50%;
+      width: 1.5px;
+      height: 38px;
+      background: #E5A84B;
+      transform-origin: bottom center;
+      transform: rotate(-35deg);
+      box-shadow: 0 0 4px rgba(229, 168, 75, 0.8);
+    }
+
+    .tape-transport-controls { display: flex; gap: 8px; justify-content: center; }
+
+    .tape-btn {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      padding: 6px 14px;
+      background: #252C28;
+      border: 1px solid #3C4842;
+      color: #C8D3CB;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+    }
+
+    .tape-btn:hover { background: #323C37; color: #FFFFFF; }
+    .tape-btn.active { background: var(--color-sage-deep); color: #FFFFFF; border-color: #4ADE80; }
+
+    /* 4. Rotary Dial Widget */
+    .rotary-dial-widget {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 16px;
+      outline: none;
+    }
+
+    .rotary-escutcheon {
+      position: relative;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: #141816;
+      border: 4px solid #2B322F;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    }
+
+    .rotary-number-ring { position: absolute; inset: 0; pointer-events: none; }
+
+    .rotary-digit-label {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      margin-left: -10px;
+      margin-top: -10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 700;
+      color: #8B9991;
+    }
+
+    .rotary-wheel {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      touch-action: none;
+    }
+
+    .rotary-hole {
+      position: absolute;
+      width: 26px;
+      height: 26px;
+      margin-left: -13px;
+      margin-top: -13px;
+      border-radius: 50%;
+      background: rgba(20, 24, 22, 0.85);
+      border: 2px solid #3D4642;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .rotary-hole:hover { border-color: var(--color-brass-bright); }
+
+    .rotary-finger-stop {
+      position: absolute;
+      width: 16px;
+      height: 6px;
+      background: #C28833;
+      bottom: 24px;
+      right: 28px;
+      border-radius: 2px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    /* 5. Switchboard Jack Matrix Widget */
+    .patch-matrix-widget {
+      background: #1E2220;
+      border: 2px solid #3D4642;
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    .patch-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.15em;
+    }
+
+    .patch-title { color: #8B9991; font-weight: 600; }
+    .patch-status { color: var(--color-crt-phosphor); font-weight: 600; }
+
+    .patch-board-area {
+      position: relative;
+      min-height: 150px;
+      background: #161A18;
+      border: 1px solid #28302C;
+      border-radius: var(--radius-sm);
+      padding: 16px;
+    }
+
+    .patch-svg-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .patch-sockets-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px 24px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .patch-socket-box {
+      background: #121614;
+      border: 1px solid #2B322F;
+      border-radius: var(--radius-sm);
+      padding: 14px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      outline: none;
+      user-select: none;
+    }
+
+    .patch-socket-box:hover {
+      background: #1A201C;
+      border-color: #4ADE80;
+    }
+
+    .patch-socket-box.selected {
+      border-color: var(--color-crt-amber);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
+      background: #232A25;
+    }
+
+    .patch-socket-box.connected {
+      border-color: #4ADE80;
+    }
+
+    .patch-led {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #252D28;
+      border: 1px solid #3B4640;
+      transition: all 0.2s ease;
+    }
+
+    .patch-led.active {
+      background: #4ADE80;
+      border-color: #86EFAC;
+      box-shadow: 0 0 8px #4ADE80;
+    }
+
+    .patch-led.pending {
+      background: #FBBF24;
+      border-color: #FDE68A;
+      box-shadow: 0 0 8px #FBBF24;
+    }
+
+    .patch-jack-hole {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #080D0A;
+      border: 3px solid #C28833;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.95);
+    }
+
+    .patch-socket-label {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: #C8D3CB;
+      font-weight: 600;
+    }
+
+    .patch-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: #718096;
+    }
+
+    /* 6. Classified Dossier Folder */
+    .dossier-folder-widget {
+      background: #E8E2D2;
+      border: 1px solid #C4BA9F;
+      border-radius: var(--radius-sm);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dossier-tab-row {
+      display: flex;
+      gap: 4px;
+      background: #D8D1BE;
+      padding: 8px 16px 0 16px;
+      border-bottom: 1px solid #C4BA9F;
+    }
+
+    .dossier-tab-btn {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      background: #CFC7B2;
+      border: 1px solid #B8AE94;
+      border-bottom: none;
+      border-radius: 4px 4px 0 0;
+      color: #4A5568;
+      cursor: pointer;
+    }
+
+    .dossier-tab-btn:hover { background: #E2DBD0; color: #141A21; }
+    .dossier-tab-btn.active {
+      background: #FBFBF9;
+      color: #141A21;
+      font-weight: 600;
+      border-color: #C4BA9F;
+      margin-bottom: -1px;
+      padding-bottom: 7px;
+    }
+
+    .dossier-sheet {
+      background: #FBFBF9;
+      padding: 28px;
+      min-height: 220px;
+      position: relative;
+    }
+
+    .dossier-paperclip {
+      position: absolute;
+      top: -8px;
+      left: 28px;
+      width: 14px;
+      height: 38px;
+      z-index: 10;
+    }
+
+    .dossier-typewriter {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      line-height: 1.8;
+      color: var(--ink-primary);
+    }
+
+    .wax-seal {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: var(--color-crimson-wax);
+      border: 2px solid #5F1317;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FCE8E8;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      user-select: none;
+    }
+
+    .stamp-restricted {
+      border: 2px solid var(--color-crimson-wax);
+      color: var(--color-crimson-wax);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 4px 10px;
+      display: inline-block;
+      text-transform: uppercase;
+      transform: rotate(-2deg);
+      user-select: none;
+    }
+
+    .stamp-cleared {
+      border: 2px solid var(--color-sage-deep);
+      color: var(--color-sage-deep);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 4px 10px;
+      display: inline-block;
+      text-transform: uppercase;
+      transform: rotate(1.5deg);
+      user-select: none;
+    }
+
+    .redaction-bar {
+      display: inline-block;
+      background: var(--ink-primary);
+      color: transparent;
+      padding: 0 4px;
+      border-radius: 1px;
+      user-select: none;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .redaction-bar.revealed {
+      background: rgba(20, 26, 33, 0.10);
+      color: var(--ink-primary);
     }
 
     /* Knife Switch */
@@ -267,7 +879,7 @@
       background: #141816;
       border: 1px solid #3D4642;
       padding: 16px 20px;
-      border-radius: var(--radius-md, 6px);
+      border-radius: var(--radius-md);
       user-select: none;
     }
 
@@ -277,7 +889,7 @@
       height: 38px;
       background: #0E1210;
       border: 2px solid #233E31;
-      border-radius: var(--radius-xs, 2px);
+      border-radius: var(--radius-xs);
       cursor: pointer;
     }
 
@@ -287,7 +899,7 @@
       left: 10px;
       width: 44px;
       height: 6px;
-      background: var(--color-brass-cast, #C28833);
+      background: var(--color-brass-cast);
       border-radius: 2px;
       transform-origin: 4px 3px;
       transform: rotate(-35deg);
@@ -297,7 +909,7 @@
 
     .knife-switch-visual.closed .knife-blade {
       transform: rotate(0deg);
-      background: var(--color-brass-bright, #E5A84B);
+      background: var(--color-brass-bright);
       box-shadow: 0 0 10px rgba(229, 168, 75, 0.6);
     }
 
@@ -307,16 +919,16 @@
       top: 8px;
       width: 8px;
       height: 18px;
-      border-left: 2px solid var(--color-brass-cast, #C28833);
-      border-right: 2px solid var(--color-brass-cast, #C28833);
+      border-left: 2px solid var(--color-brass-cast);
+      border-right: 2px solid var(--color-brass-cast);
     }
 
-    /* Live CRT Simulation Canvas */
+    /* CRT Sim Box */
     .crt-sim-box {
       position: relative;
       background: #080D0A;
       border: 3px solid #141B17;
-      border-radius: var(--radius-md, 6px);
+      border-radius: var(--radius-md);
       overflow: hidden;
       box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95);
     }
@@ -342,53 +954,42 @@
       background-size: 100% 4px;
     }
 
-    /* Redaction Bar */
-    .redaction-bar {
-      display: inline-block;
-      background: var(--ink-primary, #141A21);
-      color: transparent;
-      padding: 0 4px;
-      border-radius: 1px;
-      user-select: none;
+    /* Color Grid */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .color-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .color-preview { height: 84px; width: 100%; border-bottom: 1px solid rgba(0, 0, 0, 0.08); }
+    .color-info { padding: 16px; display: flex; flex-direction: column; gap: 6px; }
+    .color-name { font-family: var(--font-mono); font-size: 12px; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
+    .color-hex { font-family: var(--font-mono); font-size: 11px; color: var(--color-sage-deep); letter-spacing: 0.08em; }
+    .color-desc { font-size: 12px; line-height: 1.4; color: var(--ink-secondary); }
+
+    .btn-copy-token {
+      background: none;
+      border: 1px solid rgba(20, 26, 33, 0.15);
+      border-radius: var(--radius-xs);
+      padding: 2px 6px;
+      font-family: var(--font-mono);
+      font-size: 9px;
       cursor: pointer;
-      transition: background 0.2s ease, color 0.2s ease;
+      color: var(--ink-secondary);
     }
+    .btn-copy-token:hover { background: var(--ink-primary); color: #FFFFFF; }
 
-    .redaction-bar.revealed {
-      background: rgba(20, 26, 33, 0.10);
-      color: var(--ink-primary, #141A21);
-    }
-
-    /* Stamp Styles */
-    .stamp-restricted {
-      border: 2px solid var(--color-crimson-wax, #8B1E23);
-      color: var(--color-crimson-wax, #8B1E23);
-      font-family: var(--font-mono, monospace);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      padding: 4px 10px;
-      display: inline-block;
-      text-transform: uppercase;
-      transform: rotate(-2deg);
-      user-select: none;
-    }
-
-    .stamp-cleared {
-      border: 2px solid var(--color-sage-deep, #2D4A3E);
-      color: var(--color-sage-deep, #2D4A3E);
-      font-family: var(--font-mono, monospace);
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      padding: 4px 10px;
-      display: inline-block;
-      text-transform: uppercase;
-      transform: rotate(1.5deg);
-      user-select: none;
-    }
-
-    /* Icon Catalog */
+    /* Icon Grid */
     .icon-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -398,7 +999,7 @@
     .icon-item {
       background: #FFFFFF;
       border: 1px solid rgba(20, 26, 33, 0.12);
-      border-radius: var(--radius-sm, 4px);
+      border-radius: var(--radius-sm);
       padding: 16px 12px;
       display: flex;
       flex-direction: column;
@@ -408,33 +1009,21 @@
       transition: all 0.15s ease;
     }
 
-    .icon-item:hover {
-      border-color: var(--color-sage-deep, #2D4A3E);
-      background: #F8FAF7;
-      transform: translateY(-2px);
-    }
+    .icon-item:hover { border-color: var(--color-sage-deep); background: #F8FAF7; transform: translateY(-2px); }
+    .icon-label { font-family: var(--font-mono); font-size: 10px; color: var(--ink-secondary); text-align: center; }
 
-    .icon-label {
-      font-family: var(--font-mono, monospace);
-      font-size: 10px;
-      letter-spacing: 0.08em;
-      color: var(--ink-secondary, #4A5568);
-      text-align: center;
-    }
-
-    /* Toast */
     #copy-toast {
       position: fixed;
       bottom: 24px;
       right: 24px;
-      background: var(--ink-primary, #141A21);
+      background: var(--ink-primary);
       color: #EDF0EB;
-      font-family: var(--font-mono, monospace);
+      font-family: var(--font-mono);
       font-size: 11px;
       letter-spacing: 0.14em;
       text-transform: uppercase;
       padding: 10px 18px;
-      border-radius: var(--radius-sm, 4px);
+      border-radius: var(--radius-sm);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
       opacity: 0;
       pointer-events: none;
@@ -443,10 +1032,7 @@
       z-index: 10000;
     }
 
-    #copy-toast.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    #copy-toast.show { opacity: 1; transform: translateY(0); }
   </style>
 </head>
 <body>
@@ -464,11 +1050,11 @@
       Living architectural specification for Analogue Clinical Brutalism. This interactive masterwork houses reusable 1970s hardware widgets—including high-DPI Bourdon hydrostatic gauges, scrolling polygraph chart recorders, Nagra SN reel-to-reel tape transports, rotary telephones, telephone switchboards, and multi-sheet classified case dossiers.
     </p>
     <div class="showcase-badge-row">
-      <span class="badge-tag highlight">SPEC: V2.5 PERIOD SUITE</span>
+      <span class="badge-tag highlight">SPEC: V2.5 STANDALONE</span>
       <span class="badge-tag">TACTILE 1970S CLINICAL ARTIFACTS</span>
       <span class="badge-tag">STRICT ZERO-EMOJI MANDATE</span>
       <span class="badge-tag">AUTO-SLEEPING ANIMATION LOOPS</span>
-      <span class="badge-tag">POINTER CAPTURE &amp; ACCESSIBLE</span>
+      <span class="badge-tag">RELOAD &amp; FILE:// COMPLIANT</span>
     </div>
   </header>
 
@@ -544,7 +1130,7 @@
           <span style="color: var(--color-crt-phosphor);">6-SECTOR ROUTING</span>
         </div>
         <p style="font-size: 12px; color: var(--ink-secondary); margin: 0;">
-          Interactive patch bay with dynamic SVG braided catenary cords, contact LED indicator lamps, and automatic ResizeObserver coordinate tracking.
+          Interactive patch bay with dynamic SVG braided catenary cords, contact LED indicator lamps, and automatic ResizeObserver coordinate tracking. Click any two sockets to patch.
         </p>
         <div id="mount-patch-matrix"></div>
       </div>
@@ -596,7 +1182,7 @@
             <h3 style="font-family: var(--font-serif); font-size: 24px; margin: 8px 0 0 0;">Intake Requisition &amp; Limbic Calibration</h3>
             <span style="font-family: var(--font-mono); font-size: 10px; color: var(--ink-muted); letter-spacing: 0.14em;">DEPARTMENT OF VOLUNTARY COGNITIVE ALIGNMENT</span>
           </div>
-          <div class="wax-seal" style="position: static; width: 42px; height: 42px; font-size: 11px;">104</div>
+          <div class="wax-seal">104</div>
         </div>
 
         <div class="dossier-typewriter">
@@ -610,7 +1196,7 @@
 
         <div style="margin-top: 24px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #D5DAD3; padding-top: 14px;">
           <span style="font-family: var(--font-mono); font-size: 10px; color: var(--ink-secondary);">PHYSICIAN SIGNATURE: <span class="redaction-bar" onclick="this.classList.toggle('revealed')">DR. MAMIYA</span></span>
-          <span class="type-meta">CLICK BLACK BARS TO DECLASSIFY TEXT</span>
+          <span style="font-family: var(--font-mono); font-size: 10px; color: var(--ink-muted);">CLICK BLACK BARS TO DECLASSIFY TEXT</span>
         </div>
       </div>
 
@@ -729,59 +1315,931 @@
 
 <div id="copy-toast">TOKEN COPIED TO CLIPBOARD</div>
 
-<!-- Component Implementations Bundled for Seamless Browser Execution -->
-<script type="module">
-  import { BourdonGauge } from './src/ui/components/BourdonGauge.ts';
-  import { StripChartRecorder } from './src/ui/components/StripChartRecorder.ts';
-  import { ReelTapeTransport } from './src/ui/components/ReelTapeTransport.ts';
-  import { RotaryDial } from './src/ui/components/RotaryDial.ts';
-  import { PatchMatrix } from './src/ui/components/PatchMatrix.ts';
-
-  // Instantiate Widgets
-  const mountGauge = document.getElementById('mount-bourdon-gauge');
-  if (mountGauge) {
-    window.demoGauge = new BourdonGauge(mountGauge, {
-      nominalPressureKpa: 101.3,
-      targetPressureKpa: 100.0
-    });
-  }
-
-  const mountChart = document.getElementById('mount-strip-chart');
-  if (mountChart) {
-    window.demoChart = new StripChartRecorder(mountChart, {
-      initialSpeed: 25,
-      frequencyHz: 2.4
-    });
-  }
-
-  const mountTape = document.getElementById('mount-tape-deck');
-  if (mountTape) {
-    window.demoTape = new ReelTapeTransport(mountTape);
-  }
-
-  const mountPatch = document.getElementById('mount-patch-matrix');
-  if (mountPatch) {
-    window.demoPatch = new PatchMatrix(mountPatch);
-  }
-
-  const mountRotary = document.getElementById('mount-rotary-dial');
-  const historyEl = document.getElementById('dialed-history');
-  let dialedSequence = '';
-  if (mountRotary) {
-    window.demoRotary = new RotaryDial(mountRotary, {
-      onDigitDialed: (digit) => {
-        dialedSequence += digit.toString();
-        if (dialedSequence.length > 5) dialedSequence = dialedSequence.slice(-5);
-        if (historyEl) historyEl.textContent = dialedSequence.split('').join(' ');
-      }
-    });
-  }
-</script>
-
+<!-- Self-Contained Vanilla JavaScript Engine (Guaranteed zero CORS issues on file://) -->
 <script>
   /* ==========================================================================
-     COLOR TOKENS & ICON CATALOG DATA
+     1. BOURDON GAUGE IMPLEMENTATION
      ========================================================================== */
+  class BourdonGauge {
+    constructor(mountPoint, options = {}) {
+      this.minKpa = options.minPressureKpa || 0;
+      this.maxKpa = options.maxPressureKpa || 200;
+      this.currentKpa = options.nominalPressureKpa || 101.3;
+      this.targetKpa = this.currentKpa;
+      this.redLimitKpa = options.targetPressureKpa || 100.0;
+
+      this.currentAngle = 0;
+      this.targetAngle = 0;
+      this.velocity = 0;
+      this.animId = null;
+
+      this.container = document.createElement('div');
+      this.container.className = 'bourdon-gauge-widget';
+
+      const dialWrap = document.createElement('div');
+      dialWrap.className = 'bourdon-dial-wrap';
+      this.canvas = document.createElement('canvas');
+      this.ctx = this.canvas.getContext('2d');
+      dialWrap.appendChild(this.canvas);
+
+      const glare = document.createElement('div');
+      glare.className = 'bourdon-dial-glare';
+      dialWrap.appendChild(glare);
+
+      const controls = document.createElement('div');
+      controls.className = 'bourdon-controls-wrap';
+
+      this.readoutEl = document.createElement('div');
+      this.readoutEl.className = 'bourdon-readout';
+      this.updateReadout();
+
+      const valveGroup = document.createElement('div');
+      valveGroup.className = 'bourdon-valve-group';
+      const label = document.createElement('span');
+      label.className = 'bourdon-valve-label';
+      label.textContent = 'BLEEDER VALVE';
+
+      this.valveKnob = document.createElement('div');
+      this.valveKnob.className = 'bourdon-valve-knob';
+      this.valveKnob.setAttribute('role', 'slider');
+      this.valveKnob.setAttribute('tabindex', '0');
+      this.valveKnob.setAttribute('aria-label', 'Hydrostatic Bleeder Valve');
+      this.valveKnob.setAttribute('aria-valuenow', this.currentKpa.toFixed(1));
+
+      valveGroup.appendChild(label);
+      valveGroup.appendChild(this.valveKnob);
+      controls.appendChild(this.readoutEl);
+      controls.appendChild(valveGroup);
+
+      this.container.appendChild(dialWrap);
+      this.container.appendChild(controls);
+      mountPoint.appendChild(this.container);
+
+      this.setupListeners();
+      this.calculateTargetAngle();
+      this.currentAngle = this.targetAngle;
+
+      requestAnimationFrame(() => {
+        this.resize();
+        this.render();
+      });
+    }
+
+    resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = this.canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      this.canvas.width = Math.round(rect.width * dpr);
+      this.canvas.height = Math.round(rect.height * dpr);
+      this.ctx.resetTransform();
+      this.ctx.scale(dpr, dpr);
+    }
+
+    setupListeners() {
+      let isDragging = false;
+      let startY = 0;
+      let startKpa = 0;
+
+      this.valveKnob.addEventListener('pointerdown', (e) => {
+        isDragging = true;
+        startY = e.clientY;
+        startKpa = this.targetKpa;
+        this.valveKnob.setPointerCapture(e.pointerId);
+        this.valveKnob.classList.add('active');
+      });
+
+      this.valveKnob.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const deltaKpa = (startY - e.clientY) * 0.4;
+        this.setPressure(startKpa + deltaKpa);
+      });
+
+      const endDrag = (e) => {
+        if (!isDragging) return;
+        isDragging = false;
+        this.valveKnob.classList.remove('active');
+        try { this.valveKnob.releasePointerCapture(e.pointerId); } catch (_) {}
+      };
+
+      this.valveKnob.addEventListener('pointerup', endDrag);
+      this.valveKnob.addEventListener('pointercancel', endDrag);
+
+      this.valveKnob.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { e.preventDefault(); this.setPressure(this.targetKpa + 1); }
+        else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { e.preventDefault(); this.setPressure(this.targetKpa - 1); }
+      });
+
+      window.addEventListener('resize', () => { this.resize(); this.render(); });
+    }
+
+    setPressure(kpa) {
+      this.targetKpa = Math.max(this.minKpa, Math.min(this.maxKpa, kpa));
+      this.valveKnob.setAttribute('aria-valuenow', this.targetKpa.toFixed(1));
+      this.calculateTargetAngle();
+      this.wake();
+    }
+
+    ventPressure(amount = 25) {
+      this.setPressure(this.targetKpa - amount);
+    }
+
+    calculateTargetAngle() {
+      const frac = (this.targetKpa - this.minKpa) / (this.maxKpa - this.minKpa);
+      const startRad = (-135 * Math.PI) / 180;
+      const endRad = (135 * Math.PI) / 180;
+      this.targetAngle = startRad + frac * (endRad - startRad);
+    }
+
+    wake() {
+      if (document.hidden) return;
+      if (!this.animId) {
+        this.animId = requestAnimationFrame(() => this.loop());
+      }
+    }
+
+    loop() {
+      const k = 0.08;
+      const damping = 0.86;
+      const force = (this.targetAngle - this.currentAngle) * k;
+      this.velocity = (this.velocity + force) * damping;
+      this.currentAngle += this.velocity;
+
+      const startRad = (-135 * Math.PI) / 180;
+      const endRad = (135 * Math.PI) / 180;
+      const frac = (this.currentAngle - startRad) / (endRad - startRad);
+      this.currentKpa = this.minKpa + frac * (this.maxKpa - this.minKpa);
+      this.updateReadout();
+      this.render();
+
+      if (Math.abs(this.velocity) < 0.0001 && Math.abs(this.targetAngle - this.currentAngle) < 0.0005) {
+        this.currentAngle = this.targetAngle;
+        this.velocity = 0;
+        this.animId = null;
+        this.render();
+        return;
+      }
+      this.animId = requestAnimationFrame(() => this.loop());
+    }
+
+    updateReadout() {
+      this.readoutEl.textContent = `${this.currentKpa.toFixed(1)} kPa`;
+    }
+
+    render() {
+      const rect = this.canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (w === 0 || h === 0) return;
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const radius = Math.min(w, h) / 2 - 12;
+
+      this.ctx.clearRect(0, 0, w, h);
+
+      // Dial face
+      this.ctx.fillStyle = '#EDF0EB';
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      this.ctx.fill();
+
+      // Brass rim
+      this.ctx.strokeStyle = '#C28833';
+      this.ctx.lineWidth = 3;
+      this.ctx.stroke();
+
+      const startRad = (-135 * Math.PI) / 180;
+      const endRad = (135 * Math.PI) / 180;
+      const ticks = 20;
+
+      for (let i = 0; i <= ticks; i++) {
+        const angle = startRad + (i / ticks) * (endRad - startRad);
+        const isMajor = i % 5 === 0;
+        const len = isMajor ? 12 : 6;
+        const x1 = cx + Math.cos(angle) * (radius - len - 4);
+        const y1 = cy + Math.sin(angle) * (radius - len - 4);
+        const x2 = cx + Math.cos(angle) * (radius - 4);
+        const y2 = cy + Math.sin(angle) * (radius - 4);
+
+        this.ctx.strokeStyle = isMajor ? '#141A21' : '#4A5568';
+        this.ctx.lineWidth = isMajor ? 2 : 1;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x1, y1);
+        this.ctx.lineTo(x2, y2);
+        this.ctx.stroke();
+
+        if (isMajor) {
+          const val = this.minKpa + (i / ticks) * (this.maxKpa - this.minKpa);
+          const tx = cx + Math.cos(angle) * (radius - 22);
+          const ty = cy + Math.sin(angle) * (radius - 22) + 3;
+          this.ctx.fillStyle = '#141A21';
+          this.ctx.font = '9px "JetBrains Mono", monospace';
+          this.ctx.textAlign = 'center';
+          this.ctx.fillText(Math.round(val).toString(), tx, ty);
+        }
+      }
+
+      // Dial Center Text
+      this.ctx.fillStyle = '#718096';
+      this.ctx.font = '8px "JetBrains Mono", monospace';
+      this.ctx.textAlign = 'center';
+      this.ctx.fillText('HYDROSTATIC DAMPING', cx, cy - 20);
+      this.ctx.fillText('KILOPASCALS (kPa)', cx, cy - 10);
+
+      // Red limit needle
+      const limitFrac = (this.redLimitKpa - this.minKpa) / (this.maxKpa - this.minKpa);
+      const limitAngle = startRad + limitFrac * (endRad - startRad);
+      this.ctx.strokeStyle = 'rgba(184, 40, 46, 0.7)';
+      this.ctx.lineWidth = 1.5;
+      this.ctx.beginPath();
+      this.ctx.moveTo(cx, cy);
+      this.ctx.lineTo(cx + Math.cos(limitAngle) * (radius - 14), cy + Math.sin(limitAngle) * (radius - 14));
+      this.ctx.stroke();
+
+      // Active black needle
+      this.ctx.strokeStyle = '#141A21';
+      this.ctx.lineWidth = 2.5;
+      this.ctx.beginPath();
+      this.ctx.moveTo(cx - Math.cos(this.currentAngle) * 12, cy - Math.sin(this.currentAngle) * 12);
+      this.ctx.lineTo(cx + Math.cos(this.currentAngle) * (radius - 10), cy + Math.sin(this.currentAngle) * (radius - 10));
+      this.ctx.stroke();
+
+      // Brass center cap
+      this.ctx.fillStyle = '#C28833';
+      this.ctx.beginPath();
+      this.ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+      this.ctx.fill();
+    }
+  }
+
+  /* ==========================================================================
+     2. STRIP CHART RECORDER IMPLEMENTATION
+     ========================================================================== */
+  class StripChartRecorder {
+    constructor(mountPoint, options = {}) {
+      this.speed = options.initialSpeed !== undefined ? options.initialSpeed : 25;
+      this.frequencyHz = options.frequencyHz || 2.4;
+      this.amplitude = 28;
+      this.timeOffset = 0;
+      this.scrollOffset = 0;
+      this.points = [];
+      this.animId = null;
+
+      this.container = document.createElement('div');
+      this.container.className = 'chart-recorder-widget';
+
+      const header = document.createElement('div');
+      header.className = 'chart-header';
+      const title = document.createElement('span');
+      title.className = 'chart-title';
+      title.textContent = 'POLYGRAPH RECORDER // LIMBIC FREQUENCY';
+      this.statusEl = document.createElement('span');
+      this.statusEl.className = 'chart-status';
+      this.statusEl.textContent = `SPEED: ${this.speed} MM/S`;
+      header.appendChild(title);
+      header.appendChild(this.statusEl);
+
+      const viewport = document.createElement('div');
+      viewport.className = 'chart-viewport';
+      this.canvas = document.createElement('canvas');
+      this.ctx = this.canvas.getContext('2d');
+      viewport.appendChild(this.canvas);
+
+      const stylus = document.createElement('div');
+      stylus.className = 'chart-stylus-line';
+      viewport.appendChild(stylus);
+
+      const controls = document.createElement('div');
+      controls.className = 'chart-controls';
+
+      [0, 25, 50].forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = `chart-btn-speed ${s === this.speed ? 'active' : ''}`;
+        btn.textContent = s === 0 ? 'STOP' : `${s} MM/S`;
+        btn.addEventListener('click', () => this.setSpeed(s));
+        controls.appendChild(btn);
+      });
+
+      this.container.appendChild(header);
+      this.container.appendChild(viewport);
+      this.container.appendChild(controls);
+      mountPoint.appendChild(this.container);
+
+      requestAnimationFrame(() => {
+        this.resize();
+        this.render();
+      });
+
+      if (this.speed > 0) this.wake();
+
+      window.addEventListener('resize', () => { this.resize(); this.render(); });
+    }
+
+    resize() {
+      const dpr = window.devicePixelRatio || 1;
+      const rect = this.canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) return;
+      this.canvas.width = Math.round(rect.width * dpr);
+      this.canvas.height = Math.round(rect.height * dpr);
+      this.ctx.resetTransform();
+      this.ctx.scale(dpr, dpr);
+      this.maxPoints = Math.round(rect.width / 2);
+    }
+
+    setSpeed(speed) {
+      this.speed = speed;
+      this.statusEl.textContent = speed === 0 ? 'STATUS: HALTED' : `SPEED: ${speed} MM/S`;
+      this.container.querySelectorAll('.chart-btn-speed').forEach((btn, idx) => {
+        btn.classList.toggle('active', [0, 25, 50][idx] === speed);
+      });
+      if (this.speed === 0) {
+        if (this.animId) cancelAnimationFrame(this.animId);
+        this.animId = null;
+      } else {
+        this.wake();
+      }
+    }
+
+    setFrequency(hz) { this.frequencyHz = hz; }
+
+    wake() {
+      if (document.hidden || this.speed === 0) return;
+      if (!this.animId) this.animId = requestAnimationFrame(() => this.loop());
+    }
+
+    loop() {
+      const dt = this.speed * 0.04;
+      this.timeOffset += dt * 0.08;
+      this.scrollOffset = (this.scrollOffset + dt) % 20;
+
+      const baseWave = Math.sin(this.timeOffset * this.frequencyHz) * this.amplitude;
+      const harmonic = Math.sin(this.timeOffset * this.frequencyHz * 2.8) * (this.amplitude * 0.35);
+      const jitter = (Math.random() - 0.5) * 4;
+      const spike = Math.random() < 0.02 ? (Math.random() - 0.5) * 35 : 0;
+      this.points.push(baseWave + harmonic + jitter + spike);
+
+      if (this.points.length > (this.maxPoints || 150)) this.points.shift();
+      this.render();
+      this.animId = requestAnimationFrame(() => this.loop());
+    }
+
+    render() {
+      const rect = this.canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      if (w === 0 || h === 0) return;
+
+      this.ctx.clearRect(0, 0, w, h);
+      this.ctx.fillStyle = '#E8ECE6';
+      this.ctx.fillRect(0, 0, w, h);
+
+      // Grid
+      this.ctx.strokeStyle = 'rgba(45, 74, 62, 0.15)';
+      this.ctx.lineWidth = 1;
+      for (let x = -this.scrollOffset; x < w; x += 20) {
+        if (x < 0) continue;
+        this.ctx.beginPath(); this.ctx.moveTo(x, 0); this.ctx.lineTo(x, h); this.ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 15) {
+        this.ctx.beginPath(); this.ctx.moveTo(0, y); this.ctx.lineTo(w, y); this.ctx.stroke();
+      }
+
+      this.ctx.strokeStyle = 'rgba(45, 74, 62, 0.35)';
+      this.ctx.lineWidth = 1.5;
+      this.ctx.beginPath(); this.ctx.moveTo(0, h / 2); this.ctx.lineTo(w, h / 2); this.ctx.stroke();
+
+      // Pen line
+      this.ctx.strokeStyle = '#141A21';
+      this.ctx.lineWidth = 1.75;
+      this.ctx.beginPath();
+      const startX = w - this.points.length * 2;
+      for (let i = 0; i < this.points.length; i++) {
+        const px = startX + i * 2;
+        const py = h / 2 - this.points[i];
+        if (i === 0) this.ctx.moveTo(px, py);
+        else this.ctx.lineTo(px, py);
+      }
+      this.ctx.stroke();
+
+      if (this.points.length > 0) {
+        const penY = h / 2 - this.points[this.points.length - 1];
+        this.ctx.fillStyle = '#8B1E23';
+        this.ctx.beginPath();
+        this.ctx.arc(w - 2, penY, 3, 0, Math.PI * 2);
+        this.ctx.fill();
+      }
+    }
+  }
+
+  /* ==========================================================================
+     3. NAGRA SN REEL TAPE TRANSPORT IMPLEMENTATION
+     ========================================================================== */
+  class ReelTapeTransport {
+    constructor(mountPoint) {
+      this.state = 'stop';
+      this.speedMult = 1.0;
+      this.counter = 104;
+      this.rotDeg = 0;
+      this.vuCur = -35;
+      this.vuTarget = -35;
+      this.vuVel = 0;
+      this.animId = null;
+
+      this.container = document.createElement('div');
+      this.container.className = 'tape-transport-widget';
+
+      const header = document.createElement('div');
+      header.className = 'tape-transport-header';
+      const title = document.createElement('span');
+      title.className = 'tape-transport-title';
+      title.textContent = 'NAGRA SN // SURVEILLANCE RECORDER';
+      this.badgeEl = document.createElement('span');
+      this.badgeEl.className = 'tape-status-badge';
+      this.badgeEl.textContent = 'STANDBY';
+      header.appendChild(title);
+      header.appendChild(this.badgeEl);
+
+      const bay = document.createElement('div');
+      bay.className = 'tape-bay';
+
+      this.supplyReelEl = this.createReel('SUPPLY');
+      this.takeUpReelEl = this.createReel('TAKE-UP');
+
+      const center = document.createElement('div');
+      center.className = 'tape-center-bridge';
+
+      const odoWrap = document.createElement('div');
+      odoWrap.className = 'tape-odometer-wrap';
+      const odoLabel = document.createElement('span');
+      odoLabel.className = 'tape-odometer-label';
+      odoLabel.textContent = 'INDEX';
+      this.counterEl = document.createElement('div');
+      this.counterEl.className = 'tape-odometer-digits';
+      this.counterEl.textContent = '0104';
+      odoWrap.appendChild(odoLabel);
+      odoWrap.appendChild(this.counterEl);
+
+      const vu = document.createElement('div');
+      vu.className = 'tape-vu-meter';
+      const face = document.createElement('div');
+      face.className = 'tape-vu-face';
+      this.needleEl = document.createElement('div');
+      this.needleEl.className = 'tape-vu-needle';
+      face.appendChild(this.needleEl);
+      vu.appendChild(face);
+
+      center.appendChild(odoWrap);
+      center.appendChild(vu);
+
+      bay.appendChild(this.supplyReelEl);
+      bay.appendChild(center);
+      bay.appendChild(this.takeUpReelEl);
+
+      const controls = document.createElement('div');
+      controls.className = 'tape-transport-controls';
+
+      ['PLAY', 'STOP', 'REW', '0.5x'].forEach((lbl, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'tape-btn';
+        btn.textContent = lbl;
+        btn.addEventListener('click', () => {
+          if (idx === 0) this.setState('play');
+          else if (idx === 1) this.setState('stop');
+          else if (idx === 2) this.setState('rewind');
+          else if (idx === 3) {
+            this.speedMult = this.speedMult === 1.0 ? 0.5 : 1.0;
+            btn.classList.toggle('active', this.speedMult === 0.5);
+          }
+        });
+        controls.appendChild(btn);
+      });
+
+      this.container.appendChild(header);
+      this.container.appendChild(bay);
+      this.container.appendChild(controls);
+      mountPoint.appendChild(this.container);
+    }
+
+    createReel(lbl) {
+      const wrap = document.createElement('div');
+      wrap.className = 'tape-reel-wrap';
+      const reel = document.createElement('div');
+      reel.className = 'tape-reel';
+      reel.innerHTML = `
+        <svg viewBox="0 0 100 100" width="100%" height="100%">
+          <circle cx="50" cy="50" r="46" fill="none" stroke="#3D4642" stroke-width="2"/>
+          <circle cx="50" cy="50" r="16" fill="#141816" stroke="#C28833" stroke-width="2"/>
+          <line x1="50" y1="16" x2="50" y2="4" stroke="#8B9991" stroke-width="3"/>
+          <line x1="20" y1="67" x2="10" y2="73" stroke="#8B9991" stroke-width="3"/>
+          <line x1="80" y1="67" x2="90" y2="73" stroke="#8B9991" stroke-width="3"/>
+        </svg>
+      `;
+      const cap = document.createElement('span');
+      cap.className = 'tape-reel-caption';
+      cap.textContent = lbl;
+      wrap.appendChild(reel);
+      wrap.appendChild(cap);
+      return wrap;
+    }
+
+    setState(st) {
+      this.state = st;
+      this.badgeEl.textContent = st.toUpperCase();
+      this.badgeEl.className = `tape-status-badge ${st === 'play' ? 'active' : st === 'rewind' ? 'rewind' : ''}`;
+      if (!this.animId) this.animId = requestAnimationFrame(() => this.loop());
+    }
+
+    loop() {
+      if (this.state === 'play') {
+        this.rotDeg = (this.rotDeg + 2.5 * this.speedMult) % 360;
+        this.counter += 0.05 * this.speedMult;
+        this.vuTarget = -5 + (Math.random() - 0.5) * 18;
+      } else if (this.state === 'rewind') {
+        this.rotDeg = (this.rotDeg - 8.0) % 360;
+        this.counter = Math.max(0, this.counter - 0.25);
+        this.vuTarget = -30;
+      } else {
+        this.vuTarget = -35;
+      }
+
+      this.counterEl.textContent = Math.floor(this.counter).toString().padStart(4, '0');
+      this.supplyReelEl.querySelector('.tape-reel').style.transform = `rotate(${this.rotDeg}deg)`;
+      this.takeUpReelEl.querySelector('.tape-reel').style.transform = `rotate(${this.rotDeg}deg)`;
+
+      const force = (this.vuTarget - this.vuCur) * 0.12;
+      this.vuVel = (this.vuVel + force) * 0.82;
+      this.vuCur += this.vuVel;
+      this.needleEl.style.transform = `rotate(${this.vuCur}deg)`;
+
+      if (this.state === 'stop' && Math.abs(this.vuVel) < 0.001) {
+        this.animId = null;
+        return;
+      }
+      this.animId = requestAnimationFrame(() => this.loop());
+    }
+  }
+
+  /* ==========================================================================
+     4. ROTARY TELEPHONE DIAL IMPLEMENTATION
+     ========================================================================== */
+  class RotaryDial {
+    constructor(mountPoint, options = {}) {
+      this.onDialed = options.onDigitDialed;
+      this.currentRotation = 0;
+      this.isDialing = false;
+
+      this.container = document.createElement('div');
+      this.container.className = 'rotary-dial-widget';
+
+      const esc = document.createElement('div');
+      esc.className = 'rotary-escutcheon';
+
+      const ring = document.createElement('div');
+      ring.className = 'rotary-number-ring';
+
+      this.wheelEl = document.createElement('div');
+      this.wheelEl.className = 'rotary-wheel';
+
+      const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+      digits.forEach((digit, idx) => {
+        const angle = 45 + idx * 26;
+        const rad = (angle * Math.PI) / 180;
+        const cx = 80 + Math.cos(rad) * 58;
+        const cy = 80 + Math.sin(rad) * 58;
+
+        const lbl = document.createElement('div');
+        lbl.className = 'rotary-digit-label';
+        lbl.textContent = digit.toString();
+        lbl.style.left = `${cx}px`;
+        lbl.style.top = `${cy}px`;
+        ring.appendChild(lbl);
+
+        const hole = document.createElement('div');
+        hole.className = 'rotary-hole';
+        hole.style.left = `${cx}px`;
+        hole.style.top = `${cy}px`;
+        hole.setAttribute('role', 'button');
+        hole.setAttribute('aria-label', `Dial ${digit}`);
+
+        hole.addEventListener('pointerdown', (e) => {
+          if (this.isDialing) return;
+          this.isDialing = true;
+          const targetDeg = 310 - angle;
+          hole.setPointerCapture(e.pointerId);
+          this.wheelEl.style.transform = `rotate(${targetDeg}deg)`;
+
+          const end = () => {
+            try { hole.releasePointerCapture(e.pointerId); } catch (_) {}
+            if (this.onDialed) this.onDialed(digit);
+            this.currentRotation = targetDeg;
+            this.isDialing = false;
+            this.springReturn();
+          };
+
+          hole.addEventListener('pointerup', end, { once: true });
+          hole.addEventListener('pointercancel', end, { once: true });
+        });
+
+        this.wheelEl.appendChild(hole);
+      });
+
+      const stop = document.createElement('div');
+      stop.className = 'rotary-finger-stop';
+
+      esc.appendChild(ring);
+      esc.appendChild(this.wheelEl);
+      esc.appendChild(stop);
+      this.container.appendChild(esc);
+      mountPoint.appendChild(this.container);
+
+      // Keyboard support
+      window.addEventListener('keydown', (e) => {
+        if (/^[0-9]$/.test(e.key)) {
+          this.simulateDial(parseInt(e.key, 10));
+        }
+      });
+    }
+
+    simulateDial(digit) {
+      if (this.isDialing) return;
+      this.isDialing = true;
+      const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+      const idx = digits.indexOf(digit);
+      const angle = 45 + idx * 26;
+      const targetDeg = 310 - angle;
+
+      this.wheelEl.style.transition = 'transform 0.35s ease-out';
+      this.wheelEl.style.transform = `rotate(${targetDeg}deg)`;
+
+      setTimeout(() => {
+        this.wheelEl.style.transition = '';
+        if (this.onDialed) this.onDialed(digit);
+        this.currentRotation = targetDeg;
+        this.isDialing = false;
+        this.springReturn();
+      }, 380);
+    }
+
+    springReturn() {
+      const step = () => {
+        this.currentRotation -= 14;
+        if (this.currentRotation <= 0) {
+          this.currentRotation = 0;
+          this.wheelEl.style.transform = 'rotate(0deg)';
+          return;
+        }
+        this.wheelEl.style.transform = `rotate(${this.currentRotation}deg)`;
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+  }
+
+  /* ==========================================================================
+     5. SWITCHBOARD JACK MATRIX IMPLEMENTATION
+     ========================================================================== */
+  class PatchMatrix {
+    constructor(mountPoint) {
+      this.sockets = [
+        { id: 'jack_hub', label: 'HUB 04' },
+        { id: 'jack_slp', label: 'SLP 02' },
+        { id: 'jack_hyd', label: 'HYD 03' },
+        { id: 'jack_aud', label: 'AUD 04' },
+        { id: 'jack_arc', label: 'ARC 05' },
+        { id: 'jack_dir', label: 'DIR 06' }
+      ];
+      this.selectedId = null;
+      // Pre-connect HUB 04 to AUD 04 as immediate live visual proof
+      this.connections = [['jack_hub', 'jack_aud']];
+
+      this.container = document.createElement('div');
+      this.container.className = 'patch-matrix-widget';
+
+      const header = document.createElement('div');
+      header.className = 'patch-header';
+      const title = document.createElement('span');
+      title.className = 'patch-title';
+      title.textContent = 'TELEPHONE SWITCHBOARD // JACK MATRIX';
+      this.statusEl = document.createElement('span');
+      this.statusEl.className = 'patch-status';
+      this.statusEl.textContent = '1 PATCH ACTIVE';
+      header.appendChild(title);
+      header.appendChild(this.statusEl);
+
+      this.boardArea = document.createElement('div');
+      this.boardArea.className = 'patch-board-area';
+
+      this.svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      this.svgEl.setAttribute('class', 'patch-svg-layer');
+      this.boardArea.appendChild(this.svgEl);
+
+      const grid = document.createElement('div');
+      grid.className = 'patch-sockets-grid';
+
+      this.sockets.forEach(s => {
+        const box = document.createElement('div');
+        box.className = 'patch-socket-box';
+        box.setAttribute('data-id', s.id);
+
+        const led = document.createElement('div');
+        led.className = 'patch-led';
+
+        const hole = document.createElement('div');
+        hole.className = 'patch-jack-hole';
+
+        const lbl = document.createElement('span');
+        lbl.className = 'patch-socket-label';
+        lbl.textContent = s.label;
+
+        box.appendChild(led);
+        box.appendChild(hole);
+        box.appendChild(lbl);
+
+        box.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.handleSocketClick(s.id);
+        });
+
+        grid.appendChild(box);
+      });
+
+      this.boardArea.appendChild(grid);
+
+      const footer = document.createElement('div');
+      footer.className = 'patch-footer';
+      const hint = document.createElement('span');
+      hint.textContent = 'Click socket A then socket B to route. ESC to cancel.';
+      const clearBtn = document.createElement('button');
+      clearBtn.className = 'pill-btn';
+      clearBtn.style.padding = '4px 10px';
+      clearBtn.style.fontSize = '9px';
+      clearBtn.textContent = 'CLEAR CORDS';
+      clearBtn.addEventListener('click', () => {
+        this.connections = [];
+        this.selectedId = null;
+        this.updateVisuals();
+        this.renderCables();
+      });
+
+      footer.appendChild(hint);
+      footer.appendChild(clearBtn);
+
+      this.container.appendChild(header);
+      this.container.appendChild(this.boardArea);
+      this.container.appendChild(footer);
+      mountPoint.appendChild(this.container);
+
+      // Cancel routing on Escape or outside click
+      window.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && this.selectedId) {
+          this.selectedId = null;
+          this.updateVisuals();
+        }
+      });
+      document.addEventListener('click', () => {
+        if (this.selectedId) {
+          this.selectedId = null;
+          this.updateVisuals();
+        }
+      });
+
+      window.addEventListener('resize', () => {
+        this.renderCables();
+      });
+
+      // Defer initial render until DOM layout paint
+      requestAnimationFrame(() => {
+        this.updateVisuals();
+        this.renderCables();
+      });
+    }
+
+    handleSocketClick(id) {
+      if (!this.selectedId) {
+        this.selectedId = id;
+        this.updateVisuals();
+        this.statusEl.textContent = `ROUTE: ${id.replace('jack_', '').toUpperCase()} -> SELECT TARGET`;
+      } else if (this.selectedId === id) {
+        this.selectedId = null;
+        this.updateVisuals();
+        this.statusEl.textContent = `${this.connections.length} PATCHES ACTIVE`;
+      } else {
+        const existingIdx = this.connections.findIndex(([a, b]) =>
+          (a === this.selectedId && b === id) || (a === id && b === this.selectedId)
+        );
+        if (existingIdx !== -1) {
+          this.connections.splice(existingIdx, 1);
+        } else {
+          this.connections.push([this.selectedId, id]);
+        }
+        this.selectedId = null;
+        this.updateVisuals();
+        this.renderCables();
+        this.statusEl.textContent = `${this.connections.length} PATCHES ACTIVE`;
+      }
+    }
+
+    updateVisuals() {
+      this.container.querySelectorAll('.patch-socket-box').forEach(box => {
+        const id = box.getAttribute('data-id');
+        const isSelected = id === this.selectedId;
+        const isConnected = this.connections.some(([a, b]) => a === id || b === id);
+
+        box.classList.toggle('selected', isSelected);
+        box.classList.toggle('connected', isConnected);
+
+        const led = box.querySelector('.patch-led');
+        if (led) {
+          led.className = `patch-led ${isConnected ? 'active' : isSelected ? 'pending' : ''}`;
+        }
+      });
+    }
+
+    renderCables() {
+      while (this.svgEl.firstChild) this.svgEl.removeChild(this.svgEl.firstChild);
+
+      const bRect = this.boardArea.getBoundingClientRect();
+      if (bRect.width === 0 || bRect.height === 0) return;
+
+      this.svgEl.setAttribute('viewBox', `0 0 ${bRect.width} ${bRect.height}`);
+
+      this.connections.forEach(([idA, idB], idx) => {
+        const elA = this.container.querySelector(`[data-id="${idA}"] .patch-jack-hole`);
+        const elB = this.container.querySelector(`[data-id="${idB}"] .patch-jack-hole`);
+        if (!elA || !elB) return;
+
+        const rA = elA.getBoundingClientRect();
+        const rB = elB.getBoundingClientRect();
+
+        const x1 = rA.left + rA.width / 2 - bRect.left;
+        const y1 = rA.top + rA.height / 2 - bRect.top;
+        const x2 = rB.left + rB.width / 2 - bRect.left;
+        const y2 = rB.top + rB.height / 2 - bRect.top;
+
+        const dx = x2 - x1;
+        const dy = y2 - y1;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const sag = Math.min(65, dist * 0.35 + 15);
+        const cx = (x1 + x2) / 2;
+        const cy = Math.max(y1, y2) + sag;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', `M ${x1} ${y1} Q ${cx} ${cy} ${x2} ${y2}`);
+
+        const colors = ['#C28833', '#8B1E23', '#2D4A3E', '#141A21'];
+        path.setAttribute('stroke', colors[idx % colors.length]);
+        path.setAttribute('stroke-width', '4');
+        path.setAttribute('fill', 'none');
+        path.setAttribute('stroke-linecap', 'round');
+        path.setAttribute('filter', 'drop-shadow(0 3px 5px rgba(0,0,0,0.5))');
+
+        this.svgEl.appendChild(path);
+      });
+    }
+  }
+
+  /* ==========================================================================
+     INITIALIZATION ON DOM READY
+     ========================================================================== */
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Mount Bourdon Gauge
+    const mountGauge = document.getElementById('mount-bourdon-gauge');
+    if (mountGauge) window.demoGauge = new BourdonGauge(mountGauge);
+
+    // 2. Mount Strip Chart Recorder
+    const mountChart = document.getElementById('mount-strip-chart');
+    if (mountChart) window.demoChart = new StripChartRecorder(mountChart);
+
+    // 3. Mount Nagra Tape Transport
+    const mountTape = document.getElementById('mount-tape-deck');
+    if (mountTape) window.demoTape = new ReelTapeTransport(mountTape);
+
+    // 4. Mount Patch Matrix
+    const mountPatch = document.getElementById('mount-patch-matrix');
+    if (mountPatch) window.demoPatch = new PatchMatrix(mountPatch);
+
+    // 5. Mount Rotary Dial
+    const mountRotary = document.getElementById('mount-rotary-dial');
+    const historyEl = document.getElementById('dialed-history');
+    let historyStr = '';
+    if (mountRotary) {
+      window.demoRotary = new RotaryDial(mountRotary, {
+        onDigitDialed: (d) => {
+          historyStr += d.toString();
+          if (historyStr.length > 5) historyStr = historyStr.slice(-5);
+          if (historyEl) historyEl.textContent = historyStr.split('').join(' ');
+        }
+      });
+    }
+
+    // 6. Palette & Icon Catalog
+    renderPalette();
+    renderIconCatalog();
+    resizeCrt();
+    drawCrt();
+  });
+
+  /* Palette Data */
   const COLOR_TOKENS = [
     { varName: '--color-alabaster', hex: '#EDF0EB', name: 'Alabaster Ivory', desc: 'Primary document paper, modal surfaces, unglazed tile' },
     { varName: '--color-alabaster-dim', hex: '#E2E7DF', name: 'Aged Alabaster', desc: 'Dossier backing sheets, classified drawer interiors' },
@@ -820,38 +2278,14 @@
   }
 
   const ICON_CATALOG = [
-    {
-      name: 'Settings Gear',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>'
-    },
-    {
-      name: 'Inventory Backpack',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path><path d="M10 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1"></path><path d="M4 10h16"></path><path d="M22 10a2 2 0 0 0-2-2h-3"></path><path d="M2 10a2 2 0 0 1 2-2h3"></path><path d="M9 22v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"></path></svg>'
-    },
-    {
-      name: 'Disengage Close',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
-    },
-    {
-      name: 'Blueprint Compass',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 19 21 12 17 5 21 12 2"></polygon></svg>'
-    },
-    {
-      name: 'Oscilloscope Wave',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-7 4 14 3-7h3"></path><circle cx="21" cy="12" r="1"></circle></svg>'
-    },
-    {
-      name: 'Bourdon Manifold',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="12" x2="16" y2="8"></line><line x1="12" y1="2" x2="12" y2="4"></line></svg>'
-    },
-    {
-      name: 'Tape Reel',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="4"></circle><circle cx="18" cy="12" r="4"></circle><line x1="6" y1="16" x2="18" y2="16"></line></svg>'
-    },
-    {
-      name: 'Telephone Jack',
-      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"></rect><circle cx="12" cy="10" r="2"></circle><line x1="12" y1="14" x2="12" y2="16"></line></svg>'
-    }
+    { name: 'Settings Gear', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>' },
+    { name: 'Inventory Backpack', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path><path d="M10 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1"></path><path d="M4 10h16"></path><path d="M22 10a2 2 0 0 0-2-2h-3"></path><path d="M2 10a2 2 0 0 1 2-2h3"></path><path d="M9 22v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"></path></svg>' },
+    { name: 'Disengage Close', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' },
+    { name: 'Blueprint Compass', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 19 21 12 17 5 21 12 2"></polygon></svg>' },
+    { name: 'Oscilloscope Wave', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-7 4 14 3-7h3"></path><circle cx="21" cy="12" r="1"></circle></svg>' },
+    { name: 'Bourdon Manifold', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="12" x2="16" y2="8"></line><line x1="12" y1="2" x2="12" y2="4"></line></svg>' },
+    { name: 'Tape Reel', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="4"></circle><circle cx="18" cy="12" r="4"></circle><line x1="6" y1="16" x2="18" y2="16"></line></svg>' },
+    { name: 'Telephone Jack', svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"></rect><circle cx="12" cy="10" r="2"></circle><line x1="12" y1="14" x2="12" y2="16"></line></svg>' }
   ];
 
   function renderIconCatalog() {
@@ -875,7 +2309,6 @@
     });
   }
 
-  /* Dossier Tab Switching */
   window.switchDossierTab = function(tabId, btn) {
     document.querySelectorAll('.dossier-tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.dossier-sheet').forEach(s => s.style.display = 'none');
@@ -884,7 +2317,6 @@
     if (target) target.style.display = 'block';
   };
 
-  /* Knife switch */
   let knifeClosed = false;
   window.toggleDemoKnifeSwitch = function() {
     knifeClosed = !knifeClosed;
@@ -897,7 +2329,6 @@
     }
   };
 
-  /* CRT Waveform Canvas */
   const crtCanvas = document.getElementById('demo-crt-canvas');
   let crtCtx = null;
   let crtPhase = 0;
@@ -924,23 +2355,15 @@
 
     crtCtx.clearRect(0, 0, w, h);
 
-    // Graticule grid
     crtCtx.strokeStyle = 'rgba(74, 222, 128, 0.08)';
     crtCtx.lineWidth = 1;
     for (let x = 0; x < w; x += 28) {
-      crtCtx.beginPath();
-      crtCtx.moveTo(x, 0);
-      crtCtx.lineTo(x, h);
-      crtCtx.stroke();
+      crtCtx.beginPath(); crtCtx.moveTo(x, 0); crtCtx.lineTo(x, h); crtCtx.stroke();
     }
     for (let y = 0; y < h; y += 28) {
-      crtCtx.beginPath();
-      crtCtx.moveTo(0, y);
-      crtCtx.lineTo(w, y);
-      crtCtx.stroke();
+      crtCtx.beginPath(); crtCtx.moveTo(0, y); crtCtx.lineTo(w, y); crtCtx.stroke();
     }
 
-    // Lissajous / Sine Wave
     crtCtx.strokeStyle = '#4ADE80';
     crtCtx.shadowColor = '#4ADE80';
     crtCtx.shadowBlur = 8;
@@ -971,13 +2394,6 @@
     } else {
       crtAnimId = requestAnimationFrame(drawCrt);
     }
-  });
-
-  window.addEventListener('load', () => {
-    renderPalette();
-    renderIconCatalog();
-    resizeCrt();
-    drawCrt();
   });
 
   window.addEventListener('resize', () => {
