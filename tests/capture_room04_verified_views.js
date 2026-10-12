@@ -1,45 +1,17 @@
 import { chromium } from 'playwright';
-import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { startTestServer } from './helpers/testServer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const SCREENSHOTS_DIR = path.resolve(__dirname, '../screenshots');
 if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
-const PORT = 4199;
-const DIST_DIR = path.resolve(__dirname, '../dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.mp3': 'audio/mpeg'
-};
-
-const server = http.createServer((req, res) => {
-  const cleanUrl = req.url.split('?')[0]; let filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    }
-  });
-});
-
-server.listen(PORT, async () => {
-  console.log(`Capture server running on http://localhost:${PORT}`);
+(async () => {
+  const { baseUrl, close } = await startTestServer();
+  console.log(`Capture server running on ${baseUrl}`);
   const browser = await chromium.launch({
     headless: true,
     args: ['--use-gl=angle', '--use-angle=default']
@@ -48,7 +20,7 @@ server.listen(PORT, async () => {
   const page = await context.newPage();
 
   try {
-    await page.goto(`http://localhost:${PORT}/?test=true`);
+    await page.goto(`${baseUrl}/?test=true`);
     await page.waitForSelector('#btn-menu-start', { state: 'visible' });
     await page.click('#btn-menu-start');
     await page.waitForTimeout(1000);
@@ -93,8 +65,8 @@ server.listen(PORT, async () => {
   } catch (err) {
     console.error('Screenshot capture failed:', err);
     process.exitCode = 1;
-  } finally {
-    await browser.close();
-    server.close();
+    } finally {
+    if (browser) await browser.close();
+    close();
   }
-});
+})();

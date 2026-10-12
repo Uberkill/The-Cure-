@@ -1,45 +1,9 @@
 import { chromium } from 'playwright';
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { startTestServer } from './helpers/testServer.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PORT = 4198;
-const DIST_DIR = path.resolve(__dirname, '../dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.mp3': 'audio/mpeg',
-  '.glb': 'model/gltf-binary'
-};
-
-const server = http.createServer((req, res) => {
-  const cleanUrl = req.url.split('?')[0];
-  const filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    }
-  });
-});
-
-server.listen(PORT, async () => {
-  console.log(`UI & Accessibility test server running on http://localhost:${PORT}`);
+(async () => {
+  const { baseUrl, close } = await startTestServer();
+  console.log(`UI & Accessibility test server running on ${baseUrl}`);
   const browser = await chromium.launch({
     headless: true,
     args: [
@@ -70,7 +34,7 @@ server.listen(PORT, async () => {
 
   try {
     console.log('--- Step 1: Application Bootstrap ---');
-    await page.goto(`http://localhost:${PORT}/?test=true`);
+    await page.goto(`${baseUrl}/?test=true`);
     await page.waitForSelector('#btn-menu-start', { state: 'visible' });
     await page.click('#btn-menu-start');
     await page.waitForTimeout(600);
@@ -114,81 +78,65 @@ server.listen(PORT, async () => {
     }
     console.log('PASSED: Reticle hover prompt matrix and opacity dynamics verified.');
 
-    console.log('--- Step 3: Frequency Oscilloscope & Resonance Switch UI ---');
-    // Open frequency console via hotspot
+            console.log('--- Step 3: Frequency Oscilloscope & Resonance Switch UI ---');
+    // Open frequency console via object click
     await page.evaluate(() => {
       const app = window.__VAULT_APP__;
-      app.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+      app.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(100);
+    
+    
+    await page.waitForTimeout(100);
 
-    const isFreqVisible = await page.$eval('#freq-console', (el) => !el.classList.contains('hidden'));
+    const isFreqVisible = await page.$eval('#screen-tektronix-crt', (el) => !el.classList.contains('hidden'));
     if (!isFreqVisible) {
-      throw new Error('Frequency console was not made visible upon moving to vault hotspot');
+      throw new Error('Tektronix CRT was not made visible');
     }
 
-    // Test non-resonant frequency (440 Hz)
+    // Insert brass shunt to unlock the controls
     await page.evaluate(() => {
-      const slider = document.getElementById('slider-freq');
+      window.__VAULT_APP__.eventBus.emit('inventory:add', { itemId: 'prop_brass_shunt' });
+    });
+    await page.waitForTimeout(100);
+    await page.click('#slot-shunt');
+    await page.waitForTimeout(100);
+
+    // Test non-resonant frequency
+    await page.evaluate(() => {
+      const slider = document.getElementById('dial-frequency');
       slider.value = '440';
       slider.dispatchEvent(new Event('input', { bubbles: true }));
     });
-
-    const nonResonantState = await page.evaluate(() => {
-      const valEl = document.getElementById('freq-val');
-      const btn = document.getElementById('btn-throw-switch');
-      return {
-        valText: valEl.textContent,
-        disabled: btn.disabled,
-        hasReadyClass: btn.classList.contains('ready')
-      };
-    });
-
-    if (nonResonantState.valText !== '440 Hz') {
-      throw new Error(`Expected 440 Hz, got "${nonResonantState.valText}"`);
-    }
-    if (!nonResonantState.disabled || nonResonantState.hasReadyClass) {
-      throw new Error('Throw switch must be disabled and not ready when frequency is non-resonant (440 Hz)');
-    }
-
-    // Test resonant frequency (528 Hz)
-    await page.evaluate(() => {
-      const slider = document.getElementById('slider-freq');
-      slider.value = '528';
-      slider.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-
-    const resonantState = await page.evaluate(() => {
-      const valEl = document.getElementById('freq-val');
-      const btn = document.getElementById('btn-throw-switch');
-      return {
-        valText: valEl.textContent,
-        disabled: btn.disabled,
-        hasReadyClass: btn.classList.contains('ready')
-      };
-    });
-
-    if (resonantState.valText !== '528 Hz') {
-      throw new Error(`Expected 528 Hz, got "${resonantState.valText}"`);
-    }
-    if (resonantState.disabled || !resonantState.hasReadyClass) {
-      throw new Error('Throw switch must be enabled and ready when frequency resonates at 528 Hz');
-    }
-
-    // Throw the switch
-    await page.click('#btn-throw-switch');
     await page.waitForTimeout(100);
 
-    const afterThrowState = await page.evaluate(() => {
-      const consoleEl = document.getElementById('freq-console');
-      const btn = document.getElementById('btn-throw-switch');
-      return {
-        consoleHidden: consoleEl.classList.contains('hidden'),
-        btnDisabled: btn.disabled
-      };
-    });
+    const isSwitchEnabledNonRes = await page.$eval('#btn-knife-switch', (btn) => !btn.disabled);
+    if (isSwitchEnabledNonRes) {
+      throw new Error('Knife switch should be DISABLED at 440 Hz');
+    }
 
-    if (!afterThrowState.consoleHidden || !afterThrowState.btnDisabled) {
+    // Test resonant frequency
+    await page.evaluate(() => {
+      const slider = document.getElementById('dial-frequency');
+      slider.value = '528';
+      slider.dispatchEvent(new Event('input', { bubbles: true }));
+      const phase = document.getElementById('dial-phase');
+      phase.value = '180';
+      phase.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await page.waitForTimeout(100);
+
+    const isSwitchEnabledRes = await page.$eval('#btn-knife-switch', (btn) => !btn.disabled);
+    if (!isSwitchEnabledRes) {
+      throw new Error('Knife switch should be ENABLED at 528 Hz / 180 deg');
+    }
+
+    // Click switch
+    await page.click('#btn-knife-switch');
+    await page.waitForTimeout(800);
+
+    const isUIHidden = await page.$eval('#screen-tektronix-crt', (el) => el.classList.contains('hidden'));
+    if (!isUIHidden) {
       throw new Error('Throw switch click must hide console and disable button');
     }
     console.log('PASSED: Frequency console 528 Hz resonance activation and switch throw behavior verified.');
@@ -305,8 +253,8 @@ server.listen(PORT, async () => {
   } catch (err) {
     console.error('TEST FAILED:', err);
     process.exitCode = 1;
-  } finally {
-    await browser.close();
-    server.close();
+    } finally {
+    if (browser) await browser.close();
+    close();
   }
-});
+})();

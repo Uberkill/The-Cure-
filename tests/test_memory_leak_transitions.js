@@ -1,42 +1,17 @@
-﻿import { chromium } from 'playwright';
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const distDir = path.resolve(__dirname, '../dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.css': 'text/css'
-};
-
-const PORT = 4199;
-const server = http.createServer((req, res) => {
-  let filePath = path.join(distDir, req.url === '/' ? 'index.html' : req.url);
-  const ext = path.extname(filePath).toLowerCase();
-  fs.readFile(filePath, (err, data) => {
-    if (err) { res.writeHead(404); res.end('Not found'); return; }
-    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
-    res.end(data);
-  });
-});
-server.listen(PORT, () => { console.log('Memory test server running on http://localhost:' + PORT); });
+import { chromium } from 'playwright';
+import { startTestServer } from './helpers/testServer.js';
 
 (async () => {
+  const { baseUrl, close } = await startTestServer();
+  console.log(`Memory test server running on ${baseUrl}`);
   let browser;
+  let exitCode = 0;
   try {
     browser = await chromium.launch();
     const page = await browser.newPage();
     
     console.log('--- Step 1: Loading Application ---');
-    await page.goto('http://localhost:' + PORT);
-    
-    await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 5000 });
-    await page.click('#btn-menu-start');
+    await page.goto(`${baseUrl}/?test=true`);
     
     await page.waitForFunction(() => {
       const stage = window.__VAULT_APP__?.gameState?.getStage();
@@ -66,15 +41,16 @@ server.listen(PORT, () => { console.log('Memory test server running on http://lo
     
     if (finalGeometries > baseGeometries + 10) {
       console.error('FAIL: Memory leak detected! Geometries grew from ' + baseGeometries + ' to ' + finalGeometries);
-      process.exit(1);
+      exitCode = 1;
     } else {
       console.log('SUCCESS: No memory leak detected during rapid chamber transitions!');
     }
   } catch (error) {
     console.error('Test Execution Failed:', error);
-    process.exit(1);
+    exitCode = 1;
   } finally {
     if (browser) await browser.close();
-    server.close();
+    close();
+    process.exit(exitCode);
   }
 })();

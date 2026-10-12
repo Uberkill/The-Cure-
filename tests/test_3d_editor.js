@@ -1,44 +1,9 @@
 import { chromium } from 'playwright';
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { startTestServer } from './helpers/testServer.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PORT = 4188;
-const DIST_DIR = path.resolve(__dirname, '../dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.mp3': 'audio/mpeg'
-};
-
-const server = http.createServer((req, res) => {
-  const cleanUrl = req.url.split('?')[0];
-  let filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    }
-  });
-});
-
-server.listen(PORT, async () => {
-  console.log(`3D Editor test server running on http://localhost:${PORT}`);
+(async () => {
+  const { baseUrl, close } = await startTestServer();
+  console.log(`3D Editor test server running on ${baseUrl}`);
   const browser = await chromium.launch({
     headless: true,
     args: ['--use-gl=angle', '--use-angle=default']
@@ -57,9 +22,10 @@ server.listen(PORT, async () => {
     }
   });
 
+  let exitCode = 0;
   try {
     console.log('--- Step 1: Loading application with ?editor=true ---');
-    await page.goto(`http://localhost:${PORT}/?editor=true`);
+    await page.goto(`${baseUrl}/?editor=true`);
     await page.waitForSelector('#dev-3d-editor-panel', { state: 'visible', timeout: 8000 });
 
     if (await page.isVisible('#btn-menu-start')) {
@@ -80,16 +46,13 @@ server.listen(PORT, async () => {
     console.log('PASSED: Tabs are present.');
 
     console.log('--- Step 3: Verifying Spawner & Gizmo Attachment ---');
-    // Click Spawner tab
     await page.click('button[data-tab="spawner"]');
     await page.waitForTimeout(200);
-    
-    // Select Clock and spawn
+
     await page.selectOption('#dev-prefab-select', 'Clock');
     await page.click('#dev-btn-spawn');
     await page.waitForTimeout(300);
 
-    // Verify it was added to scene and selected
     const selectedText = await page.$eval('#dev-selected-object', el => el.textContent);
     console.log('Selected object after spawn:', selectedText);
     if (!selectedText.includes('prefab_Clock')) {
@@ -122,8 +85,8 @@ server.listen(PORT, async () => {
     await page.click('button[data-tab="scenarios"]');
     await page.waitForTimeout(200);
     await page.click('.dev-btn-scenario[data-room="sleep_ward"]');
-    await page.waitForTimeout(1500); // Wait for transition
-    
+    await page.waitForTimeout(1500);
+
     const subtitle = await page.$eval('#observation-subtitle', el => el.textContent);
     console.log('Subtitle after jump:', subtitle);
     if (!subtitle.includes('Sleep Ward')) {
@@ -137,38 +100,30 @@ server.listen(PORT, async () => {
       document.getElementById('tab-anim').style.display = 'block';
     });
     await page.waitForTimeout(200);
-    
-    // Fill Anim tab and scrub
+
     await page.fill('#dev-anim-start', '0');
     await page.fill('#dev-anim-end', '90');
     await page.selectOption('#dev-anim-type', 'rotation');
     await page.selectOption('#dev-anim-axis', 'x');
-    await page.fill('#dev-anim-scrub', '50'); // Scrub to 50%
+    await page.fill('#dev-anim-scrub', '50');
     await page.dispatchEvent('#dev-anim-scrub', 'input');
     await page.waitForTimeout(100);
 
-    const animX = await page.evaluate(() => {
-      // Still using the clock prefab from step 4, assuming it exists or we grab anything selected
-      // Wait, we jumped scenario! The clock might be gone. Let's just grab the currently selected object.
-      // But the gizmo was detached during jump: `this.devGizmo.detach()`.
-      return 'done';
-    });
     console.log('PASSED: Animation tab rendered and handled input without crashing.');
 
-    console.log('--- Step 8: Checking Console Errors ---');
+    console.log('--- Step 7: Checking Console Errors ---');
     console.log(`Console Errors: ${consoleErrors.length}`);
     if (consoleErrors.length > 0) {
       throw new Error(`Test encountered console errors: ${consoleErrors.join(', ')}`);
     }
 
     console.log('SUCCESS: All 3D Editor, telemetry, and transform gizmo tests passed with 0 errors!');
-    await browser.close();
-    server.close();
-    process.exit(0);
   } catch (err) {
     console.error('Test Failed:', err);
+    exitCode = 1;
+  } finally {
     await browser.close();
-    server.close();
-    process.exit(1);
+    close();
+    process.exit(exitCode);
   }
-});
+})();

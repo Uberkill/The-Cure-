@@ -1,43 +1,9 @@
 import { chromium } from 'playwright';
-import http from 'http';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import { startTestServer } from './helpers/testServer.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PORT = 4188;
-const DIST_DIR = path.resolve(__dirname, '../dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.mp3': 'audio/mpeg'
-};
-
-const server = http.createServer((req, res) => {
-  const cleanUrl = req.url.split('?')[0]; let filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    }
-  });
-});
-
-server.listen(PORT, async () => {
-  console.log(`Stress test server running on http://localhost:${PORT}`);
+(async () => {
+  const { baseUrl, close } = await startTestServer();
+  console.log(`Stress test server running on ${baseUrl}`);
   const browser = await chromium.launch({
     headless: true,
     args: [
@@ -67,7 +33,7 @@ server.listen(PORT, async () => {
 
   try {
     console.log('--- Step 1: Bootstrap & Autoplay Verification ---');
-    await page.goto(`http://localhost:${PORT}/?test=true`);
+    await page.goto(`${baseUrl}/?test=true`);
     try {
       await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 5000 });
     } catch (e) {
@@ -308,12 +274,11 @@ server.listen(PORT, async () => {
     }
 
     console.log('SUCCESS: All 3D and audio stress test cases verified with 0 console errors!');
-  } catch (err) {
+    } catch (err) {
     console.error('Stress test failed:', err);
-    process.exit(1);
+    process.exitCode = 1;
   } finally {
-    await browser.close();
-    server.close();
-    process.exit(0);
+    if (browser) await browser.close();
+    close();
   }
-});
+})();
