@@ -1,54 +1,11 @@
 import { chromium } from 'playwright';
-import http from 'http';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { startTestServer } from './helpers/testServer.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PORT = 4239;
-const DIST_DIR = path.resolve(__dirname, '../dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.mp3': 'audio/mpeg',
-  '.glb': 'model/gltf-binary'
-};
-
-const server = http.createServer((req, res) => {
-  const cleanUrl = req.url.split('?')[0];
-  const filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    }
-  });
-});
-
-server.listen(PORT, async () => {
-  console.log(`Pair 2 E2E test server running on http://localhost:${PORT}`);
-  const browser = await chromium.launch({
-    headless: true,
-    args: ['--use-gl=angle', '--use-angle=default']
-  });
-
-  const page = await browser.newPage();
+export async function runSuite(page, baseUrl) {
   const consoleErrors = [];
-
-  page.on('console', (msg) => {
+  const errorHandler = (msg) => {
     if (msg.type() === 'error') {
       const text = msg.text();
       if (text.includes('404') && (text.includes('.mp3') || text.includes('.glb') || text.includes('Failed to load resource'))) {
@@ -57,11 +14,12 @@ server.listen(PORT, async () => {
       consoleErrors.push(text);
       console.error(`[Browser Error] ${text}`);
     }
-  });
+  };
+  page.on('console', errorHandler);
 
   try {
     console.log('--- Step 1: Bootstrap & Teleport to Act III (Hydrotherapy) ---');
-    await page.goto(`http://localhost:${PORT}/?test=true`, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${baseUrl}/?test=true`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#canvas-container canvas', { state: 'visible', timeout: 8000 });
     await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 5000 });
 
@@ -251,13 +209,29 @@ server.listen(PORT, async () => {
     }
 
     console.log('ALL PAIR 2 (ACTS III & IV) E2E TESTS PASSED WITH 0 ERRORS.');
-    await browser.close();
-    server.close();
-    process.exit(0);
-  } catch (err) {
-    console.error('TEST RUNNER FAILED:', err);
-    await browser.close();
-    server.close();
-    process.exit(1);
+  } finally {
+    page.off('console', errorHandler);
   }
-});
+}
+
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isMain) {
+  const { baseUrl, close } = await startTestServer();
+  console.log(`Pair 2 E2E test server running on ${baseUrl}`);
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--use-gl=angle', '--use-angle=default']
+  });
+  const page = await browser.newPage();
+  let exitCode = 0;
+  try {
+    await runSuite(page, baseUrl);
+  } catch (err) {
+    console.error('FAILED: Pair 2 E2E Test execution failed:', err);
+    exitCode = 1;
+  } finally {
+    await browser.close();
+    close();
+    process.exit(exitCode);
+  }
+}

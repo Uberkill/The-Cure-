@@ -1,54 +1,11 @@
 import { chromium } from 'playwright';
-import http from 'http';
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { startTestServer } from './helpers/testServer.js';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const PORT = 4210;
-const DIST_DIR = path.resolve(__dirname, '../dist');
-
-const MIME_TYPES = {
-  '.html': 'text/html',
-  '.js': 'application/javascript',
-  '.css': 'text/css',
-  '.json': 'application/json',
-  '.png': 'image/png',
-  '.jpg': 'image/jpeg',
-  '.mp3': 'audio/mpeg',
-  '.glb': 'model/gltf-binary'
-};
-
-const server = http.createServer((req, res) => {
-  const cleanUrl = req.url.split('?')[0];
-  const filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
-  const ext = path.extname(filePath).toLowerCase();
-  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-
-  fs.readFile(filePath, (err, content) => {
-    if (err) {
-      res.writeHead(404);
-      res.end('Not Found');
-    } else {
-      res.writeHead(200, { 'Content-Type': contentType });
-      res.end(content);
-    }
-  });
-});
-
-server.listen(PORT, async () => {
-  console.log(`Scenario Jump Buttons test server running on http://localhost:${PORT}`);
-  const browser = await chromium.launch({
-    headless: true,
-    args: ['--use-gl=angle', '--use-angle=default']
-  });
-
-  const page = await browser.newPage();
+export async function runSuite(page, baseUrl) {
   const consoleErrors = [];
-
-  page.on('console', (msg) => {
+  const errorHandler = (msg) => {
     if (msg.type() === 'error') {
       const text = msg.text();
       if (text.includes('404') && (text.includes('.mp3') || text.includes('.glb') || text.includes('Failed to load resource'))) {
@@ -57,25 +14,27 @@ server.listen(PORT, async () => {
       consoleErrors.push(text);
       console.error(`[Browser Error] ${text}`);
     }
-  });
-
-  page.on('pageerror', (err) => {
+  };
+  const pageErrorHandler = (err) => {
     consoleErrors.push(err.message);
     console.error(`[Page Error] ${err.message}`);
-  });
+  };
+
+  page.on('console', errorHandler);
+  page.on('pageerror', pageErrorHandler);
 
   try {
-    await page.goto(`http://localhost:${PORT}/?editor=true`);
+    await page.goto(`${baseUrl}/?editor=true`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#dev-3d-editor-panel', { state: 'visible', timeout: 8000 });
 
     if (await page.isVisible('#btn-menu-start')) {
       await page.click('#btn-menu-start');
-      await page.waitForTimeout(500);
+      await page.waitForSelector('#view-main-menu', { state: 'hidden', timeout: 4000 });
     }
 
     // Switch to Scenarios tab
     await page.click('button[data-tab="scenarios"]');
-    await page.waitForTimeout(200);
+    await page.waitForSelector('.dev-btn-scenario', { state: 'visible', timeout: 3000 });
 
     const roomsToTest = [
       { id: 'room_04', expectedStage: 'ACT_1_HUB_AWAKEN', expectedTitle: 'The Sterile Chamber' },
@@ -91,7 +50,10 @@ server.listen(PORT, async () => {
     for (const room of roomsToTest) {
       console.log(`Testing Jump to [${room.id}] -> ${room.expectedTitle}`);
       await page.click(`.dev-btn-scenario[data-room="${room.id}"]`);
-      await page.waitForTimeout(400);
+
+      await page.waitForFunction((roomId) => {
+        return window.__VAULT_APP__?.scenarioRegistry?.getCurrentScenario()?.id === roomId;
+      }, room.id, { timeout: 4000 });
 
       const state = await page.evaluate(() => {
         const app = window.__VAULT_APP__;
@@ -117,7 +79,10 @@ server.listen(PORT, async () => {
     // Jump back to Room 01 to prove bidirectional reset
     console.log('Testing bidirectional jump back to Act I (Room 01)');
     await page.click('.dev-btn-scenario[data-room="room_04"]');
-    await page.waitForTimeout(400);
+
+    await page.waitForFunction(() => {
+      return window.__VAULT_APP__?.scenarioRegistry?.getCurrentScenario()?.id === 'room_04';
+    }, { timeout: 4000 });
 
     const hubState = await page.evaluate(() => {
       const app = window.__VAULT_APP__;
@@ -141,13 +106,30 @@ server.listen(PORT, async () => {
     }
 
     console.log('SUCCESS: All 8 Act scenario jump buttons and bidirectional state synchronization verified cleanly!');
-    await browser.close();
-    server.close();
-    process.exit(0);
+  } finally {
+    page.off('console', errorHandler);
+    page.off('pageerror', pageErrorHandler);
+  }
+}
+
+const isMain = process.argv[1] && path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (isMain) {
+  const { baseUrl, close } = await startTestServer();
+  console.log(`Scenario Jump Buttons test server running on ${baseUrl}`);
+  const browser = await chromium.launch({
+    headless: true,
+    args: ['--use-gl=angle', '--use-angle=default']
+  });
+  const page = await browser.newPage();
+  let exitCode = 0;
+  try {
+    await runSuite(page, baseUrl);
   } catch (err) {
     console.error('TEST FAILED:', err);
+    exitCode = 1;
+  } finally {
     await browser.close();
-    server.close();
-    process.exit(1);
+    close();
+    process.exit(exitCode);
   }
-});
+}
