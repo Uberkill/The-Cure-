@@ -14,8 +14,10 @@ const files = [
   'docs/ARCHITECTURE.md',
   'docs/DIEGETIC_PUZZLE_BIBLE.md',
   'docs/THE_CURE_DESIGN_BIBLE.md',
+  'docs/PSYCHOLOGICAL_FRAMEWORK.md',
   'docs/PHASED_IMPLEMENTATION_PLAN.md'
 ];
+
 
 let doc = '# THE VAULT: MASTER DOCUMENTATION\n\n*This document is an automated compilation of all technical, architectural, and design documentation for The Vault project.*\n\n---\n\n';
 

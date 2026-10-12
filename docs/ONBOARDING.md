@@ -116,18 +116,48 @@ npm run typecheck
 # Unit tests (44 tests covering save schema, math invariants, state, registry, and interactions)
 npm run test:unit
 
+# Fast unified regression test (Unit + Typecheck + Build + 26 E2E suites in ~68s)
+npm run test:fast
+
 # Persistence & Settings E2E Suite
 npm run test:save
 
-# Full automated integration pipeline
+# Full automated integration pipeline (smoke test)
 npm run test
 
-# Run complete 8-Act test matrix (26 concurrent Playwright suites)
+# Run legacy concurrent test matrix (26 concurrent Playwright suites)
 npm run test:all
 
 # Recompile master documentation (Markdown & HTML)
 npm run docs:build
 ```
+
+### Test Authoring & Dual-Mode Contract
+Every integration and E2E test script in `tests/` conforms to a standardized dual-mode contract:
+1. **Runner Module Export**:
+   Each test file must export an asynchronous suite entrypoint:
+   ```javascript
+   export async function runSuite(page, baseUrl) {
+     // Perform navigation, interactions, and assertions
+   }
+   ```
+   This allows `tests/run_all_fast.js` to run the suite inside a dedicated browser context (`browser.newContext()`) without launching a new Chromium process.
+2. **Direct CLI Execution Guard**:
+   Each test file retains an execution block for isolated CLI execution:
+   ```javascript
+   import { pathToFileURL } from 'url';
+   import { startTestServer } from './helpers/testServer.js';
+
+   const isMain = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+   if (isMain) {
+     const { server, baseUrl } = await startTestServer(0);
+     // launch local browser, run suite, close server
+   }
+   ```
+3. **Ephemeral Port Allocation**:
+   Never hardcode static ports (such as 4188, 4198, or 4199). Use `server.listen(0)` via `tests/helpers/testServer.js` to obtain an available operating system port, preventing `EADDRINUSE` race conditions.
+4. **State-Driven Assertions Over Fixed Sleeps**:
+   Avoid arbitrary `page.waitForTimeout(1000)` calls. In test mode (`?test=true`), CameraDirector animation duration is forced to 0ms and CSS transitions are suppressed. Use deterministic DOM state checks (`page.waitForSelector`, `page.waitForFunction`) to maintain rapid test throughput.
 
 ### Save System Debugging
 In the browser DevTools Console, inspect persisted state via:

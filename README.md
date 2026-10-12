@@ -64,10 +64,13 @@ npm run build
 # Run unit tests (44 tests across 8 test suites)
 npm run test:unit
 
-# Run full integration pipeline (Unit + Typecheck + Blueprint + Save + 3D Stress + 360 Audit)
+# Run full fast test pipeline (Unit + Typecheck + Vite Build + 26 E2E suites in ~68s)
+npm run test:fast
+
+# Run smoke integration pipeline (Unit + Typecheck + Blueprint + Save + 3D Stress + 360 Audit)
 npm run test
 
-# Run complete test matrix (44 unit tests + 26 concurrent Playwright E2E suites)
+# Run legacy concurrent test matrix (44 unit tests + 26 concurrent Playwright E2E suites)
 npm run test:all
 
 # Recompile master documentation (Markdown & printable HTML)
@@ -81,10 +84,24 @@ npm run dev
 
 ## Automated Test Harness
 
-```powershell
-# Unit Test Suite (Vitest - 44 tests across 8 suites)
-npm run test:unit
+The testing suite features a dual-mode execution contract. All 26 test scripts under `tests/` export `runSuite(page, baseUrl)` for the unified, single-browser test runner (`tests/run_all_fast.js`), while retaining an independent execution guard (`isMain` checking `import.meta.url`) that launches an ephemeral static server (`server.listen(0)`) for standalone CLI debugging.
 
+### Master Regression Runners
+```powershell
+# Unified Zero-Leak Full Suite (~68s, 1 Chromium process, isolated browser contexts)
+npm run test:fast
+
+# Smoke Test (Unit + 5 Core Integration Tests)
+npm run test
+
+# Unit Tests (44 Vitest assertions)
+npm run test:unit
+```
+
+### Granular Scenario & Stress Suites
+Individual test suites can be executed standalone in under 4 seconds without port collisions:
+
+```powershell
 # E2E Scenario Progression Suites
 npm run test:pair1         # Acts I & II (Hub & Sleep Ward)
 npm run test:pair2         # Acts III & IV (Hydrotherapy & Audiology)
@@ -111,3 +128,4 @@ npm run test:click         # Rapid input & event queue stress
 npm run test:perf          # Framerate & render budget benchmark
 npm run test:ui            # Contrast, ARIA, and DOM accessibility
 ```
+

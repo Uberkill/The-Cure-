@@ -77,10 +77,13 @@ npm run build
 # Run unit tests (44 tests across 8 test suites)
 npm run test:unit
 
-# Run full integration pipeline (Unit + Typecheck + Blueprint + Save + 3D Stress + 360 Audit)
+# Run full fast test pipeline (Unit + Typecheck + Vite Build + 26 E2E suites in ~68s)
+npm run test:fast
+
+# Run smoke integration pipeline (Unit + Typecheck + Blueprint + Save + 3D Stress + 360 Audit)
 npm run test
 
-# Run complete test matrix (44 unit tests + 26 concurrent Playwright E2E suites)
+# Run legacy concurrent test matrix (44 unit tests + 26 concurrent Playwright E2E suites)
 npm run test:all
 
 # Recompile master documentation (Markdown &amp; printable HTML)
@@ -91,10 +94,20 @@ npm run dev
 </code></pre>
 <hr>
 <h2>Automated Test Harness</h2>
-<pre><code class="language-powershell"># Unit Test Suite (Vitest - 44 tests across 8 suites)
-npm run test:unit
+<p>The testing suite features a dual-mode execution contract. All 26 test scripts under <code>tests/</code> export <code>runSuite(page, baseUrl)</code> for the unified, single-browser test runner (<code>tests/run_all_fast.js</code>), while retaining an independent execution guard (<code>isMain</code> checking <code>import.meta.url</code>) that launches an ephemeral static server (<code>server.listen(0)</code>) for standalone CLI debugging.</p>
+<h3>Master Regression Runners</h3>
+<pre><code class="language-powershell"># Unified Zero-Leak Full Suite (~68s, 1 Chromium process, isolated browser contexts)
+npm run test:fast
 
-# E2E Scenario Progression Suites
+# Smoke Test (Unit + 5 Core Integration Tests)
+npm run test
+
+# Unit Tests (44 Vitest assertions)
+npm run test:unit
+</code></pre>
+<h3>Granular Scenario &amp; Stress Suites</h3>
+<p>Individual test suites can be executed standalone in under 4 seconds without port collisions:</p>
+<pre><code class="language-powershell"># E2E Scenario Progression Suites
 npm run test:pair1         # Acts I &amp; II (Hub &amp; Sleep Ward)
 npm run test:pair2         # Acts III &amp; IV (Hydrotherapy &amp; Audiology)
 npm run test:pair3         # Acts V &amp; VI (Archive &amp; Director&#39;s Office)
@@ -226,18 +239,46 @@ npm run typecheck
 # Unit tests (44 tests covering save schema, math invariants, state, registry, and interactions)
 npm run test:unit
 
+# Fast unified regression test (Unit + Typecheck + Build + 26 E2E suites in ~68s)
+npm run test:fast
+
 # Persistence &amp; Settings E2E Suite
 npm run test:save
 
-# Full automated integration pipeline
+# Full automated integration pipeline (smoke test)
 npm run test
 
-# Run complete 8-Act test matrix (26 concurrent Playwright suites)
+# Run legacy concurrent test matrix (26 concurrent Playwright suites)
 npm run test:all
 
 # Recompile master documentation (Markdown &amp; HTML)
 npm run docs:build
 </code></pre>
+<h3>Test Authoring &amp; Dual-Mode Contract</h3>
+<p>Every integration and E2E test script in <code>tests/</code> conforms to a standardized dual-mode contract:</p>
+<ol>
+<li><strong>Runner Module Export</strong>:
+Each test file must export an asynchronous suite entrypoint:<pre><code class="language-javascript">export async function runSuite(page, baseUrl) {
+  // Perform navigation, interactions, and assertions
+}
+</code></pre>
+This allows <code>tests/run_all_fast.js</code> to run the suite inside a dedicated browser context (<code>browser.newContext()</code>) without launching a new Chromium process.</li>
+<li><strong>Direct CLI Execution Guard</strong>:
+Each test file retains an execution block for isolated CLI execution:<pre><code class="language-javascript">import { pathToFileURL } from &#39;url&#39;;
+import { startTestServer } from &#39;./helpers/testServer.js&#39;;
+
+const isMain = process.argv[1] &amp;&amp; import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isMain) {
+  const { server, baseUrl } = await startTestServer(0);
+  // launch local browser, run suite, close server
+}
+</code></pre>
+</li>
+<li><strong>Ephemeral Port Allocation</strong>:
+Never hardcode static ports (such as 4188, 4198, or 4199). Use <code>server.listen(0)</code> via <code>tests/helpers/testServer.js</code> to obtain an available operating system port, preventing <code>EADDRINUSE</code> race conditions.</li>
+<li><strong>State-Driven Assertions Over Fixed Sleeps</strong>:
+Avoid arbitrary <code>page.waitForTimeout(1000)</code> calls. In test mode (<code>?test=true</code>), CameraDirector animation duration is forced to 0ms and CSS transitions are suppressed. Use deterministic DOM state checks (<code>page.waitForSelector</code>, <code>page.waitForFunction</code>) to maintain rapid test throughput.</li>
+</ol>
 <h3>Save System Debugging</h3>
 <p>In the browser DevTools Console, inspect persisted state via:</p>
 <pre><code class="language-javascript">JSON.parse(localStorage.getItem(&#39;the_vault_save_record&#39;))
@@ -543,7 +584,15 @@ letter-spacing: 0.15em;
 <h3>3.9. Automated Verification &amp; Testing Architecture</h3>
 <ul>
 <li><strong>Unit Testing (Vitest)</strong>: 44 unit tests across 8 suites in <code>src/**/*.spec.ts</code> testing pure mathematical invariants, save schema serialization, state machine transitions, event mediator routing, and raycast hierarchies.</li>
-<li><strong>End-to-End Testing (Playwright)</strong>: 26 concurrent test suites in <code>npm run test:all</code> (29 total scripts in <code>tests/</code>) verifying 8-Act narrative progression, non-linear blueprint transit, save reload persistence, VRAM garbage collection, and input stress.</li>
+<li><strong>Unified High-Speed Test Architecture (<code>tests/run_all_fast.js</code>)</strong>:<ul>
+<li><strong>Single-Process Chromium Lifecycle</strong>: Launches a single Playwright Chromium instance once for the entire 26-suite regression suite, eliminating recurring browser process spin-up latency and executing the full end-to-end matrix in ~68 seconds.</li>
+<li><strong>Context Isolation &amp; GPU WebGL Disposal</strong>: Each test suite is assigned an isolated browser context (<code>await browser.newContext()</code>) providing a clean <code>localStorage</code>, empty cookies, and pristine DOM state. Calling <code>await context.close()</code> after each suite immediately destroys the active Three.js canvas and frees the underlying GPU WebGL context, remaining well beneath Chromium&#39;s 16 active WebGL context ceiling.</li>
+<li><strong>Dual-Mode Execution Contract</strong>: All 26 test scripts under <code>tests/</code> export <code>runSuite(page, baseUrl)</code> for the unified runner, while retaining a direct execution guard (<code>isMain</code> checking <code>import.meta.url</code>) that initializes an ephemeral static HTTP server for standalone debugging.</li>
+<li><strong>Ephemeral Port Allocation</strong>: Uses dynamic port binding (<code>server.listen(0)</code>) via <code>tests/helpers/testServer.js</code> to eliminate <code>EADDRINUSE</code> port collisions during concurrent and isolated test runs.</li>
+<li><strong>Watchdog Protection</strong>: Each suite is monitored with a 35,000ms async watchdog race to prevent stalled network requests or unhandled promise loops from locking CI pipelines.</li>
+</ul>
+</li>
+<li><strong>Granular CLI Runners</strong>: Dedicated scripts (<code>npm run test:pair1</code>, <code>npm run test:pair2</code>, <code>npm run test:save</code>, <code>npm run test:facility</code>, etc.) provide targeted scenario verification in under 4 seconds.</li>
 </ul>
 <hr>
 <h1>The Vault: Room 04 — Master Diegetic Puzzle &amp; Narrative Bible</h1>
@@ -1247,6 +1296,194 @@ PRESCRIPTION: COMPLETE DE-COUPLING // THE CURE
 </tbody></table>
 <p>With every crystal recovered and slotted into the central CRT console, the pristine alabaster walls of the Hub bruise and discolor. The visual corruption is the side-effect of Subject 104 successfully digesting the trauma of others and erasing it from their own mind.</p>
 <hr>
+<h1>The Tripartite Psychological Horror Framework: The Architecture of Dread</h1>
+<blockquote>
+<p><strong>Design Principle</strong><br>Rather than imitating a single cinematic work, <em>The Vault: Room 04</em> synthesizes three foundational traditions of psychological and existential dread: <strong>Kiyoshi Kurosawa&#39;s hypnotic contagion</strong>, <strong>David Lynch&#39;s uncanny surrealism and tension modulation</strong>, and <strong>the corporate doublespeak of partitioned selfhood (<em>Severance</em>)</strong>.<br>This framework serves as an additive layer, enriching the existing eight chambers with profound emotional resonance, tactile intrigue, and masterfully paced psychological tension.</p>
+</blockquote>
+<hr>
+<h2>1. The Three Cinematic &amp; Philosophical Pillars</h2>
+<pre><code>┌─────────────────────────────────────────────────────────────────────────────────┐
+│                    THE TRIPARTITE PSYCHOLOGICAL MOSAIC                          │
+├─────────────────────────┬──────────────────────────┬────────────────────────────┤
+│   KIYOSHI KUROSAWA      │       DAVID LYNCH        │      CORPORATE DISSOCIATION│
+│   (Cure, Pulse)         │  (Twin Peaks, Mulholland)│       (Severance, Kafka)   │
+├─────────────────────────┼──────────────────────────┼────────────────────────────┤
+│ • Ambient contagion     │ • Uncanny mundane objects│ • Administrative euphemisms│
+│ • Hypnotic amnesia      │ • Dream-logic geometry   │ • Partitioned consciousness│
+│ • Repetitive rituals    │ • The &quot;Tension Coil&quot;     │ • Human sorrow as a defect │
+│ • Quiet, rational dread │ • Intense acoustic vacuum│ • The illusion of consent  │
+└─────────────────────────┴──────────────────────────┴────────────────────────────┘
+</code></pre>
+<h3>Pillar I: Kiyoshi Kurosawa — Ambient Contagion &amp; Hypnotic Calm</h3>
+<ul>
+<li><strong>The Philosophy</strong>: In Kurosawa&#39;s <em>Cure</em> (1997) and <em>Pulse</em> (2001), horror does not announce itself with screeching monsters or sudden violence. It is quiet, rational, and chillingly polite. Evil spreads like a sensory virus—carried by a repetitive rhythm, a trickling of water, or a monotone question.</li>
+<li><strong>Application in The Vault</strong>:<ul>
+<li>The facility staff never threaten or scream at Subject 104. The voices on recordings and over the telephone are measured, articulate, and soothing.</li>
+<li>The horror comes from realizing that compliance feels peaceful. The temptation to stop resisting and let the mind go numb is the true threat.</li>
+</ul>
+</li>
+</ul>
+<h3>Pillar II: David Lynch — The Uncanny Mundane &amp; The Tension Coil</h3>
+<ul>
+<li><strong>The Philosophy</strong>: In Lynch&#39;s cinema (<em>Twin Peaks: The Return</em>, <em>Mulholland Drive</em>, <em>Lost Highway</em>), horror resides in ordinary mid-century domesticity: an unplugged cream telephone that rings anyway, a radiator that emits an organic hum, an empty hallway that feels alive.</li>
+<li><strong>The Emotional Waveform (&quot;Give Fear, Then Take It Away&quot;)</strong>:<ul>
+<li>Lynch builds unbearable tension not by exploding into a jump scare, but by holding an uncomfortable moment until it hurts—and then abruptly <strong>cutting to complete, dead silence</strong>.</li>
+<li>Taking the fear away leaves the audience in a sensory vacuum (<em>&quot;the nothing&quot;</em>). In that breathless silence, the player&#39;s own imagination takes over, magnifying every subtle visual texture, every shadow, and every faint click.</li>
+</ul>
+</li>
+</ul>
+<h3>Pillar III: Corporate Dissociation — The Bureaucracy of the Self (<em>Severance</em>)</h3>
+<ul>
+<li><strong>The Philosophy</strong>: Inspired by <em>Severance</em>, Franz Kafka&#39;s bureaucratic nightmares, and Mark Fisher&#39;s <em>Capitalist Realism</em>, the facility treats the human soul as malfunctioning office hardware that simply requires scheduled maintenance.</li>
+<li><strong>Application in The Vault</strong>:<ul>
+<li>Extreme emotional trauma is described in cheerful corporate wellness language: <em>&quot;limbic friction&quot;</em>, <em>&quot;equilibrium protocol&quot;</em>, <em>&quot;phase stabilization&quot;</em>, <em>&quot;voluntary cognitive alignment&quot;</em>.</li>
+<li>The Crimson Dossier treats the player&#39;s identity not as a human biography, but as an administrative intake requisition. Did the &quot;you&quot; of yesterday choose to enter this facility? If you signed the intake document, is your current self bound by that choice?</li>
+</ul>
+</li>
+</ul>
+<hr>
+<h2>2. Act I: The Master Tension Coil (Beat-by-Beat Modulation)</h2>
+<p>To ensure the player is utterly transfixed within the first four minutes, Act I executes a precise oscillation between <strong>Suspense</strong>, <strong>Fear/Dread</strong>, <strong>The Sensory Vacuum</strong>, and <strong>Tactile Mechanical Relief</strong>:</p>
+<pre><code>Intensity
+   ▲
+100│                      [Fear Spike: The Voice]
+   │                             /\
+ 75│                            /  \
+   │                           /    \
+ 50│   [Awakening: Suspense]  /      \
+   │            /\           /        \       [Tactile Relief: Harmonic Lock &amp; Blastdoor]
+ 25│           /  \         /          \                     /─────────\
+   │          /    \       /            \                   /           \
+  0└─────────/──────\─────/              \─────────────────/─────────────\────► Time
+           0:00    0:30  0:45           1:15              2:00          3:30
+                                   [The Acoustic Vacuum]
+</code></pre>
+<h3>The Emotional Beats in Detail:</h3>
+<h4>Beat 1: The Cold Awakening (0:00 - 0:30) — <em>Suspense &amp; Uncanny Realism</em></h4>
+<ul>
+<li><strong>Visual</strong>: The player opens their eyes. Symmetrical white walls, pristine pale terrazzo floor, smoked teak desk.</li>
+<li><strong>Acoustic</strong>: A dry, sterile 60 Hz electrical fluorescent light hum.</li>
+<li><strong>The Hook</strong>: Before the player moves, the cream rotary telephone on the desk rings with a muffled, rhythmic chime.</li>
+<li><strong>The Lynchian Tell</strong>: Looking closely at the telephone, its curly cord dangles loosely onto the floor, severed. It is ringing without a wall connection.</li>
+</ul>
+<h4>Beat 2: The Ringing Phone (0:30 - 1:15) — <em>The Dread Spike</em></h4>
+<ul>
+<li><strong>Action</strong>: The player lifts the receiver. The ringing stops instantly.</li>
+<li><strong>Acoustic</strong>: A low 40 Hz binaural drone swells subtly beneath the dialogue, creating physical acoustic tension.</li>
+<li><strong>The Voice</strong>: A flat, calm voice speaks with chillingly cordial intimacy:<blockquote>
+<p><em>&quot;Subject 104. You believe you were brought here against your will. But tell me: who was it that signed the intake sheet? Look at your hands. No bruises. No bindings. You chose to be cured. We all chose it. Finish your harmonic calibration. The corridor is waiting.&quot;</em></p>
+</blockquote>
+</li>
+<li><strong>The Climax of the Call</strong>: On the final word <em>&quot;waiting&quot;</em>, the line emits a sharp electrical pulse.</li>
+</ul>
+<h4>Beat 3: The Acoustic Vacuum (1:15 - 1:45) — <em>The &quot;Nothing&quot;</em></h4>
+<ul>
+<li><strong>The Subversion</strong>: Instead of a jump scare or an alarm, <strong>everything cuts out completely</strong>.</li>
+<li><strong>Acoustic</strong>: Zero decibels. Absolute silence for two full seconds. The 60 Hz fluorescent hum, the drone, the phone—gone.</li>
+<li><strong>Psychological Effect</strong>: The player&#39;s nervous system braces for an attack that never comes. The dread collapses into hypnotic stillness. The player takes a deep breath. In this vacuum, the player feels acutely present in the physical room.</li>
+</ul>
+<h4>Beat 4: Tactile Grounding (1:45 - 2:30) — <em>Observation &amp; Tangible Props</em></h4>
+<ul>
+<li><strong>Visual</strong>: The faint fluorescent hum slowly fades back in, grounding the room in reality.</li>
+<li><strong>Action</strong>: The player investigates the desk.<ul>
+<li>Beside the phone lies the <strong>Crimson Dossier</strong>: stamped with official corporate seals and intake protocols.</li>
+<li>Beside the dossier sits a <strong>Heavy Brass Cylinder Shunt</strong>: machined brass with knurled grip, cold to the touch. The player picks it up (<code>prop_brass_shunt</code> acquired).</li>
+</ul>
+</li>
+<li><strong>The Mental Connection</strong>: The player looks at the central Tektronix oscilloscope console on the desk apron. There is an empty ceramic fuse block with exposed brass spring clips.</li>
+</ul>
+<h4>Beat 5: Tactile Mechanical Mastery (2:30 - 3:30) — <em>Catharsis &amp; Agency</em></h4>
+<ul>
+<li><strong>Action</strong>: Clicking the Tektronix console opens the diegetic hardware screen.<ul>
+<li>The player snaps the brass shunt into the fuse clips. <em>CLANK.</em> Vacuum tubes ignite behind the ventilation louvers with a rich orange glow.</li>
+<li>The player rotates the large Bakelite frequency dial. As the frequency approaches 528 Hz, the erratic green phosphor wave smoothly stabilizes into a glowing circular Lissajous loop.</li>
+<li>A heavy internal solenoid trips open with a metallic <em>TICK</em>.</li>
+<li>The player drags down the heavy ceramic knife switch.</li>
+</ul>
+</li>
+<li><strong>The Payoff</strong>: A concussive pneumatic hiss releases through the wainscoting. The forward steel blastdoor swings open into the dark observation corridor. The player has earned their progress through observation and tactile manipulation.</li>
+</ul>
+<hr>
+<h2>3. Additive Integration Across Subsequent Acts</h2>
+<p>This tripartite framework layers onto the existing chambers without altering their established architectural layouts:</p>
+<table>
+<thead>
+<tr>
+<th>Act</th>
+<th>Chamber</th>
+<th>Kurosawa Element</th>
+<th>Lynch Element</th>
+<th>Severance Element</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Act II</strong></td>
+<td>The Sleep Ward</td>
+<td>Silent patients with slow, shared breathing tempo.</td>
+<td>Turning off lights reveals glowing handwritten messages on the ceiling.</td>
+<td>Medical charts documenting &quot;vocal cord severance&quot; as successful symptom management.</td>
+</tr>
+<tr>
+<td><strong>Act III</strong></td>
+<td>Hydrotherapy Room</td>
+<td>Drowning sensations and acoustic siphoning.</td>
+<td>A submerged hydrophone playing faint ballroom music beneath the surface.</td>
+<td>Clinical plaques describing hyper-saline immersion as a standard employee perk.</td>
+</tr>
+<tr>
+<td><strong>Act IV</strong></td>
+<td>Audiology Vault</td>
+<td>Phase cancellation inducing auditory hallucinations.</td>
+<td>Wall paintings that warp their geometric angles when not viewed directly.</td>
+<td>Acoustic testing measuring employee resistance to Directorate directives.</td>
+</tr>
+<tr>
+<td><strong>Act V</strong></td>
+<td>The Archive</td>
+<td>Infinite spiral of cabinets; phone cords coiling like roots.</td>
+<td>Pneumatic canisters arriving with personal items belonging to the player.</td>
+<td>Discarded personnel files stamped &quot;SEVERED &amp; PRESERVED // NON-COMPLIANT&quot;.</td>
+</tr>
+<tr>
+<td><strong>Act VI</strong></td>
+<td>Director&#39;s Office</td>
+<td>Intercepted telephone tape recording of the Director&#39;s voice.</td>
+<td>Executive desk floating in infinite black void under a single spotlight.</td>
+<td>The realization that the Director subjected himself to the same severance procedure.</td>
+</tr>
+<tr>
+<td><strong>Act VII</strong></td>
+<td>Synthesis Chamber</td>
+<td>Overwhelming acoustic entrainment locking all frequencies.</td>
+<td>Total blackout followed by warm amber light spilling through an unexpected door.</td>
+<td>The final corporate appraisal declaring Subject 104 &quot;100% Aligned&quot;.</td>
+</tr>
+<tr>
+<td><strong>Act VIII</strong></td>
+<td>Velvet Lounge / Subway</td>
+<td>The viral carrier stepping out into the civilian city.</td>
+<td>A one-way mirror showing a silhouette reflection with no human features.</td>
+<td>The final telephone call: your own voice thanking yourself for your compliance.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. Technical Safeguards (Senior Technical Reviewer Verified)</h2>
+<ol>
+<li><strong>Non-Blocking Audio Architecture</strong>:<ul>
+<li>The acoustic vacuum and frequency swells route through native Web Audio nodes and EventBus notifications.</li>
+<li>If audio is muted or restricted by browser autoplay policies, all narrative beats display synchronized diegetic subtitles (<code>ui:subtitle_changed</code>).</li>
+</ul>
+</li>
+<li><strong>Zero Input Lockouts</strong>:<ul>
+<li>During phone voiceover and tension beats, the player remains free to look around or interact with desk props. Rapid clicks or early interactions register cleanly without race conditions.</li>
+</ul>
+</li>
+<li><strong>Deterministic State Progression</strong>:<ul>
+<li>All narrative milestones are recorded in <code>GameState</code> flags (<code>telephoneAnswered</code>, <code>brassShuntInserted</code>, <code>harmonicLocked</code>), ensuring test scripts and save states remain 100% deterministic.</li>
+</ul>
+</li>
+</ol>
+<hr>
 <h1>The Vault: Room 04 - Master Phased Implementation Plan</h1>
 <blockquote>
 <p><strong>Architectural Status: COMPLETE</strong><br>All 5 execution phases for upgrading the facility into a multi-layered psychological descent across 8 Acts have been successfully implemented, hardened, and verified via Playwright E2E testing. The system now features decoupled diegetic hardware screens, stable finite state machines, and synchronized storytelling, all while maintaining strict WebGL performance budgets and 0 memory leaks.</p>
@@ -1265,6 +1502,7 @@ Phase 3 | Acts V &amp; VI (Pair III)   | Microfiche &amp; Wiretap | Verified (0 
 Phase 4 | Acts VII &amp; VIII (Pair IV)| Power Grid &amp; Mirror  | Verified (0 console errors)
 Phase 5 | Full System Polish       | Performance &amp; VRAM   | Verified (0 memory leaks)
 Phase 6 | Hardening &amp; Blueprint    | Save, Audio &amp; Map    | Verified (44 Unit / 26 E2E)
+Phase 7 | Fast Test Infrastructure | Single-Browser &amp; GC  | Verified (67.88s / 26 Suites)
 ====================================================================================
 </code></pre>
 <h2>The Verification Protocol (Historical Context)</h2>
@@ -1273,6 +1511,7 @@ Phase 6 | Hardening &amp; Blueprint    | Save, Audio &amp; Map    | Verified (44
 <li><strong>Edge Case &amp; Failure State Validation</strong>: Testing rapid clicking, sequence breaking, and interrupting camera transitions.</li>
 <li><strong>Playwright E2E Suite Execution</strong>: Asserting <code>data-testid</code> elements on diegetic screens, focus trapping, and verifying explicit <code>AudioContext</code> teardown.</li>
 <li><strong>Strict Git Checkpointing</strong>: Features were committed only upon full test suite success.</li>
+<li><strong>Single-Browser High-Speed Regression</strong>: Consolidated runner (<code>npm run test:fast</code>) executing 26 suites sequentially inside isolated browser contexts, disposing WebGL canvases to ensure zero GPU resource leaks.</li>
 </ol>
 <p>The project continues to uphold this testing standard for all future features.</p>
 <hr>
