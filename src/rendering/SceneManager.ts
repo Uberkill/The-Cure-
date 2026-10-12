@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { Telemetry } from '../core/Telemetry';
 import { EventBus } from '../core/EventBus';
+import { EditorServerSync } from '../editor/EditorServerSync';
 
 export class SceneManager {
   public scene: THREE.Scene;
@@ -49,7 +50,7 @@ export class SceneManager {
 
   private async applySavedEnvironment() {
     try {
-      const { EditorServerSync } = await import('../editor/EditorServerSync');
+      
       const layout = await EditorServerSync.fetchLayout();
       if (layout && layout.environment) {
         if (this.scene.fog) {

@@ -1,8 +1,9 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox.js';
 import { RaycastManager } from './RaycastManager';
+import { EventBus } from '../core/EventBus';
 
 
 export interface TransformSnapshot {
@@ -174,8 +175,8 @@ export class DevTransformGizmo {
   public setEnabled(enabled: boolean): void {
     if (this.isEnabled === enabled) return;
     this.isEnabled = enabled;
-    this.transformControls.enabled = enabled;
-    this.helper.visible = enabled;
+    this.transformControls.enabled = enabled && this.selectedObjects.length > 0;
+    this.helper.visible = enabled && this.selectedObjects.length > 0;
 
     this.raycastManager.setEnabled(!enabled);
 
@@ -200,6 +201,10 @@ export class DevTransformGizmo {
     }
 
     this.selectedObjects = [...objects];
+    if (this.isEnabled) {
+      this.transformControls.enabled = true;
+      this.helper.visible = true;
+    }
     
     // Calculate bounding box center of all selected objects
     const box = new THREE.Box3();
@@ -242,6 +247,7 @@ export class DevTransformGizmo {
 
   public detach(): void {
     this.transformControls.detach();
+    this.transformControls.enabled = false;
     this.selectedObjects = [];
     this.objectStartStates.clear();
     this.isMarqueeDragging = false;
@@ -345,9 +351,7 @@ export class DevTransformGizmo {
           this.attachMultiple(pasted);
           this.showToast(`Pasted ${pasted.length} object(s)`);
           
-          import('../core/EventBus').then(({ EventBus }) => {
-            EventBus.getInstance().emit('editor:rebuild_visualizers', {});
-          });
+          EventBus.getInstance().emit('editor:rebuild_visualizers', {});
           
           // Trigger save via change event
           if (this.onTransformChange) {
@@ -450,14 +454,17 @@ export class DevTransformGizmo {
       }
       if (isHelper) continue;
 
+      let found: THREE.Object3D | null = null;
       while (target && target.parent && target.parent !== this.scene) {
-        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_') || target.name === 'faceplate' || target.name === 'rotaryDial' || target.name === 'knifeSwitch') {
+        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_')) {
+          found = target;
           break;
         }
         target = target.parent;
       }
 
-      if (target && target.name && target.name !== 'Room04_Root') {
+      if (found) {
+        target = found;
         if (e.shiftKey) {
           const current = [...this.selectedObjects];
           if (!current.includes(target)) {
@@ -478,8 +485,8 @@ export class DevTransformGizmo {
       this.detach();
     }
     
-    // Only allow marquee drag on left click
-    if (e.button === 0) {
+    // Only allow marquee drag on left click with Shift key to preserve camera orbit
+    if (e.button === 0 && e.shiftKey) {
       this.isMarqueeDragging = true;
       this.marqueeStartPoint.set(e.clientX, e.clientY);
       this.marqueeDiv.style.left = e.clientX + 'px';
@@ -552,15 +559,17 @@ export class DevTransformGizmo {
       if (isHelper) continue;
 
       let target: THREE.Object3D | null = obj;
+      let found: THREE.Object3D | null = null;
       while (target && target.parent && target.parent !== this.scene) {
-        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_') || target.name === 'faceplate' || target.name === 'rotaryDial' || target.name === 'knifeSwitch') {
+        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_')) {
+          found = target;
           break;
         }
         target = target.parent;
       }
 
-      if (target && target.name && target.name !== 'Room04_Root') {
-        newSelection.add(target);
+      if (found) {
+        newSelection.add(found);
       }
     }
 

@@ -1,6 +1,7 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor } from '../types';
 import { createRoom04Materials, Room04MaterialPalette } from '../entities/room04/Room04Materials';
+import { EditorPrefabs } from '../editor/EditorPrefabs';
 
 export class Room99_Sandbox implements RoomScenario {
   public id = 'sandbox';
@@ -68,7 +69,7 @@ export class Room99_Sandbox implements RoomScenario {
     try {
       const resp = await fetch('/src/data/room_layout.json');
       const layout = await resp.json();
-      const { EditorPrefabs } = await import('../editor/EditorPrefabs');
+      
       if (layout.prefabs && Array.isArray(layout.prefabs)) {
         for (const p of layout.prefabs) {
           let prefab;

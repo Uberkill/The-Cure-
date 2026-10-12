@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { createRoom04Materials } from '../entities/room04/Room04Materials';
 
 export class EditorPrefabs {
@@ -19,9 +20,7 @@ export class EditorPrefabs {
     const mesh = new THREE.Mesh(geo, mat);
     group.add(mesh);
 
-    // Assuming we have ModelLoader or just GLTFLoader
-    import('three/examples/jsm/loaders/GLTFLoader.js').then(({ GLTFLoader }) => {
-      const loader = new GLTFLoader();
+    const loader = new GLTFLoader();
       loader.load(url, (gltf) => {
         group.remove(mesh);
         gltf.scene.traverse((c: any) => {
@@ -31,7 +30,6 @@ export class EditorPrefabs {
           }
         });
         group.add(gltf.scene);
-      });
     });
 
     return group;

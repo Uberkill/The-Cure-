@@ -60,7 +60,7 @@ export class ScreenManager {
     });
 
     btnExit?.addEventListener('click', () => {
-       window.close();
+      window.location.reload();
     });
 
     let isStarting = false;
@@ -114,6 +114,84 @@ export class ScreenManager {
     };
     btnCloseDossier?.addEventListener('click', handleCloseDossier);
     btnCloseDossierX?.addEventListener('click', handleCloseDossier);
+
+    
+    // Dossier 3D Drag and Zoom Logic
+    const dossierPaper = document.getElementById('dossier-paper-3d');
+    if (dossierPaper) {
+      let isDragging = false;
+      let startX = 0;
+      let startY = 0;
+      let rotX = 0;
+      let rotY = 0;
+      let scaleZ = 1;
+
+      const updateTransform = () => {
+        dossierPaper.style.setProperty('--rot-x', rotX.toString());
+        dossierPaper.style.setProperty('--rot-y', rotY.toString());
+        dossierPaper.style.setProperty('--scale-z', scaleZ.toString());
+      };
+
+      this.dossierModal.addEventListener('mousedown', (e) => {
+        if (e.target === btnCloseDossier || e.target === btnTakeDossier) return;
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+      });
+
+      window.addEventListener('pointermove', (e) => {
+        if (!isDragging) return;
+        const deltaX = e.clientX - startX;
+        const deltaY = e.clientY - startY;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        rotY += deltaX * 0.5;
+        rotX -= deltaY * 0.5;
+        
+        // Clamp X rotation to prevent flipping entirely upside down awkwardly
+        rotX = Math.max(-80, Math.min(80, rotX));
+
+        updateTransform();
+      });
+
+      window.addEventListener('pointerup', () => {
+        isDragging = false;
+      });
+
+      this.dossierModal.addEventListener('wheel', (e) => {
+        const target = e.target as HTMLElement;
+        if (target && target.closest('.dossier-paper')) {
+          return;
+        }
+        e.preventDefault();
+        scaleZ -= e.deltaY * 0.001;
+        scaleZ = Math.max(0.5, Math.min(2.5, scaleZ));
+        updateTransform();
+      }, { passive: false });
+      
+      // Reset on open
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (mutation.attributeName === 'class' && !this.dossierModal.classList.contains('hidden')) {
+            rotX = 0; rotY = 0; scaleZ = 1; updateTransform();
+          }
+        });
+      });
+      observer.observe(this.dossierModal, { attributes: true });
+    }
+
+    const btnTakeDossier = document.getElementById('btn-take-dossier');
+    btnTakeDossier?.addEventListener('click', () => {
+      this.audioEngine.playTumblerClick();
+      const gs = GameState.getInstance();
+        if (!gs.hasItem('prop_envelope')) {
+          gs.addItem('prop_envelope');
+          this.eventBus.emit('inventory:add', { itemId: 'prop_envelope' });
+          this.eventBus.emit('ui:subtitle_changed', { text: 'Intake protocol added to Asset Manifest.' });
+        }
+        handleCloseDossier();
+    });
 
     // Close dossier on backdrop click outside paper
     this.dossierModal.addEventListener('click', (e) => {
@@ -199,6 +277,14 @@ export class ScreenManager {
 
     if (nextView === 'dossier') {
       this.dossierModal.classList.remove('hidden');
+      const btnTake = document.getElementById('btn-take-dossier');
+            if (btnTake) {
+              if (GameState.getInstance().hasItem('prop_envelope')) {
+                btnTake.classList.add('hidden');
+              } else {
+                btnTake.classList.remove('hidden');
+        }
+      }
     } else {
       this.dossierModal.classList.add('hidden');
     }

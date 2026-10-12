@@ -3,6 +3,7 @@ import { DevTransformGizmo } from '../interaction/DevTransformGizmo';
 import { CameraDirector } from '../rendering/CameraDirector';
 import { EditorServerSync } from '../editor/EditorServerSync';
 import { EditorPrefabs } from '../editor/EditorPrefabs';
+import { EventBus } from '../core/EventBus';
 
 
 export class Dev3DEditorPanel {
@@ -68,6 +69,7 @@ export class Dev3DEditorPanel {
         <button class="editor-tab active" data-tab="transforms" style="flex:1; padding: 4px; background: #3b4c42; border: 1px solid #5a7566; color: #fff; cursor: pointer; border-radius: 3px;">Trans</button>
         <button class="editor-tab" data-tab="anim" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Anim</button>
         <button class="editor-tab" data-tab="spawner" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Spawn</button>
+        <button class="editor-tab" data-tab="lore" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Lore</button>
         <button class="editor-tab" data-tab="env" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Env</button>
         <button class="editor-tab" data-tab="scenarios" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Scen</button>
         <button class="editor-tab" data-tab="telemetry" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Telem</button>
@@ -122,6 +124,10 @@ export class Dev3DEditorPanel {
         <button id="dev-btn-save-server" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Save to Server (room_layout.json)</button>
         <button id="dev-btn-export" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); color: #bad2c8; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;">Export Clipboard</button>
         <button id="dev-btn-delete" style="width: 100%; padding: 8px; background: rgba(220,50,50,0.1); color: #ff8888; border: 1px solid rgba(220,50,50,0.3); border-radius: 4px; cursor: pointer; margin-top: 8px;">Delete Selected</button>
+        <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
+          <input type="checkbox" id="dev-chk-snap" style="accent-color: #00ff88;">
+          <label for="dev-chk-snap" style="font-size: 11px; color: #bad2c8; cursor: pointer;">Grid Snap (0.5m / 15°)</label>
+        </div>
       </div>
 
       <!-- TAB CONTENT: ANIMATION -->
@@ -212,6 +218,22 @@ export class Dev3DEditorPanel {
             </optgroup>
           </select>
         <button id="dev-btn-spawn" style="width: 100%; padding: 8px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 4px; cursor: pointer;">Spawn Prefab</button>
+      </div>
+
+      <!-- TAB CONTENT: LORE -->
+      <div id="tab-lore" class="editor-tab-content" style="display: none;">
+        <label style="display: block; margin-bottom: 6px; color: #88928b;">Interaction Properties</label>
+        <div style="margin-bottom: 12px;">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+            <span>Prompt (Hover)</span>
+            <input type="text" id="dev-lore-prompt" placeholder="[EXAMINE DESK]" style="width:180px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
+          </div>
+          <div style="display: flex; flex-direction: column; margin-bottom: 4px;">
+            <span style="margin-bottom: 4px;">Flavor Text (Click)</span>
+            <textarea id="dev-lore-flavor" rows="4" placeholder="An institutional heavy metal desk..." style="width:100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px; resize: vertical;"></textarea>
+          </div>
+        </div>
+        <button id="dev-btn-lore-save" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Apply & Save Lore</button>
       </div>
 
       <!-- TAB CONTENT: ENVIRONMENT -->
@@ -347,15 +369,13 @@ export class Dev3DEditorPanel {
         const canvasMesh = objs[0].children[1] as any;
         if (canvasMesh && canvasMesh.material) {
           if (url) {
-            import('three').then(THREE => {
-              const loader = new THREE.TextureLoader();
+            const loader = new THREE.TextureLoader();
               loader.load(url, (texture) => {
                 canvasMesh.material.map = texture;
                 canvasMesh.material.color.setHex(0xffffff);
                 canvasMesh.material.needsUpdate = true;
               });
-            });
-          } else {
+            } else {
             canvasMesh.material.map = null;
             canvasMesh.material.color.setHex(0xedf0eb); // chalkUpperWall default
             canvasMesh.material.needsUpdate = true;
@@ -460,6 +480,18 @@ export class Dev3DEditorPanel {
       document.getElementById('dev-btn-save-server')?.click(); // trigger the main save logic
     });
 
+    // Lore / Flavor Text
+    document.getElementById('dev-btn-lore-save')?.addEventListener('click', () => {
+      const objs = this.devGizmo.getSelectedObjects();
+      if (objs.length === 1) {
+        const obj = objs[0];
+        obj.userData.interactionPrompt = (document.getElementById('dev-lore-prompt') as HTMLInputElement).value;
+        obj.userData.flavorText = (document.getElementById('dev-lore-flavor') as HTMLTextAreaElement).value;
+        obj.userData.isModified = true;
+        document.getElementById('dev-btn-save-server')?.click();
+      }
+    });
+
     // Save to Server
     document.getElementById('dev-btn-save-server')?.addEventListener('click', async () => {
       const data: any = { 
@@ -491,6 +523,8 @@ export class Dev3DEditorPanel {
             if (child.userData.animEnd !== undefined) pEntry.animEnd = child.userData.animEnd;
             if (child.userData.animTrigger) pEntry.animTrigger = child.userData.animTrigger;
             if (child.userData.animDuration) pEntry.animDuration = child.userData.animDuration;
+            if (child.userData.interactionPrompt !== undefined) pEntry.interactionPrompt = child.userData.interactionPrompt;
+            if (child.userData.flavorText !== undefined) pEntry.flavorText = child.userData.flavorText;
             
             // Serialize light properties if it's a light prefab
             if (child.userData.isLight) {
@@ -502,12 +536,14 @@ export class Dev3DEditorPanel {
             }
             
             data.prefabs.push(pEntry);
-          } else if (child.name && child.userData.isModified) {
+          } else if (child.name && child.name.startsWith('prop_')) {
              data.overrides[child.name] = {
                 x: child.position.x, y: child.position.y, z: child.position.z,
                 rx: child.rotation.x, ry: child.rotation.y, rz: child.rotation.z,
                 sx: child.scale.x, sy: child.scale.y, sz: child.scale.z
              };
+             if (child.userData.interactionPrompt !== undefined) data.overrides[child.name].interactionPrompt = child.userData.interactionPrompt;
+             if (child.userData.flavorText !== undefined) data.overrides[child.name].flavorText = child.userData.flavorText;
           }
         }
         // Dummy if block to satisfy old regex target end
@@ -582,9 +618,7 @@ export class Dev3DEditorPanel {
       this.scene.add(prefab);
       this.devGizmo.attachMultiple([prefab]);
       
-      import('../core/EventBus').then(({ EventBus }) => {
-        EventBus.getInstance().emit('editor:rebuild_visualizers', {});
-      });
+      EventBus.getInstance().emit('editor:rebuild_visualizers', {});
     });
 
     // Delete Selected
@@ -622,9 +656,7 @@ export class Dev3DEditorPanel {
       // Force save to server to persist deletion
       document.getElementById('dev-btn-save-server')?.click();
       
-      import('../core/EventBus').then(({ EventBus }) => {
-        EventBus.getInstance().emit('editor:rebuild_visualizers', {});
-      });
+      EventBus.getInstance().emit('editor:rebuild_visualizers', {});
     });
 
     // Scenario Jump
@@ -634,9 +666,7 @@ export class Dev3DEditorPanel {
         const room = target.dataset.room;
         if (room) {
           this.devGizmo.detach();
-          import('../core/EventBus').then(({ EventBus }) => {
-            EventBus.getInstance().emit('scenario:switch_room', { targetRoomId: room, isDevJump: true });
-          });
+          EventBus.getInstance().emit('scenario:switch_room', { targetRoomId: room, isDevJump: true });
         }
       });
     });
@@ -644,9 +674,7 @@ export class Dev3DEditorPanel {
     // Visualizer Toggle
     document.getElementById('dev-chk-visualizers')?.addEventListener('change', (e) => {
       const checked = (e.target as HTMLInputElement).checked;
-      import('../core/EventBus').then(({ EventBus }) => {
-        EventBus.getInstance().emit('editor:toggle_visualizers', { visible: checked });
-        });
+      EventBus.getInstance().emit('editor:toggle_visualizers', { visible: checked });
       });
 
       document.getElementById('dev-btn-env-save')?.addEventListener('click', () => {
@@ -668,14 +696,35 @@ export class Dev3DEditorPanel {
         }
 
         // Save to server
-        import('../core/EventBus').then(({ EventBus }) => {
-          EventBus.getInstance().emit('editor:save_environment', {
-            fogColor, fogDensity, ambColor, ambIntensity
-          });
-          document.getElementById('dev-btn-save-server')?.click(); // piggy back the master save
+        EventBus.getInstance().emit('editor:save_environment', {
+          fogColor, fogDensity, ambColor, ambIntensity
         });
+        document.getElementById('dev-btn-save-server')?.click();
         
         this.showToast('Environment updated', 'success');
+      });
+
+      document.getElementById('dev-btn-export')?.addEventListener('click', () => {
+        const objs = this.devGizmo.getSelectedObjects();
+        const obj = objs.length > 0 ? objs[0] : null;
+        if (!obj) {
+          this.showToast('No object selected to export', 'error');
+          return;
+        }
+        const data = {
+          name: obj.name,
+          position: { x: obj.position.x, y: obj.position.y, z: obj.position.z },
+          rotation: { x: obj.rotation.x, y: obj.rotation.y, z: obj.rotation.z },
+          scale: { x: obj.scale.x, y: obj.scale.y, z: obj.scale.z }
+        };
+        const text = JSON.stringify(data, null, 2);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text)
+            .then(() => this.showToast('Transform copied to clipboard', 'success'))
+            .catch(() => this.showToast('Clipboard access denied', 'error'));
+        } else {
+          this.showToast('Clipboard API unavailable', 'error');
+        }
       });
 
       document.getElementById('dev-chk-snap')?.addEventListener('change', (e) => {
@@ -735,8 +784,7 @@ export class Dev3DEditorPanel {
         y: -((e.clientY - rect.top) / rect.height) * 2 + 1
       };
 
-      import('three').then(async (THREE) => {
-        const rc = new THREE.Raycaster();
+      const rc = new THREE.Raycaster();
         rc.setFromCamera(mouse as any, this.cameraDirector.camera);
         const intersects = rc.intersectObjects(this.scene.children, true);
         
@@ -781,16 +829,12 @@ export class Dev3DEditorPanel {
                 });
               }
             } else if (isModel) {
-              import('../editor/EditorPrefabs').then(({ EditorPrefabs }) => {
-                // We'll add spawnCustomModel to EditorPrefabs next
-                const newMesh = EditorPrefabs.spawnCustomModel ? EditorPrefabs.spawnCustomModel(data.path, file.name) : EditorPrefabs.spawn('Painting');
-                newMesh.position.copy(dropPoint);
-                this.scene.add(newMesh);
-                this.showToast(`Spawned custom model: ${file.name}`, 'success');
-              });
+              const newMesh = EditorPrefabs.spawnCustomModel ? EditorPrefabs.spawnCustomModel(data.path, file.name) : EditorPrefabs.spawn('Painting');
+              newMesh.position.copy(dropPoint);
+              this.scene.add(newMesh);
+              this.showToast(`Spawned custom model: ${file.name}`, 'success');
             } else if (isImage && !targetPainting) {
-                import('../editor/EditorPrefabs').then(({ EditorPrefabs }) => {
-                  const newMesh = EditorPrefabs.spawn('Painting');
+              const newMesh = EditorPrefabs.spawn('Painting');
                   newMesh.position.copy(dropPoint);
                   newMesh.userData.paintingUrl = data.path;
                   const canvasMesh = newMesh.children[1] as any;
@@ -803,7 +847,6 @@ export class Dev3DEditorPanel {
                     });
                   }
                   this.scene.add(newMesh);
-                });
             }
             
             document.getElementById('dev-btn-save-server')?.click();
@@ -812,7 +855,6 @@ export class Dev3DEditorPanel {
           console.error(err);
           this.showToast('Upload failed', 'error');
         }
-      });
     });
   }
 
@@ -862,6 +904,11 @@ export class Dev3DEditorPanel {
           document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
           document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
         }
+
+        const lorePromptInput = document.getElementById('dev-lore-prompt') as HTMLInputElement;
+        const loreFlavorInput = document.getElementById('dev-lore-flavor') as HTMLTextAreaElement;
+        if (lorePromptInput) lorePromptInput.value = obj.userData.interactionPrompt || '';
+        if (loreFlavorInput) loreFlavorInput.value = obj.userData.flavorText || '';
 
         const typeSelect = document.getElementById('dev-anim-type') as HTMLSelectElement;
         const axisSelect = document.getElementById('dev-anim-axis') as HTMLSelectElement;
