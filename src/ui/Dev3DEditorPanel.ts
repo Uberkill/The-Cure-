@@ -57,10 +57,10 @@ export class Dev3DEditorPanel {
     panel.innerHTML = `
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
         <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • Developer Mode</span>
-        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer;">✕</button>
+        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer; font-family: monospace;">[X]</button>
       </div>
       <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-        <input type="checkbox" id="dev-chk-visualizers" checked style="accent-color: #00ff88; cursor: pointer;">
+        <input type="checkbox" id="dev-chk-visualizers" checked style="accent-color: var(--color-crt-phosphor, #4ade80); cursor: pointer;">
         <label for="dev-chk-visualizers" style="cursor: pointer;">Show Bounding Boxes</label>
       </div>
 

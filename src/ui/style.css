@@ -24,6 +24,27 @@
   --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
 
+  /* Hardware Chassis Tokens */
+  --color-chassis-dark: #141816;
+  --color-chassis-panel: #1E2220;
+  --color-chassis-border: #3D4642;
+
+  /* Border Radius Hierarchy */
+  --radius-sharp: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 9999px;
+  --radius-circle: 50%;
+
+  /* Elevation & Shadow Hierarchy */
+  --elevation-flat: none;
+  --elevation-inset: inset 0 2px 4px rgba(0, 0, 0, 0.35);
+  --elevation-sm: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --elevation-md: 0 4px 16px rgba(0, 0, 0, 0.22);
+  --elevation-lg: 0 16px 48px rgba(0, 0, 0, 0.45);
+  --elevation-chassis: 0 24px 64px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
   --glass-bg: rgba(246, 248, 246, 0.88);
   --glass-border: rgba(20, 26, 33, 0.08);
 }
@@ -168,7 +189,7 @@ body, html {
   backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
   padding: 8px 16px;
-  border-radius: 20px;
+  border-radius: var(--radius-pill, 9999px);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -716,7 +737,7 @@ body, html {
 .pill-btn {
   backdrop-filter: none;
   background: var(--color-alabaster);
-  border-radius: 40px;
+  border-radius: var(--radius-pill, 9999px);
   border: 1px solid var(--ink-primary);
   color: var(--ink-primary);
 }

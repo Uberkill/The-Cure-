@@ -285,120 +285,387 @@ Avoid arbitrary <code>page.waitForTimeout(1000)</code> calls. In test mode (<cod
 </code></pre>
 <p>To bypass save hydration and force a clean Act I test environment, append <code>?test=1</code> to the URL.</p>
 <hr>
-<h1>The Vault: Sub-Level 04 - Design System Specification</h1>
-<p>This document defines the visual identity, typographic hierarchy, color tokens, and UI component standards for &quot;The Vault: Sub-Level 04&quot;.</p>
+<h1>The Vault: Sub-Level 04 - Master Design System Specification</h1>
+<p>This specification serves as the immutable, authoritative single source of truth for all visual, typographic, tactile, and diegetic interface design across <strong>The Vault: Sub-Level 04</strong>.</p>
 <hr>
-<h2>1. Aesthetic Concept: Analogue Clinical Brutalism</h2>
-<p>The interface simulates physical case dossiers, architectural blueprints, and mid-century clinical apparatus from a 1970s clandestine sanatorium. It relies on stark contrast, tactile physical affordances, rigorous typography, and strict functional minimalism.</p>
-<h3>Non-Negotiable Guardrails</h3>
+<h2>1. Aesthetic Philosophy: Analogue Clinical Brutalism</h2>
+<p>The aesthetic identity of <em>The Vault</em> is defined as <strong>Analogue Clinical Brutalism</strong>—a synthesis of mid-20th-century institutional medical facilities, Cold War telecommunication surveillance, and existential psychological dread.</p>
+<h3>Thematic Influences</h3>
 <ul>
-<li><strong>Zero Emojis</strong>: Emojis are strictly prohibited in UI components, buttons, tooltips, logs, comments, and commit messages. Iconography must use pure SVG line art or monospace typographic markers.</li>
-<li><strong>No Generic AI Aesthetics</strong>: Avoid purple or indigo gradient borders, blurred orbs, floating glowing cards, and empty hero cards with sparkle icons.</li>
-<li><strong>Physical Diegesis</strong>: Every interaction represents authentic physical mid-century materials: ivory cardstock, Bakelite, smoked teak, brushed stainless steel, and stamped ink.</li>
+<li><strong>Kiyoshi Kurosawa (<em>Cure</em>, <em>Pulse</em>)</strong>: Quiet, rational, chilled institutional calm. Evil does not announce itself with jump scares; it operates through soothing routine, hums, and rhythmic repetition.</li>
+<li><strong>David Lynch (<em>Twin Peaks</em>, <em>Mulholland Drive</em>)</strong>: Uncanny mundane domesticity. Unplugged rotary telephones, chevron floors, Bakelite fixtures, smoked teak, and abrupt acoustic silences (&quot;the nothing&quot;).</li>
+<li><strong>Corporate Partitioning (<em>Severance</em>, Kafka)</strong>: Human consciousness treated as malfunctioning office hardware. Clinical doublespeak (<em>limbic friction</em>, <em>equilibrium protocol</em>, <em>voluntary alignment</em>), stamped intake records, and declassified dossiers.</li>
 </ul>
+<h3>Non-Negotiable Guardrails</h3>
+<ol>
+<li><strong>Zero Emojis</strong>: Emojis are strictly prohibited in all source code, UI components, HTML templates, button labels, badges, tooltips, comments, docstrings, commit messages, and logs. Iconography must exclusively utilize pure geometric SVG line art or monospace typographic glyphs.</li>
+<li><strong>Zero Generic AI Aesthetics</strong>: No purple or indigo neon gradient borders. No blurred glowing orbs. No centered hero cards with sparkle icons. Interfaces must simulate authentic tactile matter: ivory cardstock, heavy cast Bakelite, glazed subway tile, brushed stainless steel, and stamped ink.</li>
+<li><strong>Physical Diegesis</strong>: Every interface element must represent a physically plausible mid-century apparatus or document. Modals are physical dossiers, screens are cathode-ray oscilloscopes, buttons are mechanical relays or Bakelite pushers.</li>
+</ol>
 <hr>
-<h2>2. Color Palette Tokens</h2>
+<h2>2. Master Design Tokens</h2>
+<h3>2.1. Color Palette Tokens</h3>
 <pre><code class="language-css">:root {
-  /* Architectural Color Tokens */
-  --color-alabaster: #EDF0EB;       /* Primary cardstock paper &amp; modal housing */
-  --color-sage-deep: #2D4A3E;       /* Clinical glazed tile &amp; active system accents */
-  --color-terrazzo-base: #D8DED6;   /* Terrazzo stone aggregate &amp; muted paneling */
-  --color-brass-cast: #C28833;      /* Instrument dials, knife shunts &amp; lock housings */
-  --color-teak-smoked: #1F1A18;     /* Furniture woodwork &amp; heavy Bakelite components */
-  --color-crimson-wax: #8B1E23;     /* Classified seals, danger states, purge alerts */
-  --color-crimson-glow: #B8282E;    /* Active warning indicator lamps */
-  --color-chrome-tubular: #D4D8DB;  /* Medical chassis, caster rings, IV poles */
-  --color-crt-phosphor: #4ADE80;    /* Oscilloscope raster waveforms &amp; signal traces */
-  --color-crt-amber: #FBBF24;       /* Standby telemetry &amp; warning readouts */
+  /* Architectural &amp; Spatial Surfaces */
+  --color-alabaster: #EDF0EB;         /* Ivory cardstock, unglazed tile, clean modal paper */
+  --color-alabaster-dim: #E2E7DF;     /* Aged dossier paper, drawer card backing */
+  --color-terrazzo-base: #D8DED6;     /* Terrazzo stone aggregate, structural dividers */
+  --color-sage-deep: #2D4A3E;         /* Glazed ceramic wall tile, primary brand accent */
+  --color-sage-accent: #3D5E50;       /* Highlighted tile joints, active apparatus toggles */
+  --color-sage-muted: #577366;        /* Secondary hardware labels, inactive channels */
+  --color-chrome-tubular: #D4D8DB;    /* Marcel Breuer tubular frames, IV poles, caster rings */
 
-  /* Typographic Ink Tokens */
-  --ink-primary: #141A21;           /* Deep ink black for titles, primary body, active borders */
-  --ink-secondary: #4A5568;         /* Subheadings, clinical field labels, active controls */
-  --ink-muted: #718096;             /* Telemetry labels, disabled metadata, inactive pips */
+  /* Hardware &amp; Chassis Surfaces (Bakelite &amp; Cast Iron) */
+  --color-chassis-dark: #141816;      /* Tektronix apparatus bezel outer housing */
+  --color-chassis-panel: #1E2220;     /* Equipment apron, secondary console body */
+  --color-chassis-border: #3D4642;    /* Machined metal bezel border, panel seams */
+  --color-teak-smoked: #1F1A18;       /* Heavy mid-century furniture woodwork, Bakelite knobs */
 
-  /* Glass &amp; Depth Tokens */
-  --glass-bg: rgba(246, 248, 246, 0.88);   /* Frosted cardstock backdrop filter */
-  --glass-border: rgba(20, 26, 33, 0.08); /* 1px hairline boundary stroke */
+  /* Instrument &amp; Cathode Displays (CRT Phosphors) */
+  --color-crt-bg: #080D0A;            /* Unexcited phosphor glass viewport interior */
+  --color-crt-phosphor: #4ADE80;      /* P1 phosphor green beam, Lissajous waveform trace */
+  --color-crt-phosphor-dim: #235A38;  /* Reticle graticule grid lines, standby trace */
+  --color-crt-amber: #FBBF24;         /* Telemetry readouts, frequency calibration alert */
+  --color-crt-amber-dim: #7C5810;     /* Amber filament glow, standby status border */
+
+  /* Mechanical Accents &amp; Fasteners */
+  --color-brass-cast: #C28833;        /* Machined shunts, dial dials, escapement gears */
+  --color-brass-bright: #E5A84B;      /* Polished contact pins, illuminated shunt highlight */
+
+  /* Warnings, Seals &amp; Purge Alerts */
+  --color-crimson-wax: #8B1E23;       /* Intake seal wax, restricted rubber stamps */
+  --color-crimson-glow: #B8282E;      /* Emergency beacon indicator, breaker trip lamp */
+  --color-crimson-muted: #5F1317;     /* Subdued warning borders, declassified header lines */
+
+  /* Typographic Inks */
+  --ink-primary: #141A21;             /* Deep carbon black ink for document text and titles */
+  --ink-secondary: #4A5568;           /* Clinical field descriptions, metadata, subtitles */
+  --ink-muted: #718096;               /* Inactive telemetry, serial numbers, footnote stamps */
+  --ink-inverse: #EDF0EB;             /* White-alabaster text against dark hardware bezels */
+
+  /* Glassmorphism &amp; Translucency */
+  --glass-bg: rgba(237, 240, 235, 0.88); /* Frosted cardstock modal filter */
+  --glass-border: rgba(20, 26, 33, 0.12); /* 1px hairline boundary stroke */
+  --glass-hardware: rgba(20, 24, 22, 0.92); /* Dark glass CRT viewport housing */
 }
 </code></pre>
-<hr>
-<h2>3. Typographic Hierarchy</h2>
-<p>All typography uses deliberate Google Fonts loaded in <code>src/ui/style.css</code>:</p>
-<pre><code class="language-html">@import url(&#39;https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&amp;family=Outfit:wght@300;400;500;600&amp;family=Playfair+Display:ital,wght@0,400;0,600;1,400&amp;display=swap&#39;);
+<h3>2.2. Typographic Matrix</h3>
+<p>Three font families are loaded with explicit system font fallbacks to guarantee 100% offline rendering:</p>
+<pre><code class="language-css">:root {
+  --font-serif: &#39;Playfair Display&#39;, Georgia, &#39;Times New Roman&#39;, serif;
+  --font-sans: &#39;Outfit&#39;, -apple-system, BlinkMacSystemFont, &#39;Segoe UI&#39;, Roboto, sans-serif;
+  --font-mono: &#39;JetBrains Mono&#39;, &#39;SF Mono&#39;, Menlo, Consolas, monospace;
+}
 </code></pre>
 <table>
 <thead>
 <tr>
-<th>Role</th>
-<th>Font Family</th>
-<th>Weight &amp; Tracking</th>
-<th>Usage</th>
+<th>Token</th>
+<th>Size</th>
+<th>Line Height</th>
+<th>Tracking</th>
+<th>Weight</th>
+<th>Target Usage</th>
 </tr>
 </thead>
 <tbody><tr>
-<td><strong>Editorial Serif</strong></td>
-<td><code>&#39;Playfair Display&#39;, Georgia, serif</code></td>
-<td>400 / 600, Normal Tracking</td>
-<td>Chapter titles, chamber headings, dossier card names, modal headlines</td>
+<td><code>--type-display-xl</code></td>
+<td>38px–48px</td>
+<td>1.1</td>
+<td><code>-0.01em</code></td>
+<td>400</td>
+<td>Editorial Chapter Titles, Master Headlines</td>
 </tr>
 <tr>
-<td><strong>Clinical Geometric Sans</strong></td>
-<td><code>&#39;Outfit&#39;, -apple-system, sans-serif</code></td>
-<td>300 / 400 / 500, Tight Tracking</td>
-<td>Body text, patient case narratives, instructions, button labels</td>
+<td><code>--type-display-lg</code></td>
+<td>26px–32px</td>
+<td>1.2</td>
+<td><code>0em</code></td>
+<td>400</td>
+<td>Modal Dossier Headlines, Chamber Names</td>
 </tr>
 <tr>
-<td><strong>Typewritten Monospace</strong></td>
-<td><code>&#39;JetBrains Mono&#39;, monospace</code></td>
-<td>400 / 500, Wide Tracking (<code>0.12em</code>–<code>0.2em</code>)</td>
-<td>Coordinates, timestamps, status telemetry, classified tags, rubber stamps</td>
+<td><code>--type-display-md</code></td>
+<td>20px–24px</td>
+<td>1.3</td>
+<td><code>0.02em</code></td>
+<td>600</td>
+<td>Apparatus Sub-panel Titles, Instrument Models</td>
+</tr>
+<tr>
+<td><code>--type-body-lg</code></td>
+<td>15px–16px</td>
+<td>1.5</td>
+<td><code>0.01em</code></td>
+<td>400</td>
+<td>Case Intake Paragraphs, Narrative Dossiers</td>
+</tr>
+<tr>
+<td><code>--type-body-md</code></td>
+<td>13px–14px</td>
+<td>1.5</td>
+<td><code>0.02em</code></td>
+<td>300 / 400</td>
+<td>Standard UI Descriptions, Instructions</td>
+</tr>
+<tr>
+<td><code>--type-ui-btn</code></td>
+<td>11px–12px</td>
+<td>1.0</td>
+<td><code>0.12em</code></td>
+<td>500 / 600</td>
+<td>Pill Action Buttons, Navigation Links</td>
+</tr>
+<tr>
+<td><code>--type-mono-sm</code></td>
+<td>10px–11px</td>
+<td>1.4</td>
+<td><code>0.15em</code></td>
+<td>400 / 500</td>
+<td>Coordinates, Clock Escapements, Sliders</td>
+</tr>
+<tr>
+<td><code>--type-mono-xs</code></td>
+<td>9px</td>
+<td>1.3</td>
+<td><code>0.20em</code></td>
+<td>600</td>
+<td>Classified Stamps, Technical Telemetry, Pips</td>
 </tr>
 </tbody></table>
-<h3>Monospace Rule</h3>
-<p>All technical metadata, sector codes, and telemetry strings MUST be styled in uppercase with explicit letter tracking:</p>
-<pre><code class="language-css">font-family: var(--font-mono);
-text-transform: uppercase;
-letter-spacing: 0.15em;
+<h4>Monospace Formatting Directive</h4>
+<p>All sector codes, timestamps, coordinates, diagnostic telemetry, and instrument readouts <strong>MUST</strong> be styled in monospace uppercase with wide tracking (<code>letter-spacing: 0.15em</code> to <code>0.25em</code>).</p>
+<hr>
+<h2>3. Spatial &amp; Geometry Tokens</h2>
+<h3>3.1. Modular 4px Spacing Scale</h3>
+<pre><code class="language-css">:root {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+}
+</code></pre>
+<h3>3.2. Border Radius Hierarchy (Rounding &amp; Bounding)</h3>
+<p>To eliminate visual drift, border radii are mapped strictly to functional categories:</p>
+<pre><code class="language-css">:root {
+  --radius-sharp: 0px;       /* Machined brass shunts, redaction bars, paper tabs */
+  --radius-xs: 2px;          /* Value badges, technical tags, rubber stamp borders */
+  --radius-sm: 4px;          /* Dossier paper sheets, group boxes, observation subtitle */
+  --radius-md: 6px;          /* CRT viewport bezel, inner apparatus frames */
+  --radius-lg: 8px;          /* Outer hardware console chassis, terminal housings */
+  --radius-pill: 9999px;     /* Pill action buttons, slider tracks, filter capsules */
+  --radius-circle: 50%;      /* Rotary dials, indicator lamps, wax seals, gear buttons */
+}
+</code></pre>
+<h3>3.3. Border &amp; Hairline Standards</h3>
+<ul>
+<li><strong>Hairline Rule</strong>: Dividers and sheet boundaries use 1px solid hairlines: <code>1px solid rgba(20, 26, 33, 0.12)</code> on light paper, or <code>1px solid rgba(255, 255, 255, 0.10)</code> on dark chassis.</li>
+<li><strong>Machined Bezel</strong>: Outer hardware frames use 2px solid structural borders: <code>2px solid #3D4642</code>.</li>
+<li><strong>CRT Screen Rim</strong>: Inner cathode displays use a recessed 3px border: <code>3px solid #141B17</code>.</li>
+<li><strong>Rubber Stamps</strong>: Institutional stamps use 2px solid border with deliberate misalignment.</li>
+</ul>
+<h3>3.4. Elevation &amp; Depth Architecture</h3>
+<p>Mid-century physical depth relies on crisp, high-density drop shadows and subtle inner bevels rather than diffuse modern glows:</p>
+<pre><code class="language-css">:root {
+  --elevation-flat: none;
+  --elevation-inset: inset 0 2px 4px rgba(0, 0, 0, 0.35); /* Recessed gauge wells, sockets */
+  --elevation-sm: 0 2px 8px rgba(0, 0, 0, 0.12);           /* Badges, unpressed buttons */
+  --elevation-md: 0 4px 16px rgba(0, 0, 0, 0.22);          /* Floating utility pills, dropdowns */
+  --elevation-lg: 0 16px 48px rgba(0, 0, 0, 0.45);         /* Dossier paper modal, blueprint */
+  --elevation-chassis: 0 24px 64px rgba(0, 0, 0, 0.8), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  --elevation-crt-glow: 0 0 16px rgba(74, 222, 128, 0.35); /* Active phosphor lock */
+  --elevation-amber-glow: 0 0 16px rgba(251, 191, 36, 0.35); /* Standby indicator */
+  --elevation-crimson-glow: 0 0 16px rgba(184, 40, 46, 0.40); /* Active alarm lamp */
+}
+</code></pre>
+<h3>3.5. Semantic Z-Index Stack</h3>
+<p>Standardized z-index layers prevent cross-modal occlusion:</p>
+<pre><code class="language-css">:root {
+  --z-canvas: 1;               /* WebGL 3D canvas viewport */
+  --z-vignette: 2;             /* High-key vignette &amp; grain overlay */
+  --z-hud: 10;                 /* Permanent HUD cards, crosshair, bottom shelf */
+  --z-hud-floating: 20;        /* Floating prompt pills, active reticle badge */
+  --z-modal-inspect: 50;       /* 3D Key turntable examination mode */
+  --z-modal-overlay: 100;      /* Standard 2D modals (Settings, Dossier reader) */
+  --z-diegetic-screen: 12000;  /* 8-Act hardware puzzle consoles &amp; CRT monitors */
+  --z-main-menu: 15000;        /* Boot sequence &amp; primary start terminal */
+  --z-cutscene-blackout: 20000;/* Act VIII terminal conclusion blackout */
+}
 </code></pre>
 <hr>
-<h2>4. UI Component Library</h2>
-<h3>4.1. Circular Tactile Action Buttons (<code>.settings-gear-btn</code>, <code>.backpack-btn</code>)</h3>
+<h2>4. UI Component Library Standards</h2>
+<h3>4.1. Tactile Pill Buttons (<code>.pill-btn</code>)</h3>
 <ul>
-<li><strong>Geometry</strong>: <code>44x44px</code> circular container adhering to touch target minimums.</li>
-<li><strong>Affordance</strong>: 1px solid <code>rgba(20, 26, 33, 0.18)</code> border, <code>rgba(235, 239, 235, 0.85)</code> background, <code>backdrop-filter: blur(4px)</code>.</li>
-<li><strong>Iconography</strong>: Clean 22x22px inline SVG icon with <code>stroke-width: 1.75</code>.</li>
-<li><strong>Motion</strong>: Smooth <code>250ms</code> rotation or scale transform on hover with subtle drop shadow.</li>
+<li><strong>Geometry</strong>: Full capsule (<code>border-radius: var(--radius-pill)</code>), height 36px–40px, padding <code>8px 20px</code>.</li>
+<li><strong>Standard Variant</strong>: Alabaster cardstock background (<code>#EDF0EB</code>), 1px solid <code>var(--ink-primary)</code> border, <code>var(--ink-primary)</code> text. Inverts to solid <code>var(--ink-primary)</code> background with Alabaster text on hover (<code>transform: translateY(-1px)</code>).</li>
+<li><strong>Primary Variant (<code>.pill-btn.active</code>, <code>.pill-btn-primary</code>)</strong>: Solid <code>var(--color-sage-deep)</code> background, white text, 1px solid <code>var(--color-sage-deep)</code> border.</li>
+<li><strong>Danger Variant (<code>.pill-btn-danger</code>)</strong>: 1px solid <code>var(--color-crimson-wax)</code> border, crimson text. Inverts to crimson background with white text on hover.</li>
+<li><strong>Touch Target Requirement</strong>: All interactive buttons enforce a minimum clickable area of 44x44px.</li>
 </ul>
-<h3>4.2. Tactile Pill Buttons (<code>.pill-btn</code>)</h3>
+<h3>4.2. Circular Tactile Utility Buttons (<code>.settings-gear-btn</code>, <code>.inventory-btn</code>)</h3>
 <ul>
-<li><strong>Shape</strong>: Full capsule curve (<code>border-radius: 40px</code>).</li>
-<li><strong>Standard Variant</strong>: Transparent background, 1px solid <code>var(--ink-primary)</code> border, dark text. Inverts to solid <code>var(--ink-primary)</code> with ivory text on hover.</li>
-<li><strong>Primary Variant (<code>.pill-btn-primary</code>)</strong>: Solid dark slate background (<code>#2d3748</code>), ivory text, elevated drop shadow.</li>
-<li><strong>Danger Variant (<code>.pill-btn-danger</code>)</strong>: 1px solid <code>var(--color-crimson-wax)</code> border, crimson text. Inverts to crimson background on hover.</li>
+<li><strong>Geometry</strong>: <code>44x44px</code> perfect circle (<code>border-radius: var(--radius-circle)</code>).</li>
+<li><strong>Surface</strong>: 1px solid <code>rgba(20, 26, 33, 0.22)</code> border, <code>rgba(235, 239, 235, 0.88)</code> background, shadow <code>0 4px 12px rgba(0, 0, 0, 0.25)</code>.</li>
+<li><strong>Iconography</strong>: Centered 22x22px inline SVG with <code>stroke-width: 1.75</code>.</li>
+<li><strong>Interaction</strong>: Rotate 35 degrees with scale <code>1.05</code> on hover using <code>cubic-bezier(0.2, 0.8, 0.2, 1)</code>.</li>
 </ul>
-<h3>4.3. Dossier Panels &amp; Cardstock Cards (<code>.dossier-paper</code>, <code>.facility-sector-card</code>)</h3>
+<h3>4.3. Diegetic Hardware Consoles (<code>.diegetic-housing</code>)</h3>
 <ul>
-<li><strong>Material</strong>: Ivory cardstock background (<code>#edf0eb</code> / <code>#f8faf7</code>), 1px hairline border (<code>rgba(20, 26, 33, 0.12)</code>).</li>
-<li><strong>Depth</strong>: Crisp 8px to 24px drop shadow (<code>rgba(20, 26, 33, 0.14)</code>). Zero blurred color glows.</li>
-<li><strong>Header</strong>: Split header layout separating title and document metadata from action buttons to prevent visual tangent collisions.</li>
+<li><strong>Housing</strong>: Dark textured Bakelite chassis (<code>#1E2220</code>), machined border (<code>2px solid #3D4642</code>), <code>border-radius: var(--radius-lg)</code>.</li>
+<li><strong>Header Bar</strong>: <code>#141816</code> background, 1px border-bottom (<code>#2B322F</code>), model designation stamped in monospace green-gray (<code>#8B9991</code>).</li>
+<li><strong>Close / Disengage Action</strong>: Tactile recessed button (<code>.diegetic-btn-close</code>) styled as a spring-loaded disengage button.</li>
 </ul>
-<h3>4.4. Classified Rubber Stamps (<code>.stamp-restricted</code>, <code>.stamp-cleared</code>)</h3>
+<h3>4.4. CRT Oscilloscope Displays (<code>.crt-viewport-container</code>)</h3>
 <ul>
-<li><strong>Border</strong>: Heavy 2px solid border (<code>var(--color-crimson-wax)</code> or <code>var(--color-sage-deep)</code>).</li>
-<li><strong>Typography</strong>: Bold <code>JetBrains Mono</code> uppercase with <code>letter-spacing: 0.18em</code>.</li>
-<li><strong>Angle</strong>: Subtle 2-degree rotation transform (<code>transform: rotate(-2deg)</code>) simulating manual bureaucratic rubber stamping.</li>
+<li><strong>Bezel</strong>: Recessed frame (<code>background: #080D0A</code>, border <code>3px solid #141B17</code>, shadow <code>var(--elevation-inset)</code>).</li>
+<li><strong>Canvas Rendering</strong>: High-DPI scaled with <code>window.devicePixelRatio</code>. Waveform drawn in P1 phosphor green (<code>#4ADE80</code>) with <code>shadowBlur: 10</code>, <code>shadowColor: #4ADE80</code>.</li>
+<li><strong>Scanline Overlay</strong>: Continuous CSS raster grid (<code>background-size: 100% 4px</code>) simulating cathode-ray line persistence.</li>
+<li><strong>Phosphor Glare</strong>: Circular radial gradient overlay simulating the curved glass surface of an electron gun CRT tube.</li>
 </ul>
-<h3>4.5. Classified Redaction Bars (<code>.redaction-bar</code>)</h3>
+<h3>4.5. Case Dossier Paper Sheets (<code>.dossier-paper</code>)</h3>
 <ul>
-<li><strong>Visual</strong>: Solid ink black block (<code>background: var(--ink-primary)</code>) obscuring sensitive clearance data until unlocked.</li>
-<li><strong>Aesthetic</strong>: Simulates typewritten black marker redactions on declassified intelligence files.</li>
+<li><strong>Material</strong>: Ivory cellulose cardstock (<code>#FBFBF9</code>), hairline border (<code>1px solid #D5DAD3</code>), shadow <code>var(--elevation-lg)</code>.</li>
+<li><strong>Header Stamp</strong>: Monospace uppercase header with wide tracking (<code>0.28em</code>), thin separator line.</li>
+<li><strong>Wax Seal</strong>: Circular crimson seal (<code>44x44px</code>, <code>#8B1E23</code>, border <code>2px solid #5F1317</code>) stamped with patient registration code (<code>104</code>).</li>
+<li><strong>Interactive 3D Unseal</strong>: Opens with 3D perspective animation (<code>perspective: 1200px</code>, <code>rotateX: 70deg</code> to <code>0deg</code>).</li>
 </ul>
-<h3>4.6. Audio &amp; Calibration Sliders</h3>
+<h3>4.6. Classified Rubber Stamps &amp; Redactions</h3>
 <ul>
-<li><strong>Track</strong>: Thin 4px recessed metallic rail with 1px border.</li>
-<li><strong>Thumb</strong>: Tactile circular brass or dark slate knob with hover expansion.</li>
-<li><strong>Telemetry Badge</strong>: Dedicated monospace badge (e.g., <code>#volume-val</code>) rendering real-time calibrated percentage values.</li>
+<li><strong>Restricted Stamp (<code>.stamp-restricted</code>)</strong>: 2px solid <code>var(--color-crimson-wax)</code> border, crimson monospace text, rotated <code>-2deg</code> to simulate manual bureaucratic stamping.</li>
+<li><strong>Cleared Stamp (<code>.stamp-cleared</code>)</strong>: 2px solid <code>var(--color-sage-deep)</code> border, sage-deep monospace text, rotated <code>1.5deg</code>.</li>
+<li><strong>Redaction Bar (<code>.redaction-bar</code>)</strong>: Solid carbon black block (<code>background: var(--ink-primary)</code>) obscuring classified intelligence text until player clearance is verified.</li>
 </ul>
+<h3>4.7. Bourdon Pressure Gauges</h3>
+<ul>
+<li><strong>Geometry</strong>: 160px–220px circular brass-rimmed dial.</li>
+<li><strong>Face</strong>: Terrazzo-tinted ivory face with radial dial ticks (10 kPa increments).</li>
+<li><strong>Needle</strong>: High-contrast needle with physical oscillation physics (damped second-order spring harmonic motion).</li>
+</ul>
+<hr>
+<h2>5. Motion &amp; Animation Standards</h2>
+<p>Interface animations must reflect the mechanical inertia of 1970s analogue machinery—zero bouncy spring cartoon physics.</p>
+<pre><code class="language-css">:root {
+  --ease-mechanical: cubic-bezier(0.1, 0.9, 0.2, 1);  /* Heavy relay throws, shutter drops */
+  --ease-tactile: cubic-bezier(0.2, 0.8, 0.2, 1);     /* Button hover states, needle flicks */
+  --ease-cinematic: cubic-bezier(0.4, 0.0, 0.2, 1);   /* Fade transitions, camera pans */
+
+  --dur-fast: 150ms;                                  /* Button active, click feedback */
+  --dur-normal: 250ms;                                /* Hover elevations, reticle prompts */
+  --dur-slow: 600ms;                                  /* Modal pop-ins, shutter sliding */
+  --dur-cinematic: 2500ms;                            /* Chapter card fade, title dissolve */
+}
+</code></pre>
+<h3>Keyframe Animations</h3>
+<ul>
+<li><strong><code>crt-scanline-flicker</code></strong>: Subtle 0.02 opacity jitter simulating electron beam interference.</li>
+<li><strong><code>needle-bounce</code></strong>: Damped oscillation around target value when hydrostatic or resistance values change.</li>
+<li><strong><code>dossier-unseal</code></strong>: 3D perspective fold-down from 70deg inclination into planar focus.</li>
+<li><strong><code>beacon-pulse</code></strong>: 2.5s rhythmic respiration of the architectural blueprint location pip.</li>
+</ul>
+<hr>
+<h2>6. Standardized SVG Iconography Catalog</h2>
+<p>All icons use clean inline SVG conforming to this strict specification:</p>
+<ul>
+<li><strong>viewBox</strong>: <code>0 0 24 24</code></li>
+<li><strong>stroke</strong>: <code>currentColor</code></li>
+<li><strong>stroke-width</strong>: <code>1.75</code></li>
+<li><strong>fill</strong>: <code>none</code></li>
+<li><strong>stroke-linecap</strong>: <code>round</code></li>
+<li><strong>stroke-linejoin</strong>: <code>round</code></li>
+</ul>
+<h3>Permitted Icon Standards</h3>
+<pre><code class="language-html">&lt;!-- Settings Gear (44x44px button) --&gt;
+&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.75&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+  &lt;circle cx=&quot;12&quot; cy=&quot;12&quot; r=&quot;3&quot;&gt;&lt;/circle&gt;
+  &lt;path d=&quot;M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z&quot;&gt;&lt;/path&gt;
+&lt;/svg&gt;
+
+&lt;!-- Patient Inventory Backpack --&gt;
+&lt;svg width=&quot;22&quot; height=&quot;22&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.75&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+  &lt;path d=&quot;M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9&quot;&gt;&lt;/path&gt;
+  &lt;path d=&quot;M10 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1&quot;&gt;&lt;/path&gt;
+  &lt;path d=&quot;M4 10h16&quot;&gt;&lt;/path&gt;
+  &lt;path d=&quot;M22 10a2 2 0 0 0-2-2h-3&quot;&gt;&lt;/path&gt;
+  &lt;path d=&quot;M2 10a2 2 0 0 1 2-2h3&quot;&gt;&lt;/path&gt;
+  &lt;path d=&quot;M9 22v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4&quot;&gt;&lt;/path&gt;
+&lt;/svg&gt;
+
+&lt;!-- Modal Close Cross --&gt;
+&lt;svg width=&quot;18&quot; height=&quot;18&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;2&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+  &lt;line x1=&quot;18&quot; y1=&quot;6&quot; x2=&quot;6&quot; y2=&quot;18&quot;&gt;&lt;/line&gt;
+  &lt;line x1=&quot;6&quot; y1=&quot;6&quot; x2=&quot;18&quot; y2=&quot;18&quot;&gt;&lt;/line&gt;
+&lt;/svg&gt;
+
+&lt;!-- Architectural Blueprint Compass --&gt;
+&lt;svg width=&quot;20&quot; height=&quot;20&quot; viewBox=&quot;0 0 24 24&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.75&quot; stroke-linecap=&quot;round&quot; stroke-linejoin=&quot;round&quot;&gt;
+  &lt;polygon points=&quot;12 2 19 21 12 17 5 21 12 2&quot;&gt;&lt;/polygon&gt;
+&lt;/svg&gt;
+</code></pre>
+<hr>
+<h2>7. Compliance Matrix: Do&#39;s and Don&#39;ts</h2>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Permitted (Compliant)</th>
+<th>Prohibited (Non-Compliant)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Iconography</strong></td>
+<td>Pure SVG line paths (<code>stroke-width: 1.5–2px</code>)</td>
+<td>Unicode Emojis, colored glyphs, Lucide icon bundles</td>
+</tr>
+<tr>
+<td><strong>Color Schemes</strong></td>
+<td>Alabaster <code>#EDF0EB</code>, Sage <code>#2D4A3E</code>, Terrazzo <code>#D8DED6</code></td>
+<td>Purple neon borders, saturated cyber cyan, magenta</td>
+</tr>
+<tr>
+<td><strong>Phosphors</strong></td>
+<td>P1 Phosphor Green <code>#4ADE80</code>, CRT Amber <code>#FBBF24</code></td>
+<td>Neon Lime <code>#00FF88</code>, generic web green <code>#00FF00</code></td>
+</tr>
+<tr>
+<td><strong>Typography</strong></td>
+<td><code>Playfair Display</code>, <code>Outfit</code>, <code>JetBrains Mono</code></td>
+<td>Comic Sans, Inter, Roboto, Arial, AI-slop sans</td>
+</tr>
+<tr>
+<td><strong>Card Borders</strong></td>
+<td>1px hairlines (<code>rgba(20,26,33,0.12)</code>), crisp shadows</td>
+<td>Glowing purple gradients, 3px blurry drop shadows</td>
+</tr>
+<tr>
+<td><strong>Button Shapes</strong></td>
+<td>Pill (<code>border-radius: 9999px</code>) or Circle (<code>50%</code>)</td>
+<td>Arbitrary rectangles with <code>border-radius: 10px</code></td>
+</tr>
+<tr>
+<td><strong>Text Casing</strong></td>
+<td>Technical data uppercase (<code>0.15em</code> tracking)</td>
+<td>Mixed-case telemetry strings, unspaced numbers</td>
+</tr>
+<tr>
+<td><strong>Sounds</strong></td>
+<td>Authentic relay clicks, 45 Hz binaural hum, tape hiss</td>
+<td>Generic 8-bit beeps, arcade chimes, synth pads</td>
+</tr>
+<tr>
+<td><strong>Document State</strong></td>
+<td>Rubber stamps (<code>RESTRICTED</code>), black ink redactions</td>
+<td>Yellow highlight pens, modern badge stickers</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>8. Living HTML Showcase Reference</h2>
+<p>The living, interactive showcase for this design system is maintained at <a href="design_system.html"><code>design_system.html</code></a>. It renders all permitted color tokens, live interactive components, real-time CRT oscilloscopes, damped pressure gauges, and SVG icons in a standalone browser environment.</p>
 <hr>
 <h1>Technical Architecture Specification: The Vault (Sub-Level 04)</h1>
 <h2>1. Architecture Overview &amp; Principles</h2>

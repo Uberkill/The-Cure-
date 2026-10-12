@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Vault • Master Design System Showcase</title>
+
+  <!-- Typography: Google Fonts with strict local fallbacks -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Production tokens from app stylesheet -->
+  <link rel="stylesheet" href="./src/ui/style.css">
+
+  <style>
+    /* ==========================================================================
+       SHOWCASE EXTENSIONS & OVERRIDES
+       ========================================================================== */
+    body, html {
+      width: 100%;
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background-color: var(--color-alabaster, #EDF0EB);
+      color: var(--ink-primary, #141A21);
+      font-family: var(--font-sans, 'Outfit', -apple-system, sans-serif);
+      margin: 0;
+      padding: 0;
+    }
+
+    .showcase-wrapper {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 48px 32px 120px 32px;
+    }
+
+    /* Masthead Banner */
+    .showcase-masthead {
+      border-bottom: 2px solid var(--ink-primary, #141A21);
+      padding-bottom: 28px;
+      margin-bottom: 56px;
+    }
+
+    .showcase-top-tag {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      color: var(--color-sage-deep, #2D4A3E);
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .showcase-pip {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-crimson-wax, #8B1E23);
+      display: inline-block;
+    }
+
+    .showcase-title {
+      font-family: var(--font-serif, Georgia, serif);
+      font-size: 46px;
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -0.01em;
+      margin: 0 0 12px 0;
+      color: var(--ink-primary, #141A21);
+    }
+
+    .showcase-sub {
+      font-size: 16px;
+      line-height: 1.6;
+      color: var(--ink-secondary, #4A5568);
+      max-width: 780px;
+      margin-bottom: 24px;
+    }
+
+    .showcase-badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .badge-tag {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: var(--radius-xs, 2px);
+      background: rgba(20, 26, 33, 0.06);
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      color: var(--ink-secondary, #4A5568);
+      font-weight: 600;
+    }
+
+    .badge-tag.highlight {
+      background: var(--color-sage-deep, #2D4A3E);
+      color: #EDF0EB;
+      border-color: var(--color-sage-deep, #2D4A3E);
+    }
+
+    /* Section Structure */
+    .showcase-section {
+      margin-bottom: 72px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      border-bottom: 1px solid rgba(20, 26, 33, 0.18);
+      padding-bottom: 12px;
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif, Georgia, serif);
+      font-size: 26px;
+      font-weight: 400;
+      color: var(--ink-primary, #141A21);
+      margin: 0;
+    }
+
+    .section-num {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      letter-spacing: 0.20em;
+      color: var(--color-sage-deep, #2D4A3E);
+      font-weight: 600;
+    }
+
+    /* Color Swatch Grid */
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .color-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      border-radius: var(--radius-sm, 4px);
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .color-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .color-preview {
+      height: 90px;
+      width: 100%;
+      position: relative;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .color-info {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .color-name {
+      font-family: var(--font-mono, monospace);
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-primary, #141A21);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .color-hex {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      color: var(--color-sage-deep, #2D4A3E);
+      letter-spacing: 0.08em;
+    }
+
+    .color-desc {
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--ink-secondary, #4A5568);
+    }
+
+    .btn-copy-token {
+      background: none;
+      border: 1px solid rgba(20, 26, 33, 0.15);
+      border-radius: var(--radius-xs, 2px);
+      padding: 2px 6px;
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      color: var(--ink-secondary, #4A5568);
+      transition: all 0.15s ease;
+    }
+
+    .btn-copy-token:hover {
+      background: var(--ink-primary, #141A21);
+      color: #FFFFFF;
+      border-color: var(--ink-primary, #141A21);
+    }
+
+    /* Typography Specimen */
+    .type-specimen-box {
+      background: #FFFFFF;
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      border-radius: var(--radius-sm, 4px);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+
+    .type-scale-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      align-items: baseline;
+      padding: 18px 0;
+      border-bottom: 1px solid rgba(20, 26, 33, 0.08);
+      gap: 20px;
+    }
+
+    .type-scale-row:last-child {
+      border-bottom: none;
+    }
+
+    .type-meta {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      color: var(--ink-muted, #718096);
+      line-height: 1.5;
+    }
+
+    .type-meta strong {
+      color: var(--color-sage-deep, #2D4A3E);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .interactive-tester {
+      width: 100%;
+      border: 1px dashed rgba(20, 26, 33, 0.25);
+      background: var(--color-alabaster, #EDF0EB);
+      padding: 16px;
+      font-family: var(--font-serif, Georgia, serif);
+      font-size: 18px;
+      line-height: 1.5;
+      color: var(--ink-primary, #141A21);
+      border-radius: var(--radius-sm, 4px);
+      box-sizing: border-box;
+      outline: none;
+    }
+
+    /* Spatial & Rounding Grid */
+    .rounding-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .rounding-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      border-radius: var(--radius-sm, 4px);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 16px;
+    }
+
+    .rounding-box {
+      width: 80px;
+      height: 80px;
+      background: var(--color-alabaster-dim, #E2E7DF);
+      border: 2px solid var(--color-sage-deep, #2D4A3E);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-sage-deep, #2D4A3E);
+    }
+
+    /* Component Laboratory */
+    .lab-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .lab-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .lab-panel {
+      background: #FFFFFF;
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      border-radius: var(--radius-sm, 4px);
+      padding: 28px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .lab-panel-dark {
+      background: #1E2220;
+      color: #EDF0EB;
+      border: 2px solid #3D4642;
+    }
+
+    .lab-panel-dark h3 {
+      color: #C8D3CB;
+      border-bottom-color: #2B322F;
+    }
+
+    .lab-panel h3 {
+      font-family: var(--font-mono, monospace);
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-sage-deep, #2D4A3E);
+      margin: 0;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(20, 26, 33, 0.10);
+    }
+
+    .component-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Knife Switch Component */
+    .knife-switch-wrap {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      background: #141816;
+      border: 1px solid #3D4642;
+      padding: 16px 20px;
+      border-radius: var(--radius-md, 6px);
+      user-select: none;
+    }
+
+    .knife-switch-visual {
+      position: relative;
+      width: 70px;
+      height: 38px;
+      background: #0E1210;
+      border: 2px solid #233E31;
+      border-radius: var(--radius-xs, 2px);
+      cursor: pointer;
+    }
+
+    .knife-blade {
+      position: absolute;
+      top: 6px;
+      left: 10px;
+      width: 44px;
+      height: 6px;
+      background: var(--color-brass-cast, #C28833);
+      border-radius: 2px;
+      transform-origin: 4px 3px;
+      transform: rotate(-35deg);
+      transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .knife-switch-visual.closed .knife-blade {
+      transform: rotate(0deg);
+      background: var(--color-brass-bright, #E5A84B);
+      box-shadow: 0 0 10px rgba(229, 168, 75, 0.6);
+    }
+
+    .knife-contact {
+      position: absolute;
+      right: 10px;
+      top: 8px;
+      width: 8px;
+      height: 18px;
+      border-left: 2px solid var(--color-brass-cast, #C28833);
+      border-right: 2px solid var(--color-brass-cast, #C28833);
+    }
+
+    /* Live CRT Simulation Canvas */
+    .crt-sim-box {
+      position: relative;
+      background: #080D0A;
+      border: 3px solid #141B17;
+      border-radius: var(--radius-md, 6px);
+      overflow: hidden;
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.95);
+    }
+
+    .crt-sim-box canvas {
+      display: block;
+      width: 100%;
+      height: 200px;
+    }
+
+    .crt-sim-glare {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 30%, rgba(255, 255, 255, 0.08) 0%, transparent 65%);
+    }
+
+    .crt-sim-scanlines {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.35) 50%);
+      background-size: 100% 4px;
+    }
+
+    /* Bourdon Pressure Gauge Simulation */
+    .gauge-sim-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .gauge-canvas-wrap {
+      position: relative;
+      width: 180px;
+      height: 180px;
+      background: #D8DED6;
+      border: 6px solid #C28833;
+      border-radius: 50%;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35), inset 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .gauge-canvas-wrap canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Interactive Dossier Mockup */
+    .dossier-interactive-card {
+      background: #FBFBF9;
+      border: 1px solid #D5DAD3;
+      border-radius: var(--radius-sm, 4px);
+      padding: 28px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.12);
+      position: relative;
+      transition: transform 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
+    }
+
+    .stamp-restricted {
+      border: 2px solid var(--color-crimson-wax, #8B1E23);
+      color: var(--color-crimson-wax, #8B1E23);
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 4px 10px;
+      display: inline-block;
+      text-transform: uppercase;
+      transform: rotate(-2deg);
+      user-select: none;
+    }
+
+    .stamp-cleared {
+      border: 2px solid var(--color-sage-deep, #2D4A3E);
+      color: var(--color-sage-deep, #2D4A3E);
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      padding: 4px 10px;
+      display: inline-block;
+      text-transform: uppercase;
+      transform: rotate(1.5deg);
+      user-select: none;
+    }
+
+    .redaction-bar {
+      display: inline-block;
+      background: var(--ink-primary, #141A21);
+      color: transparent;
+      padding: 0 4px;
+      border-radius: 1px;
+      user-select: none;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+
+    .redaction-bar.revealed {
+      background: rgba(20, 26, 33, 0.10);
+      color: var(--ink-primary, #141A21);
+    }
+
+    /* SVG Icon Grid */
+    .icon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 16px;
+    }
+
+    .icon-item {
+      background: #FFFFFF;
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      border-radius: var(--radius-sm, 4px);
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .icon-item:hover {
+      border-color: var(--color-sage-deep, #2D4A3E);
+      background: #F8FAF7;
+      transform: translateY(-2px);
+    }
+
+    .icon-label {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--ink-secondary, #4A5568);
+      text-align: center;
+    }
+
+    /* Copied Toast Notification */
+    #copy-toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--ink-primary, #141A21);
+      color: #EDF0EB;
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm, 4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      transform: translateY(10px);
+      z-index: 10000;
+    }
+
+    #copy-toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+<div class="showcase-wrapper">
+
+  <!-- Masthead -->
+  <header class="showcase-masthead">
+    <div class="showcase-top-tag">
+      <span class="showcase-pip"></span>
+      <span>SANATORIUM OF COGNITIVE ALIGNMENT // SUB-LEVEL 04</span>
+    </div>
+    <h1 class="showcase-title">Design System &amp; Component Laboratory</h1>
+    <p class="showcase-sub">
+      Living architectural specification for Analogue Clinical Brutalism. This interactive document serves as the immutable reference for all spatial tokens, CRT phosphors, tactile affordances, and zero-emoji compliance standards across Room 04 and all connected spoke chambers.
+    </p>
+    <div class="showcase-badge-row">
+      <span class="badge-tag highlight">SPEC: V2.4 APPROVED</span>
+      <span class="badge-tag">THEMATIC: MID-CENTURY CLINICAL</span>
+      <span class="badge-tag">STRICT ZERO-EMOJI ENFORCED</span>
+      <span class="badge-tag">HIGH-DPI RETINA CALIBRATED</span>
+      <span class="badge-tag">TEST SUITE: 26 E2E HARNESSED</span>
+    </div>
+  </header>
+
+  <!-- 1. Color Palette Tokens -->
+  <section class="showcase-section">
+    <div class="section-header">
+      <h2 class="section-title">Color Palette Architecture</h2>
+      <span class="section-num">01 / PALETTE TOKENS</span>
+    </div>
+    <div class="color-grid" id="palette-grid">
+      <!-- Populated via script for precision and copyable tokens -->
+    </div>
+  </section>
+
+  <!-- 2. Typography Specimen Matrix -->
+  <section class="showcase-section">
+    <div class="section-header">
+      <h2 class="section-title">Typographic Hierarchy &amp; Scale</h2>
+      <span class="section-num">02 / TYPOGRAPHY</span>
+    </div>
+    <div class="type-specimen-box">
+      <div class="type-scale-row">
+        <div class="type-meta">
+          <strong>--type-display-xl</strong>
+          <span>Playfair Display / 40px / Tracking: -0.01em</span>
+        </div>
+        <div style="font-family: var(--font-serif); font-size: 40px; line-height: 1.1; letter-spacing: -0.01em;">
+          Room 04: The Sterile Chamber
+        </div>
+      </div>
+
+      <div class="type-scale-row">
+        <div class="type-meta">
+          <strong>--type-display-lg</strong>
+          <span>Playfair Display / 26px / Tracking: 0em</span>
+        </div>
+        <div style="font-family: var(--font-serif); font-size: 26px; line-height: 1.2;">
+          Intake Requisition: Patient 104 Record
+        </div>
+      </div>
+
+      <div class="type-scale-row">
+        <div class="type-meta">
+          <strong>--type-body-lg</strong>
+          <span>Outfit / 16px / Tracking: 0.01em</span>
+        </div>
+        <div style="font-family: var(--font-sans); font-size: 16px; line-height: 1.6; color: var(--ink-secondary);">
+          The facility staff never threaten or raise their voice. Evil operates through soothing routine, unblinking white ceiling light, and chilled institutional compliance.
+        </div>
+      </div>
+
+      <div class="type-scale-row">
+        <div class="type-meta">
+          <strong>--type-ui-btn</strong>
+          <span>Outfit / 11px / Tracking: 0.12em / Caps</span>
+        </div>
+        <div style="font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;">
+          FACILITY SCHEMATIC // ENGAGE HARMONIC LOCK
+        </div>
+      </div>
+
+      <div class="type-scale-row">
+        <div class="type-meta">
+          <strong>--type-mono-sm</strong>
+          <span>JetBrains Mono / 11px / Tracking: 0.15em</span>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--color-sage-deep);">
+          CARRIER: 440.0 HZ // EQUILIBRIUM: 100.0 OHM // STATUS: NOMINAL
+        </div>
+      </div>
+
+      <div class="type-scale-row">
+        <div class="type-meta">
+          <strong>--type-mono-xs</strong>
+          <span>JetBrains Mono / 9px / Tracking: 0.20em</span>
+        </div>
+        <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.20em; text-transform: uppercase; color: var(--ink-muted);">
+          CLASSIFIED DIRECTIVE // SECTION 14-C // SANATORIUM REGULATION
+        </div>
+      </div>
+    </div>
+
+    <!-- Live Interactive Copy Tester -->
+    <div style="margin-top: 16px;">
+      <label style="font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-secondary); display: block; margin-bottom: 8px;">
+        Live Narrative Typesetting Sandbox (Click to Edit):
+      </label>
+      <div contenteditable="true" class="interactive-tester">
+        "Did the 'you' of yesterday choose to enter Sub-Level 04? If you signed the intake document, is your present self bound by that choice?"
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. Spatial & Rounding Geometry Hierarchy -->
+  <section class="showcase-section">
+    <div class="section-header">
+      <h2 class="section-title">Spatial Geometry &amp; Rounding Hierarchy</h2>
+      <span class="section-num">03 / GEOMETRY</span>
+    </div>
+    <div class="rounding-grid">
+      <div class="rounding-card">
+        <div class="rounding-box" style="border-radius: var(--radius-sharp, 0px);">0px</div>
+        <div>
+          <strong style="display:block; font-size: 12px; margin-bottom: 4px;">--radius-sharp</strong>
+          <span class="type-meta">Machined brass shunts, redaction bars</span>
+        </div>
+      </div>
+
+      <div class="rounding-card">
+        <div class="rounding-box" style="border-radius: var(--radius-xs, 2px);">2px</div>
+        <div>
+          <strong style="display:block; font-size: 12px; margin-bottom: 4px;">--radius-xs</strong>
+          <span class="type-meta">Value badges, stamps, tags</span>
+        </div>
+      </div>
+
+      <div class="rounding-card">
+        <div class="rounding-box" style="border-radius: var(--radius-sm, 4px);">4px</div>
+        <div>
+          <strong style="display:block; font-size: 12px; margin-bottom: 4px;">--radius-sm</strong>
+          <span class="type-meta">Dossier cards, subtitles, groups</span>
+        </div>
+      </div>
+
+      <div class="rounding-card">
+        <div class="rounding-box" style="border-radius: var(--radius-md, 6px);">6px</div>
+        <div>
+          <strong style="display:block; font-size: 12px; margin-bottom: 4px;">--radius-md</strong>
+          <span class="type-meta">CRT viewports, inner frames</span>
+        </div>
+      </div>
+
+      <div class="rounding-card">
+        <div class="rounding-box" style="border-radius: var(--radius-lg, 8px);">8px</div>
+        <div>
+          <strong style="display:block; font-size: 12px; margin-bottom: 4px;">--radius-lg</strong>
+          <span class="type-meta">Equipment outer chassis</span>
+        </div>
+      </div>
+
+      <div class="rounding-card">
+        <div class="rounding-box" style="border-radius: var(--radius-pill, 9999px);">PILL</div>
+        <div>
+          <strong style="display:block; font-size: 12px; margin-bottom: 4px;">--radius-pill</strong>
+          <span class="type-meta">Tactile pill action buttons</span>
+        </div>
+      </div>
+
+      <div class="rounding-card">
+        <div class="rounding-box" style="border-radius: var(--radius-circle, 50%);">50%</div>
+        <div>
+          <strong style="display:block; font-size: 12px; margin-bottom: 4px;">--radius-circle</strong>
+          <span class="type-meta">Dials, utility circles, wax seals</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Interactive Component Laboratory -->
+  <section class="showcase-section">
+    <div class="section-header">
+      <h2 class="section-title">Interactive Component Laboratory</h2>
+      <span class="section-num">04 / COMPONENTS</span>
+    </div>
+
+    <div class="lab-grid">
+
+      <!-- Panel A: Buttons & Affordances -->
+      <div class="lab-panel">
+        <h3>Tactile Button Standards</h3>
+        <div class="component-row">
+          <button class="pill-btn">Default Pill</button>
+          <button class="pill-btn active">Active Pill</button>
+          <button class="pill-btn pill-btn-danger">Danger Purge</button>
+          <button class="pill-btn" disabled>Disabled State</button>
+        </div>
+
+        <h3>Circular Action Buttons (44x44px)</h3>
+        <div class="component-row">
+          <!-- Settings Gear -->
+          <button class="settings-gear-btn" title="Settings">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+          <!-- Backpack Inventory -->
+          <button class="inventory-btn" title="Inventory">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75">
+              <path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path>
+              <path d="M10 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1"></path>
+              <path d="M4 10h16"></path>
+              <path d="M22 10a2 2 0 0 0-2-2h-3"></path>
+              <path d="M2 10a2 2 0 0 1 2-2h3"></path>
+              <path d="M9 22v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"></path>
+            </svg>
+          </button>
+        </div>
+
+        <h3>Calibrated Sliders &amp; Monospace Badges</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div class="settings-slider-row">
+            <span class="settings-label">ACOUSTIC CARRIER</span>
+            <div class="settings-slider-wrap">
+              <input type="range" id="demo-carrier-slider" min="400" max="700" value="440" oninput="updateDemoSlider(this, 'demo-carrier-val', ' HZ')">
+              <span class="settings-val-badge" id="demo-carrier-val">440.0 HZ</span>
+            </div>
+          </div>
+          <div class="settings-slider-row">
+            <span class="settings-label">EQUILIBRIUM BALANCE</span>
+            <div class="settings-slider-wrap">
+              <input type="range" id="demo-bal-slider" min="0" max="200" value="100" oninput="updateDemoSlider(this, 'demo-bal-val', ' OHM')">
+              <span class="settings-val-badge" id="demo-bal-val">100.0 OHM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel B: Hardware Apparatus & Knife Switch -->
+      <div class="lab-panel lab-panel-dark">
+        <h3>Physical Apparatus Contact (Click to Throw)</h3>
+        <div class="knife-switch-wrap" id="demo-knife-switch" onclick="toggleDemoKnifeSwitch()">
+          <div class="knife-switch-visual" id="demo-knife-visual">
+            <div class="knife-blade"></div>
+            <div class="knife-contact"></div>
+          </div>
+          <div>
+            <div style="font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: #BAD2C8; letter-spacing: 0.12em;" id="demo-knife-status">
+              KNIFE SWITCH: DISENGAGED
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 9px; color: #718096; letter-spacing: 0.16em;">
+              2-POLE HIGH-VOLTAGE BREAKER SHUNT
+            </div>
+          </div>
+        </div>
+
+        <h3>Cathode Ray Oscilloscope (Live Retina P1 Phosphor)</h3>
+        <div class="crt-sim-box">
+          <canvas id="demo-crt-canvas"></canvas>
+          <div class="crt-sim-scanlines"></div>
+          <div class="crt-sim-glare"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 10px; color: var(--color-crt-phosphor); letter-spacing: 0.14em;">
+          <span>TEKTRONIX TYPE 545B SIM</span>
+          <span id="crt-sim-status">TRACE: HARMONIC 440 HZ</span>
+        </div>
+      </div>
+
+      <!-- Panel C: Bourdon Pressure Gauge Simulation -->
+      <div class="lab-panel">
+        <h3>Bourdon Tube Hydrostatic Gauge</h3>
+        <div class="gauge-sim-box">
+          <div class="gauge-canvas-wrap">
+            <canvas id="demo-gauge-canvas"></canvas>
+          </div>
+          <div style="font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: var(--color-sage-deep); letter-spacing: 0.15em;" id="gauge-live-val">
+            HYDROSTATIC: 101.3 kPa
+          </div>
+          <div class="type-meta" style="text-align: center;">
+            Physics-damped needle oscillation around target equilibrium
+          </div>
+        </div>
+      </div>
+
+      <!-- Panel D: Case Dossier & Classified Markings -->
+      <div class="lab-panel">
+        <h3>Clinical Case Dossier &amp; Stamps</h3>
+        <div class="dossier-interactive-card" id="demo-dossier-card">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div class="stamp-restricted" id="demo-stamp-target">RESTRICTED // PATIENT 104</div>
+            <div class="wax-seal" style="position: static; width: 36px; height: 36px; font-size: 10px;">104</div>
+          </div>
+          <h4 style="font-family: var(--font-serif); font-size: 20px; margin: 0 0 10px 0;">Observation Intake Dossier</h4>
+          <p style="font-family: var(--font-mono); font-size: 11px; line-height: 1.6; color: var(--ink-secondary); margin: 0 0 16px 0;">
+            Subject 104 underwent preliminary calibration at <span class="redaction-bar" onclick="this.classList.toggle('revealed')">03:42 AM</span> under Dr. <span class="redaction-bar" onclick="this.classList.toggle('revealed')">M. Mamiya</span>. Cognitive drift detected in sector <span class="redaction-bar" onclick="this.classList.toggle('revealed')">GAMMA-07</span>. Click black bars to declassify.
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #E2E8E0; padding-top: 12px;">
+            <button class="pill-btn" style="padding: 4px 12px; font-size: 10px;" onclick="toggleStampState()">Toggle Clearance Stamp</button>
+            <span class="type-meta">RECORD SCHEMA: V1</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 5. Standardized SVG Iconography Catalog -->
+  <section class="showcase-section">
+    <div class="section-header">
+      <h2 class="section-title">Standardized SVG Icon Catalog (Click to Copy)</h2>
+      <span class="section-num">05 / ICONOGRAPHY</span>
+    </div>
+    <div class="icon-grid" id="icon-catalog">
+      <!-- Injected by script with click-to-copy handlers -->
+    </div>
+  </section>
+
+</div>
+
+<div id="copy-toast">TOKEN COPIED TO CLIPBOARD</div>
+
+<script>
+  /* ==========================================================================
+     COLOR TOKENS DATASET
+     ========================================================================== */
+  const COLOR_TOKENS = [
+    { varName: '--color-alabaster', hex: '#EDF0EB', name: 'Alabaster Ivory', desc: 'Primary document paper, modal surfaces, unglazed tile' },
+    { varName: '--color-alabaster-dim', hex: '#E2E7DF', name: 'Aged Alabaster', desc: 'Dossier backing sheets, classified drawer interiors' },
+    { varName: '--color-terrazzo-base', hex: '#D8DED6', name: 'Pale Terrazzo', desc: 'Terrazzo floor base, architectural panel dividers' },
+    { varName: '--color-sage-deep', hex: '#2D4A3E', name: 'Sage Deep', desc: 'Glazed sanatorium subway tile, primary active accent' },
+    { varName: '--color-sage-accent', hex: '#3D5E50', name: 'Sage Accent', desc: 'Highlighted tile grouting, secondary toggle active' },
+    { varName: '--color-chassis-dark', hex: '#141816', name: 'Chassis Dark', desc: 'Outer Tektronix bezel housing, equipment frame' },
+    { varName: '--color-chassis-panel', hex: '#1E2220', name: 'Chassis Panel', desc: 'Bakelite console body, apparatus control aprons' },
+    { varName: '--color-chassis-border', hex: '#3D4642', name: 'Chassis Border', desc: 'Machined metal bezel border, panel seams' },
+    { varName: '--color-crt-bg', hex: '#080D0A', name: 'Cathode Interior', desc: 'Unexcited CRT phosphor glass viewport background' },
+    { varName: '--color-crt-phosphor', hex: '#4ADE80', name: 'P1 Phosphor Green', desc: 'Cathode-ray waveform trace, harmonic lock indicators' },
+    { varName: '--color-crt-amber', hex: '#FBBF24', name: 'CRT Amber', desc: 'Frequency calibration warning, standby telemetry' },
+    { varName: '--color-brass-cast', hex: '#C28833', name: 'Cast Brass', desc: 'Machined fuse shunts, dial bezels, escapements' },
+    { varName: '--color-crimson-wax', hex: '#8B1E23', name: 'Crimson Wax', desc: 'Intake document seals, classified stamps, alarm states' },
+    { varName: '--color-crimson-glow', hex: '#B8282E', name: 'Crimson Lamp', desc: 'Active breaker trip indicator, danger state lamp' },
+    { varName: '--ink-primary', hex: '#141A21', name: 'Carbon Black Ink', desc: 'Deep typography ink, redaction bars, solid titles' },
+    { varName: '--ink-secondary', hex: '#4A5568', name: 'Clinical Slate Ink', desc: 'Clinical subheadings, field metadata, inactive buttons' }
+  ];
+
+  function renderPalette() {
+    const grid = document.getElementById('palette-grid');
+    grid.innerHTML = COLOR_TOKENS.map(c => `
+      <div class="color-card">
+        <div class="color-preview" style="background-color: ${c.hex};"></div>
+        <div class="color-info">
+          <div class="color-name">
+            <span>${c.name}</span>
+            <button class="btn-copy-token" onclick="copyToken('${c.varName}')">COPY</button>
+          </div>
+          <div class="color-hex">${c.hex} • <code>${c.varName}</code></div>
+          <div class="color-desc">${c.desc}</div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ==========================================================================
+     ICON CATALOG DATASET
+     ========================================================================== */
+  const ICON_CATALOG = [
+    {
+      name: 'Settings Gear',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>'
+    },
+    {
+      name: 'Inventory Backpack',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path><path d="M10 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1"></path><path d="M4 10h16"></path><path d="M22 10a2 2 0 0 0-2-2h-3"></path><path d="M2 10a2 2 0 0 1 2-2h3"></path><path d="M9 22v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"></path></svg>'
+    },
+    {
+      name: 'Disengage Close',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+    },
+    {
+      name: 'Blueprint Compass',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 19 21 12 17 5 21 12 2"></polygon></svg>'
+    },
+    {
+      name: 'Oscilloscope Wave',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12h3l3-7 4 14 3-7h3"></path><circle cx="21" cy="12" r="1"></circle></svg>'
+    },
+    {
+      name: 'Bourdon Manifold',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"></circle><line x1="12" y1="12" x2="16" y2="8"></line><line x1="12" y1="2" x2="12" y2="4"></line></svg>'
+    },
+    {
+      name: 'Tape Reel',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="12" r="4"></circle><circle cx="18" cy="12" r="4"></circle><line x1="6" y1="16" x2="18" y2="16"></line></svg>'
+    },
+    {
+      name: 'Telephone Jack',
+      svg: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="16" rx="2"></rect><circle cx="12" cy="10" r="2"></circle><line x1="12" y1="14" x2="12" y2="16"></line></svg>'
+    }
+  ];
+
+  function renderIconCatalog() {
+    const catalog = document.getElementById('icon-catalog');
+    catalog.innerHTML = ICON_CATALOG.map(item => `
+      <div class="icon-item" onclick="copyToken('${item.svg.replace(/"/g, '&quot;')}')" title="Click to copy SVG markup">
+        ${item.svg}
+        <span class="icon-label">${item.name}</span>
+      </div>
+    `).join('');
+  }
+
+  /* Toast helper */
+  function copyToken(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      const toast = document.getElementById('copy-toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1600);
+    });
+  }
+
+  /* Slider helper */
+  function updateDemoSlider(slider, targetId, unit) {
+    document.getElementById(targetId).textContent = parseFloat(slider.value).toFixed(1) + unit;
+  }
+
+  /* Knife switch toggle */
+  let knifeClosed = false;
+  function toggleDemoKnifeSwitch() {
+    knifeClosed = !knifeClosed;
+    const visual = document.getElementById('demo-knife-visual');
+    const status = document.getElementById('demo-knife-status');
+    if (knifeClosed) {
+      visual.classList.add('closed');
+      status.textContent = 'KNIFE SWITCH: ENGAGED [LOCKED]';
+      status.style.color = '#4ADE80';
+    } else {
+      visual.classList.remove('closed');
+      status.textContent = 'KNIFE SWITCH: DISENGAGED';
+      status.style.color = '#BAD2C8';
+    }
+  }
+
+  /* Stamp toggle */
+  let stampCleared = false;
+  function toggleStampState() {
+    stampCleared = !stampCleared;
+    const stamp = document.getElementById('demo-stamp-target');
+    if (stampCleared) {
+      stamp.className = 'stamp-cleared';
+      stamp.textContent = 'CLEARED // COGNITIVE ALIGNED';
+    } else {
+      stamp.className = 'stamp-restricted';
+      stamp.textContent = 'RESTRICTED // PATIENT 104';
+    }
+  }
+
+  /* ==========================================================================
+     RETINA CRT OSCILLOSCOPE SIMULATION
+     ========================================================================== */
+  const crtCanvas = document.getElementById('demo-crt-canvas');
+  const crtCtx = crtCanvas.getContext('2d');
+  let crtPhase = 0;
+  let crtAnimId = null;
+
+  function resizeCrtCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = crtCanvas.getBoundingClientRect();
+    crtCanvas.width = rect.width * dpr;
+    crtCanvas.height = rect.height * dpr;
+    crtCtx.scale(dpr, dpr);
+  }
+
+  function drawCrtWaveform() {
+    if (document.hidden) return; // Prevent CPU burn in background
+
+    const rect = crtCanvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+
+    crtCtx.clearRect(0, 0, w, h);
+
+    // Graticule grid lines
+    crtCtx.strokeStyle = 'rgba(74, 222, 128, 0.08)';
+    crtCtx.lineWidth = 1;
+    for (let x = 0; x < w; x += 30) {
+      crtCtx.beginPath();
+      crtCtx.moveTo(x, 0);
+      crtCtx.lineTo(x, h);
+      crtCtx.stroke();
+    }
+    for (let y = 0; y < h; y += 30) {
+      crtCtx.beginPath();
+      crtCtx.moveTo(0, y);
+      crtCtx.lineTo(w, y);
+      crtCtx.stroke();
+    }
+
+    // Lissajous / Sine Wave
+    crtCtx.strokeStyle = '#4ADE80';
+    crtCtx.shadowColor = '#4ADE80';
+    crtCtx.shadowBlur = 8;
+    crtCtx.lineWidth = 2;
+
+    crtCtx.beginPath();
+    for (let x = 0; x < w; x++) {
+      const freq = 0.025;
+      const y = h / 2 + Math.sin(x * freq + crtPhase) * 35 * Math.cos(x * 0.008 + crtPhase * 0.5);
+      if (x === 0) crtCtx.moveTo(x, y);
+      else crtCtx.lineTo(x, y);
+    }
+    crtCtx.stroke();
+
+    crtPhase += 0.04;
+    crtAnimId = requestAnimationFrame(drawCrtWaveform);
+  }
+
+  /* ==========================================================================
+     RETINA BOURDON PRESSURE GAUGE SIMULATION
+     ========================================================================== */
+  const gaugeCanvas = document.getElementById('demo-gauge-canvas');
+  const gaugeCtx = gaugeCanvas.getContext('2d');
+  let gaugeAngle = 0;
+  let gaugeTargetAngle = 0;
+  let gaugeVelocity = 0;
+  let gaugeAnimId = null;
+
+  function resizeGaugeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const rect = gaugeCanvas.getBoundingClientRect();
+    gaugeCanvas.width = rect.width * dpr;
+    gaugeCanvas.height = rect.height * dpr;
+    gaugeCtx.scale(dpr, dpr);
+  }
+
+  function drawGauge() {
+    if (document.hidden) return; // Prevent CPU burn in background
+
+    const rect = gaugeCanvas.getBoundingClientRect();
+    const w = rect.width;
+    const h = rect.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const radius = w / 2 - 10;
+
+    gaugeCtx.clearRect(0, 0, w, h);
+
+    // Face ticks
+    gaugeCtx.strokeStyle = '#141A21';
+    for (let deg = -140; deg <= 140; deg += 20) {
+      const rad = (deg * Math.PI) / 180;
+      const isMajor = deg % 40 === 0;
+      const tickLen = isMajor ? 10 : 5;
+      const x1 = cx + Math.cos(rad) * (radius - tickLen);
+      const y1 = cy + Math.sin(rad) * (radius - tickLen);
+      const x2 = cx + Math.cos(rad) * radius;
+      const y2 = cy + Math.sin(rad) * radius;
+
+      gaugeCtx.lineWidth = isMajor ? 2 : 1;
+      gaugeCtx.beginPath();
+      gaugeCtx.moveTo(x1, y1);
+      gaugeCtx.lineTo(x2, y2);
+      gaugeCtx.stroke();
+    }
+
+    // Spring damping physics
+    const k = 0.08;   // Spring constant
+    const damping = 0.88; // Damping factor
+    const force = (gaugeTargetAngle - gaugeAngle) * k;
+    gaugeVelocity = (gaugeVelocity + force) * damping;
+    gaugeAngle += gaugeVelocity;
+
+    // Small random target drift simulating pressure fluctuations
+    if (Math.random() < 0.04) {
+      gaugeTargetAngle = (Math.random() - 0.5) * 0.4;
+      const liveKpa = (101.3 + gaugeTargetAngle * 12).toFixed(1);
+      document.getElementById('gauge-live-val').textContent = `HYDROSTATIC: ${liveKpa} kPa`;
+    }
+
+    // Needle
+    const needleRad = gaugeAngle - Math.PI / 2;
+    gaugeCtx.strokeStyle = '#8B1E23';
+    gaugeCtx.lineWidth = 2.5;
+    gaugeCtx.beginPath();
+    gaugeCtx.moveTo(cx, cy);
+    gaugeCtx.lineTo(cx + Math.cos(needleRad) * (radius - 12), cy + Math.sin(needleRad) * (radius - 12));
+    gaugeCtx.stroke();
+
+    // Pivot cap
+    gaugeCtx.fillStyle = '#141A21';
+    gaugeCtx.beginPath();
+    gaugeCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+    gaugeCtx.fill();
+
+    gaugeAnimId = requestAnimationFrame(drawGauge);
+  }
+
+  // Handle visibility blur to pause animation loops
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      if (crtAnimId) cancelAnimationFrame(crtAnimId);
+      if (gaugeAnimId) cancelAnimationFrame(gaugeAnimId);
+    } else {
+      crtAnimId = requestAnimationFrame(drawCrtWaveform);
+      gaugeAnimId = requestAnimationFrame(drawGauge);
+    }
+  });
+
+  // Initialization
+  window.addEventListener('load', () => {
+    renderPalette();
+    renderIconCatalog();
+    resizeCrtCanvas();
+    resizeGaugeCanvas();
+    drawCrtWaveform();
+    drawGauge();
+  });
+
+  window.addEventListener('resize', () => {
+    resizeCrtCanvas();
+    resizeGaugeCanvas();
+  });
+</script>
+
+</body>
+</html>
