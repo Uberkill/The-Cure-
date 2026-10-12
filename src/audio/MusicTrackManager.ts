@@ -49,6 +49,19 @@ export class MusicTrackManager {
       return;
     }
 
+    try {
+      const manifestRes = await fetch('/assets/manifest.json');
+      if (manifestRes.ok) {
+        const manifest = await manifestRes.json();
+        if (manifest.music && !manifest.music.includes(trackFilename)) {
+          this.telemetry.record('info', `Custom track '${trackFilename}' not in asset manifest. Procedural audio on standby.`);
+          return;
+        }
+      }
+    } catch {
+      // Fall through if manifest is unavailable
+    }
+
     const trackUrl = `/assets/audio/music/${trackFilename}`;
 
     try {

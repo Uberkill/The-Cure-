@@ -6,6 +6,8 @@ export class ModelLoader {
   private static instance: ModelLoader;
   private loader: GLTFLoader;
   private telemetry: Telemetry;
+  private manifest: { models: string[]; music: string[] } | null = null;
+  private manifestLoaded: boolean = false;
 
   private constructor() {
     this.loader = new GLTFLoader();
@@ -19,8 +21,31 @@ export class ModelLoader {
     return ModelLoader.instance;
   }
 
+  private async getManifest(): Promise<{ models: string[]; music: string[] }> {
+    if (this.manifestLoaded) return this.manifest || { models: [], music: [] };
+    try {
+      const res = await fetch('/assets/manifest.json');
+      if (res.ok) {
+        this.manifest = await res.json();
+      }
+    } catch {
+      // Manifest not found, default to empty
+    }
+    this.manifestLoaded = true;
+    return this.manifest || { models: [], music: [] };
+  }
+
   public async loadProp(propName: string, fallbackBuilder: () => THREE.Object3D): Promise<THREE.Object3D> {
+    const manifest = await this.getManifest();
     const assetPath = `/assets/models/${propName}.glb`;
+
+    if (!manifest.models.includes(propName) && !manifest.models.includes(`${propName}.glb`)) {
+      this.telemetry.record(
+        'info',
+        `Custom Blender model '${assetPath}' not in asset manifest. Using procedural 3D geometry fallback.`
+      );
+      return fallbackBuilder();
+    }
 
     return new Promise((resolve) => {
       this.loader.load(
