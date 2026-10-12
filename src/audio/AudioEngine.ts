@@ -8,6 +8,11 @@ export class AudioEngine {
   private telemetry: Telemetry;
   private isUnlocked: boolean = false;
   private masterGain: GainNode | null = null;
+  private sfxGain: GainNode | null = null;
+  private ambientGain: GainNode | null = null;
+  private persistedMasterVolume: number = 0.85;
+  private persistedSfxVolume: number = 0.85;
+  private persistedAmbientVolume: number = 0.75;
 
   // Active oscillators / sources for cleanup
   private activeNodes: Set<{ stop?: () => void; disconnect: () => void }> = new Set();
@@ -77,9 +82,26 @@ export class AudioEngine {
     });
 
     bus.on('settings:updated', (settings) => {
-      if (settings.masterVolume !== undefined && this.masterGain && this.ctx) {
-        const val = Math.max(0.0001, settings.masterVolume);
-        this.masterGain.gain.setValueAtTime(val, this.ctx.currentTime);
+      if (settings.masterVolume !== undefined) {
+        const val = Math.max(0.0001, Math.min(1.0, settings.masterVolume));
+        this.persistedMasterVolume = val;
+        if (this.masterGain && this.ctx) {
+          this.masterGain.gain.setValueAtTime(val, this.ctx.currentTime);
+        }
+      }
+      if (settings.sfxVolume !== undefined) {
+        const val = Math.max(0.0001, Math.min(1.0, settings.sfxVolume));
+        this.persistedSfxVolume = val;
+        if (this.sfxGain && this.ctx) {
+          this.sfxGain.gain.setValueAtTime(val, this.ctx.currentTime);
+        }
+      }
+      if (settings.ambientVolume !== undefined) {
+        const val = Math.max(0.0001, Math.min(1.0, settings.ambientVolume));
+        this.persistedAmbientVolume = val;
+        if (this.ambientGain && this.ctx) {
+          this.ambientGain.gain.setValueAtTime(val, this.ctx.currentTime);
+        }
       }
     });
   }
@@ -100,7 +122,15 @@ export class AudioEngine {
         const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
         this.ctx = new AudioContextClass();
         this.masterGain = this.ctx.createGain();
-        this.masterGain.gain.setValueAtTime(0.85, this.ctx.currentTime);
+        this.masterGain.gain.setValueAtTime(this.persistedMasterVolume, this.ctx.currentTime);
+
+        this.sfxGain = this.ctx.createGain();
+        this.sfxGain.gain.setValueAtTime(this.persistedSfxVolume, this.ctx.currentTime);
+        this.sfxGain.connect(this.masterGain);
+
+        this.ambientGain = this.ctx.createGain();
+        this.ambientGain.gain.setValueAtTime(this.persistedAmbientVolume, this.ctx.currentTime);
+        this.ambientGain.connect(this.masterGain);
 
         // Hardware brickwall limiter / compressor: prevents digital clipping above 0 dBFS
         this.compressor = this.ctx.createDynamicsCompressor();
@@ -133,6 +163,10 @@ export class AudioEngine {
 
   public teardownScenarioAudio(): void {
     if (!this.ctx) return;
+
+    if (this.isDronePlaying) {
+      this.toggleDrone(false);
+    }
 
     if (this.payphoneInterval !== null) {
       window.clearInterval(this.payphoneInterval);
@@ -175,7 +209,7 @@ export class AudioEngine {
       this.droneGain = this.ctx.createGain();
       this.droneGain.gain.setValueAtTime(0.001, now);
       this.droneGain.gain.exponentialRampToValueAtTime(0.28, now + 2.0);
-      this.droneGain.connect(this.masterGain);
+      this.droneGain.connect(this.ambientGain || this.masterGain);
 
       this.droneOscL = this.ctx.createOscillator();
       this.droneOscL.type = 'sine';
@@ -214,7 +248,7 @@ export class AudioEngine {
       this.ballastGain = this.ctx.createGain();
       this.ballastGain.gain.setValueAtTime(0.001, now);
       this.ballastGain.gain.exponentialRampToValueAtTime(0.045, now + 0.6);
-      this.ballastGain.connect(this.masterGain);
+      this.ballastGain.connect(this.ambientGain || this.masterGain);
 
       const osc = this.ctx.createOscillator();
       osc.type = 'sawtooth';
@@ -248,7 +282,7 @@ export class AudioEngine {
       this.phoneGain = this.ctx.createGain();
       this.phoneGain.gain.setValueAtTime(0.001, now);
       this.phoneGain.gain.exponentialRampToValueAtTime(0.08, now + 0.4);
-      this.phoneGain.connect(this.masterGain);
+      this.phoneGain.connect(this.ambientGain || this.masterGain);
 
       const osc1 = this.ctx.createOscillator();
       osc1.type = 'sine';
@@ -275,22 +309,30 @@ export class AudioEngine {
 
   public playTumblerClick(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playTumblerClick(this.ctx, this.masterGain);
+    MechanicalSoundFX.playTumblerClick(this.ctx, this.sfxGain || this.masterGain);
   }
 
   public playPneumaticHiss(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playPneumaticHiss(this.ctx, this.masterGain);
+    MechanicalSoundFX.playPneumaticHiss(this.ctx, this.sfxGain || this.masterGain);
   }
 
   public playWaterDrip(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playWaterDrip(this.ctx, this.masterGain);
+    MechanicalSoundFX.playWaterDrip(this.ctx, this.sfxGain || this.masterGain);
   }
 
   public playToneAlignmentSweep(freq: number): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playToneAlignmentSweep(this.ctx, this.masterGain, freq, this.sweepTracker);
+    MechanicalSoundFX.playToneAlignmentSweep(this.ctx, this.sfxGain || this.masterGain, freq, this.sweepTracker);
+  }
+
+  private registerActiveNode(node: { stop?: () => void; disconnect: () => void }): void {
+    this.activeNodes.add(node);
+  }
+
+  private unregisterActiveNode(node: { stop?: () => void; disconnect: () => void }): void {
+    this.activeNodes.delete(node);
   }
 
   public playPayphoneMechanicalRing(): void {
@@ -316,7 +358,10 @@ export class AudioEngine {
 
       osc1.connect(gain);
       osc2.connect(gain);
-      gain.connect(this.masterGain);
+      gain.connect(this.sfxGain || this.masterGain);
+
+      this.registerActiveNode(osc1);
+      this.registerActiveNode(osc2);
 
       osc1.start(now);
       osc2.start(now);
@@ -324,6 +369,8 @@ export class AudioEngine {
       osc2.stop(now + 1.25);
 
       osc1.onended = () => {
+        this.unregisterActiveNode(osc1);
+        this.unregisterActiveNode(osc2);
         try {
           osc1.disconnect();
           osc2.disconnect();
@@ -347,7 +394,7 @@ export class AudioEngine {
 
   public playHandsetClick(): void {
     if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playHandsetClick(this.ctx, this.masterGain);
+    MechanicalSoundFX.playHandsetClick(this.ctx, this.sfxGain || this.masterGain);
   }
 
   public playLoungeJazzTheme(): void {
@@ -380,12 +427,15 @@ export class AudioEngine {
         gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
 
         osc.connect(gain);
-        gain.connect(this.masterGain!);
+        gain.connect(this.ambientGain || this.masterGain!);
+
+        this.registerActiveNode(osc);
 
         osc.start(now);
         osc.stop(now + 3.0);
 
         osc.onended = () => {
+          this.unregisterActiveNode(osc);
           try {
             osc.disconnect();
             gain.disconnect();
@@ -427,10 +477,13 @@ export class AudioEngine {
     osc.connect(gain);
     gain.connect(this.masterGain);
 
+    this.registerActiveNode(osc);
+
     osc.start(now);
     osc.stop(now + durationSeconds);
 
     osc.onended = () => {
+      this.unregisterActiveNode(osc);
       try {
         osc.disconnect();
         gain.disconnect();
