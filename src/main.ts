@@ -13,6 +13,8 @@ import { ScenarioRegistry } from './scenarios/ScenarioRegistry';
 import { ScreenManager } from './ui/ScreenManager';
 import { UIManager } from './ui/UIManager';
 import { CRTNodePatcher } from './entities/CRTNodePatcher';
+import { FacilityMapScreen } from './ui/screens/FacilityMapScreen';
+import { SaveManager } from './core/SaveManager';
 import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
 import { DevTransformGizmo } from './interaction/DevTransformGizmo';
 import { Dev3DEditorPanel } from './ui/Dev3DEditorPanel';
@@ -23,6 +25,7 @@ class VaultApp {
   public telemetry: Telemetry;
   public eventBus: EventBus;
   public gameState: GameState;
+  public saveManager: SaveManager;
   public audioEngine: AudioEngine;
   public musicManager: MusicTrackManager;
 
@@ -37,6 +40,7 @@ class VaultApp {
 
   public scenarioRegistry: ScenarioRegistry;
   public crtNodePatcher: CRTNodePatcher;
+  public facilityMapScreen: FacilityMapScreen;
 
   public screenManager: ScreenManager;
   public uiManager: UIManager;
@@ -48,6 +52,7 @@ class VaultApp {
     this.telemetry = Telemetry.getInstance();
     this.eventBus = EventBus.getInstance();
     this.gameState = GameState.getInstance();
+    this.saveManager = SaveManager.getInstance();
     this.audioEngine = AudioEngine.getInstance();
     this.musicManager = MusicTrackManager.getInstance();
 
@@ -110,6 +115,7 @@ class VaultApp {
 
     this.scenarioRegistry = ScenarioRegistry.getInstance();
     this.crtNodePatcher = CRTNodePatcher.getInstance();
+    this.facilityMapScreen = FacilityMapScreen.getInstance();
 
     this.screenManager = new ScreenManager();
     this.uiManager = new UIManager();
@@ -141,26 +147,21 @@ class VaultApp {
 
       const nextScenario = this.scenarioRegistry.getScenario(targetRoomId);
       if (nextScenario) {
-        // Teardown scenario audio nodes
-        this.audioEngine.teardownScenarioAudio();
+        const loadedGroup = await this.scenarioRegistry.loadScenario(nextScenario, this.sceneManager.scene);
+        if (!loadedGroup) return;
 
-        // Load new room meshes into scene
-        await this.scenarioRegistry.loadScenario(nextScenario, this.sceneManager.scene);
-
-        // Reset camera anchor
         const defaultPreset = nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset;
         if (defaultPreset) {
           this.cameraDirector.resetForScenario(defaultPreset);
         }
 
-        // Clear any exclusive interaction locks
         this.raycastManager.setExclusiveTarget(null);
 
-        // Display chapter title card (4 seconds duration)
         this.eventBus.emit('ui:chapter_display', {
           act: nextScenario.actTitle,
           title: nextScenario.title,
-          durationMs: 4000
+          roomCode: nextScenario.roomCode,
+          durationMs: 30000
         });
 
         this.eventBus.emit('ui:subtitle_changed', {
@@ -169,25 +170,50 @@ class VaultApp {
       }
     });
 
-    this.eventBus.on('input:object_clicked', ({ objectId }) => {
+    this.eventBus.on('input:object_clicked', ({ objectId, flavorText }) => {
       const current = this.scenarioRegistry.getCurrentScenario();
       if (current && typeof current.onObjectClick === 'function') {
         const handled = current.onObjectClick(objectId);
         if (handled) return;
       }
+      if (flavorText) {
+          if (Array.isArray(flavorText)) {
+            if (flavorText.length === 0) return;
+            const idx = this.gameState.getFlavorIndex(objectId);
+            const text = flavorText[Math.min(idx, flavorText.length - 1)];
+            this.gameState.incrementFlavorIndex(objectId);
+            this.eventBus.emit('ui:subtitle_changed', { text });
+          } else {
+            this.eventBus.emit('ui:subtitle_changed', { text: flavorText });
+          }
+        }
     });
   }
 
   private async init(): Promise<void> {
     try {
       this.telemetry.record('info', 'Bootstrapping The Vault: Room 04 Nexus');
-      const hubScenario = this.scenarioRegistry.getScenario('room_04');
-      if (hubScenario) {
-        await this.scenarioRegistry.loadScenario(hubScenario, this.sceneManager.scene);
-      }
-      this.telemetry.record('info', 'Central Hub loaded successfully');
 
-      this.musicManager.playRoomTrack('room_04_theme.mp3');
+      const isTest = new URLSearchParams(window.location.search).has('test');
+      const savedData = this.saveManager.loadGame();
+      let startingRoomId = 'room_04';
+
+      if (savedData && !isTest) {
+        this.saveManager.hydrateGame(savedData);
+        startingRoomId = savedData.currentRoomId || 'room_04';
+      }
+
+      const startingScenario = this.scenarioRegistry.getScenario(startingRoomId) || this.scenarioRegistry.getScenario('room_04');
+      if (startingScenario) {
+        await this.scenarioRegistry.loadScenario(startingScenario, this.sceneManager.scene);
+        const defaultPreset = startingScenario.hotspots[startingScenario.defaultHotspot]?.cameraPreset;
+        if (defaultPreset) {
+          this.cameraDirector.resetForScenario(defaultPreset);
+        }
+      }
+      this.telemetry.record('info', `Initial Chamber '${startingRoomId}' mounted successfully`);
+
+      this.musicManager.playRoomTrack(startingRoomId === 'room_04' ? 'room_04_theme.mp3' : 'chamber_exploration.mp3');
       this.animate();
     } catch (err) {
       this.telemetry.record('error', `Initialization failure: ${String(err)}`);
