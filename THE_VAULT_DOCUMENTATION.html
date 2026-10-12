@@ -569,9 +569,10 @@ Avoid arbitrary <code>page.waitForTimeout(1000)</code> calls. In test mode (<cod
 </ul>
 <h3>4.10. Rotary Telephone Dial Mechanism (<code>RotaryDial.ts</code>)</h3>
 <ul>
-<li><strong>Geometry</strong>: 160px circular Bakelite escutcheon with 10 finger holes (digits 1–9, 0) and stationary number backing ring.</li>
-<li><strong>Tactile Spring Physics</strong>: Dragging a finger hole to the metal finger stop bracket at 310 degrees locks the digit; releasing triggers an authentic decelerating spring-back return loop.</li>
-<li><strong>Keyboard Dialing</strong>: Pressing numeric keys <code>0</code> through <code>9</code> on the keyboard automatically triggers physical mechanical dial travel and return.</li>
+<li><strong>Geometry</strong>: Mathematically centered 180px circular Bakelite escutcheon (<code>box-sizing: content-box</code>) with a stationary central Bakelite hub boss (<code>#1E2421</code>, diameter 52px) stamped with institutional text (<code>FACILITY 1974</code>).</li>
+<li><strong>Centered Coordinate System</strong>: 10 finger holes orbiting precisely at <code>radius = 56px</code> with zero cam wobble (<code>transform-origin: 90px 90px</code>).</li>
+<li><strong>Tactile Spring Physics</strong>: Pointer capture (<code>setPointerCapture</code>) dynamically tracks rotational drag angle towards the brass finger stop bracket at 310 degrees. Releasing triggers an authentic mechanical governor spring-back return loop (~16 deg/frame) and emits the dialed digit.</li>
+<li><strong>Click-to-Dial &amp; Keyboard Fallback</strong>: Supports direct synthetic click and keyboard numbers <code>0</code> through <code>9</code>, executing smooth automatic winding travel and spring release.</li>
 </ul>
 <h3>4.11. Switchboard Jack Matrix &amp; Patch Cords (<code>PatchMatrix.ts</code>)</h3>
 <ul>
@@ -584,6 +585,25 @@ Avoid arbitrary <code>page.waitForTimeout(1000)</code> calls. In test mode (<cod
 <li><strong>Folder Housing</strong>: Heavy manila paper cover (<code>#E8E2D2</code>, border <code>#C4BA9F</code>) with top filing tabs (<code>FORM 104-B: INTAKE</code>, <code>EEG CLINICAL CHART</code>, <code>DIRECTOR&#39;S MEMO</code>).</li>
 <li><strong>Tactile Fasteners</strong>: Authentic brass paperclip SVG (<code>stroke-width: 1.8</code>) and staple punctures holding attached diagnostic sheets.</li>
 <li><strong>Redaction Security</strong>: Classified names, timestamps, and doctor signatures rendered with interactive carbon black blocks (<code>.redaction-bar</code>) that reveal confidential text on click.</li>
+</ul>
+<h3>4.13. Clinical Patient Clipboard (<code>ClinicalClipboard.ts</code>)</h3>
+<ul>
+<li><strong>Hardware Chassis</strong>: Heavy aluminium/Masonite medical clipboard with spring-loaded brass clip bracket (<code>#E5A84B</code>), steel rivets, and embossed facility department headers.</li>
+<li><strong>Form 104-MED Substrate</strong>: Pale clinical cellulose paper (<code>#F4EFE6</code>) with tabbed subject indexing (<code>Subject 101</code>, <code>Subject 102</code>, <code>Subject 103</code>, <code>Subject 104 [Vacant]</code>).</li>
+<li><strong>Telemetry &amp; Notes</strong>: Integrated SVG limbic ECG waveform trace, Attending Physician diagnostic records (Dr. K. Vance), and angled rubber bureaucratic stamps (<code>CLASSIFIED CLINICAL RECORD</code>, <code>TRANSFERRED TO ROOM 04</code>).</li>
+<li><strong>Modal Integration</strong>: Wrapped by <code>ClinicalClipboardScreen.ts</code> with modal focus trapping and Escape key dismissal.</li>
+</ul>
+<h3>4.14. Peristaltic Sight Glass Manometer (<code>SightGlassManometer.ts</code>)</h3>
+<ul>
+<li><strong>Housing</strong>: Borosilicate glass column enclosed in machined brass mounting caps (<code>#E5A84B</code> / <code>#A37025</code>).</li>
+<li><strong>Graduations</strong>: Calibrated tick scale (30 to 120 BPM/ml) with highlighted target equilibrium indicator (68 BPM cardiac rest sync).</li>
+<li><strong>Fluid Physics</strong>: High-contrast green saline fluid column (<code>rgba(74, 222, 128, 0.6)</code>) with curved surface meniscus and rhythmic cardiac pulse oscillation responding to infusion rate.</li>
+</ul>
+<h3>4.15. Mechanical Tumbler Combination Bank (<code>MechanicalTumblerBank.ts</code>)</h3>
+<ul>
+<li><strong>Cylindrical Drums</strong>: 3-wheel combination bank with 3D cylindrical drum perspective shading, knurled borders, and ratcheted step buttons.</li>
+<li><strong>Feedback States</strong>: Active alignment styling (<code>color: #4ADE80</code>, glow bloom) when tumblers match target combinations (e.g. <code>1-0-4</code>).</li>
+<li><strong>Accessibility</strong>: Keyboard navigable via Arrow keys, Space, and Enter with sound feedback.</li>
 </ul>
 <hr>
 <h2>5. Motion &amp; Animation Standards</h2>

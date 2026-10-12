@@ -4,6 +4,7 @@ import { EventBus } from '../core/EventBus';
 import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
 import { DispensaryCartScreen } from '../ui/screens/DispensaryCartScreen';
+import { ClinicalClipboardScreen } from '../ui/screens/ClinicalClipboardScreen';
 
 export class Room02_SleepWard implements RoomScenario {
   public id = 'sleep_ward';
@@ -83,10 +84,12 @@ export class Room02_SleepWard implements RoomScenario {
   private uvLights: THREE.PointLight[] = [];
   private uvDecals: THREE.Mesh[] = [];
   private dispensaryScreen: DispensaryCartScreen;
+  private clipboardScreen: ClinicalClipboardScreen;
   private unsubscribers: Array<() => void> = [];
 
   public constructor() {
     this.dispensaryScreen = new DispensaryCartScreen();
+    this.clipboardScreen = new ClinicalClipboardScreen();
   }
 
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
@@ -547,6 +550,7 @@ export class Room02_SleepWard implements RoomScenario {
     this.unsubscribers.forEach(u => u());
     this.unsubscribers = [];
     this.dispensaryScreen.teardown();
+    this.clipboardScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -614,6 +618,7 @@ export class Room02_SleepWard implements RoomScenario {
     if (objectId.startsWith('prop_clipboard_')) {
       audio.playTumblerClick();
       const subjectNum = objectId.split('_')[2];
+      this.clipboardScreen.open(subjectNum);
       if (subjectNum === '101') {
         bus.emit('ui:subtitle_changed', {
           text: 'Chart 101 [Subject 101]: "Limbic sedation holding. Resting cardiac tempo: 68 BPM. Infusion rate must match cardiac rhythm to prevent neuro-shock."'

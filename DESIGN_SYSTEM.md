@@ -237,9 +237,10 @@ Standardized z-index layers prevent cross-modal occlusion:
 * **Transport Modes**: `PLAY`, `STOP`, `REWIND`, and `0.5x HALF-SPEED` with keyboard shortcuts (`Space` to toggle playback, `R` to rewind). Enters complete sleep state when stopped.
 
 ### 4.10. Rotary Telephone Dial Mechanism (`RotaryDial.ts`)
-* **Geometry**: 160px circular Bakelite escutcheon with 10 finger holes (digits 1–9, 0) and stationary number backing ring.
-* **Tactile Spring Physics**: Dragging a finger hole to the metal finger stop bracket at 310 degrees locks the digit; releasing triggers an authentic decelerating spring-back return loop.
-* **Keyboard Dialing**: Pressing numeric keys `0` through `9` on the keyboard automatically triggers physical mechanical dial travel and return.
+* **Geometry**: Mathematically centered 180px circular Bakelite escutcheon (`box-sizing: content-box`) with a stationary central Bakelite hub boss (`#1E2421`, diameter 52px) stamped with institutional text (`FACILITY 1974`).
+* **Centered Coordinate System**: 10 finger holes orbiting precisely at `radius = 56px` with zero cam wobble (`transform-origin: 90px 90px`).
+* **Tactile Spring Physics**: Pointer capture (`setPointerCapture`) dynamically tracks rotational drag angle towards the brass finger stop bracket at 310 degrees. Releasing triggers an authentic mechanical governor spring-back return loop (~16 deg/frame) and emits the dialed digit.
+* **Click-to-Dial & Keyboard Fallback**: Supports direct synthetic click and keyboard numbers `0` through `9`, executing smooth automatic winding travel and spring release.
 
 ### 4.11. Switchboard Jack Matrix & Patch Cords (`PatchMatrix.ts`)
 * **Sockets & Bezels**: Brass audio jack receptacles with independent contact LED lamps indicating unrouted, pending (`#FBBF24`), and connected (`#4ADE80`) states.
@@ -250,6 +251,22 @@ Standardized z-index layers prevent cross-modal occlusion:
 * **Folder Housing**: Heavy manila paper cover (`#E8E2D2`, border `#C4BA9F`) with top filing tabs (`FORM 104-B: INTAKE`, `EEG CLINICAL CHART`, `DIRECTOR'S MEMO`).
 * **Tactile Fasteners**: Authentic brass paperclip SVG (`stroke-width: 1.8`) and staple punctures holding attached diagnostic sheets.
 * **Redaction Security**: Classified names, timestamps, and doctor signatures rendered with interactive carbon black blocks (`.redaction-bar`) that reveal confidential text on click.
+
+### 4.13. Clinical Patient Clipboard (`ClinicalClipboard.ts`)
+* **Hardware Chassis**: Heavy aluminium/Masonite medical clipboard with spring-loaded brass clip bracket (`#E5A84B`), steel rivets, and embossed facility department headers.
+* **Form 104-MED Substrate**: Pale clinical cellulose paper (`#F4EFE6`) with tabbed subject indexing (`Subject 101`, `Subject 102`, `Subject 103`, `Subject 104 [Vacant]`).
+* **Telemetry & Notes**: Integrated SVG limbic ECG waveform trace, Attending Physician diagnostic records (Dr. K. Vance), and angled rubber bureaucratic stamps (`CLASSIFIED CLINICAL RECORD`, `TRANSFERRED TO ROOM 04`).
+* **Modal Integration**: Wrapped by `ClinicalClipboardScreen.ts` with modal focus trapping and Escape key dismissal.
+
+### 4.14. Peristaltic Sight Glass Manometer (`SightGlassManometer.ts`)
+* **Housing**: Borosilicate glass column enclosed in machined brass mounting caps (`#E5A84B` / `#A37025`).
+* **Graduations**: Calibrated tick scale (30 to 120 BPM/ml) with highlighted target equilibrium indicator (68 BPM cardiac rest sync).
+* **Fluid Physics**: High-contrast green saline fluid column (`rgba(74, 222, 128, 0.6)`) with curved surface meniscus and rhythmic cardiac pulse oscillation responding to infusion rate.
+
+### 4.15. Mechanical Tumbler Combination Bank (`MechanicalTumblerBank.ts`)
+* **Cylindrical Drums**: 3-wheel combination bank with 3D cylindrical drum perspective shading, knurled borders, and ratcheted step buttons.
+* **Feedback States**: Active alignment styling (`color: #4ADE80`, glow bloom) when tumblers match target combinations (e.g. `1-0-4`).
+* **Accessibility**: Keyboard navigable via Arrow keys, Space, and Enter with sound feedback.
 
 
 ---

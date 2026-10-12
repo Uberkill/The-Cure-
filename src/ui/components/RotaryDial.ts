@@ -1,7 +1,8 @@
 /**
  * Reusable Vintage Rotary Telephone Dial Widget.
- * Features 10 finger holes, finger stop bracket, pointer-capture dragging,
- * spring-back return physics, and keyboard fallback (0-9 digits).
+ * Features 10 finger holes, Bakelite center boss, metal finger stop,
+ * pointer-capture drag physics, click-to-dial auto-stroke,
+ * mechanical governor spring-back return loop, and keyboard fallback (0-9 digits).
  */
 
 export interface RotaryDialOptions {
@@ -10,10 +11,19 @@ export interface RotaryDialOptions {
 }
 
 export class RotaryDial {
+  public static readonly DIAL_DIAMETER = 180;
+  public static readonly CENTER = 90;
+  public static readonly HOLE_ORBIT_RADIUS = 56;
+  public static readonly HOLE_SIZE = 28;
+  public static readonly STOP_ANGLE_DEG = 310;
+  public static readonly BASE_ANGLE_DEG = 45;
+  public static readonly SPACING_DEG = 26;
+
   private container: HTMLElement;
   private dialFaceEl: HTMLElement;
   private currentRotationDeg: number = 0;
   private isDialing: boolean = false;
+  private isReturning: boolean = false;
   private activeDigit: number | null = null;
   private animId: number | null = null;
   private onDigitDialed?: (digit: number) => void;
@@ -29,26 +39,31 @@ export class RotaryDial {
     // Escutcheon housing
     const escutcheon = document.createElement('div');
     escutcheon.className = 'rotary-escutcheon';
+    escutcheon.style.width = `${RotaryDial.DIAL_DIAMETER}px`;
+    escutcheon.style.height = `${RotaryDial.DIAL_DIAMETER}px`;
 
     // Stationary number backing ring
     const numberRing = document.createElement('div');
     numberRing.className = 'rotary-number-ring';
 
-    // Rotating finger wheel
+    // Central stationary Bakelite hub cap
+    const centerBoss = document.createElement('div');
+    centerBoss.className = 'rotary-center-boss';
+    centerBoss.innerHTML = '<span class="boss-text">FACILITY<br>1974</span>';
+
+    // Rotating clear finger wheel
     this.dialFaceEl = document.createElement('div');
     this.dialFaceEl.className = 'rotary-wheel';
+    this.dialFaceEl.style.transformOrigin = `${RotaryDial.CENTER}px ${RotaryDial.CENTER}px`;
 
     // Finger holes (1 to 9, then 0)
     const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
-    const baseAngleDeg = 45;
-    const spacingDeg = 26;
 
     digits.forEach((digit, idx) => {
-      const angle = baseAngleDeg + idx * spacingDeg;
+      const angle = RotaryDial.BASE_ANGLE_DEG + idx * RotaryDial.SPACING_DEG;
       const rad = (angle * Math.PI) / 180;
-      const r = 58; // Radius in px
-      const cx = 80 + Math.cos(rad) * r;
-      const cy = 80 + Math.sin(rad) * r;
+      const cx = RotaryDial.CENTER + Math.cos(rad) * RotaryDial.HOLE_ORBIT_RADIUS;
+      const cy = RotaryDial.CENTER + Math.sin(rad) * RotaryDial.HOLE_ORBIT_RADIUS;
 
       // Background stationary number
       const numLabel = document.createElement('div');
@@ -56,37 +71,44 @@ export class RotaryDial {
       numLabel.textContent = digit.toString();
       numLabel.style.left = `${cx}px`;
       numLabel.style.top = `${cy}px`;
+      numLabel.style.marginLeft = `-${RotaryDial.HOLE_SIZE / 2}px`;
+      numLabel.style.marginTop = `-${RotaryDial.HOLE_SIZE / 2}px`;
+      numLabel.style.width = `${RotaryDial.HOLE_SIZE}px`;
+      numLabel.style.height = `${RotaryDial.HOLE_SIZE}px`;
       numberRing.appendChild(numLabel);
 
       // Rotating finger hole
       const hole = document.createElement('div');
       hole.className = 'rotary-hole';
+      hole.id = `btn-dial-${digit}`;
+      hole.setAttribute('data-testid', `btn-dial-${digit}`);
+      hole.setAttribute('data-digit', digit.toString());
       hole.setAttribute('role', 'button');
       hole.setAttribute('aria-label', `Dial digit ${digit}`);
       hole.setAttribute('tabindex', '0');
       hole.style.left = `${cx}px`;
       hole.style.top = `${cy}px`;
+      hole.style.marginLeft = `-${RotaryDial.HOLE_SIZE / 2}px`;
+      hole.style.marginTop = `-${RotaryDial.HOLE_SIZE / 2}px`;
+      hole.style.width = `${RotaryDial.HOLE_SIZE}px`;
+      hole.style.height = `${RotaryDial.HOLE_SIZE}px`;
 
-      hole.addEventListener('pointerdown', (e: PointerEvent) => {
-        this.startDialing(digit, angle, e);
-      });
-
-      hole.addEventListener('keydown', (e: KeyboardEvent) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          this.simulateDialDigit(digit);
-        }
-      });
-
+      this.bindHoleEvents(hole, digit, angle);
       this.dialFaceEl.appendChild(hole);
     });
 
-    // Metal finger stop bracket
+    // Metal finger stop bracket positioned near 310 deg
     const fingerStop = document.createElement('div');
     fingerStop.className = 'rotary-finger-stop';
+    const stopRad = (RotaryDial.STOP_ANGLE_DEG * Math.PI) / 180;
+    const stopX = RotaryDial.CENTER + Math.cos(stopRad) * (RotaryDial.HOLE_ORBIT_RADIUS + 4);
+    const stopY = RotaryDial.CENTER + Math.sin(stopRad) * (RotaryDial.HOLE_ORBIT_RADIUS + 4);
+    fingerStop.style.left = `${stopX}px`;
+    fingerStop.style.top = `${stopY}px`;
 
     escutcheon.appendChild(numberRing);
     escutcheon.appendChild(this.dialFaceEl);
+    escutcheon.appendChild(centerBoss);
     escutcheon.appendChild(fingerStop);
     this.container.appendChild(escutcheon);
     mountPoint.appendChild(this.container);
@@ -94,71 +116,143 @@ export class RotaryDial {
     this.setupKeyboardInput();
   }
 
-  private startDialing(digit: number, digitAngleDeg: number, e: PointerEvent): void {
-    if (this.isDialing) return;
-    this.isDialing = true;
-    this.activeDigit = digit;
+  private bindHoleEvents(hole: HTMLElement, digit: number, digitAngleDeg: number): void {
+    const targetTravelDeg = RotaryDial.STOP_ANGLE_DEG - digitAngleDeg;
 
-    const stopAngleDeg = 310; // Angle of metal finger stop
-    const targetTravelDeg = stopAngleDeg - digitAngleDeg;
+    let startPointerAngle: number | null = null;
+    let hasDragged = false;
 
-    const hole = e.currentTarget as HTMLElement;
-    hole.setPointerCapture(e.pointerId);
+    const onPointerDown = (e: PointerEvent) => {
+      if (this.isDialing || this.isReturning) return;
+      this.isDialing = true;
+      this.activeDigit = digit;
+      hasDragged = false;
 
-    // Animate to finger stop
-    this.currentRotationDeg = targetTravelDeg;
-    this.dialFaceEl.style.transform = `rotate(${this.currentRotationDeg}deg)`;
-
-    const finishDial = () => {
-      if (!this.isDialing) return;
-      this.isDialing = false;
       try {
-        hole.releasePointerCapture(e.pointerId);
+        hole.setPointerCapture(e.pointerId);
       } catch {
-        // Safe fallback
+        // Fallback for mock environments
       }
 
-      if (this.onDigitDialed && this.activeDigit !== null) {
-        this.onDigitDialed(this.activeDigit);
-      }
-      this.springReturn();
+      const rect = this.dialFaceEl.getBoundingClientRect();
+      const originX = rect.left + rect.width / 2;
+      const originY = rect.top + rect.height / 2;
+      startPointerAngle = (Math.atan2(e.clientY - originY, e.clientX - originX) * 180) / Math.PI;
+      if (startPointerAngle < 0) startPointerAngle += 360;
+
+      const onPointerMove = (me: PointerEvent) => {
+        if (!this.isDialing || startPointerAngle === null) return;
+        const currX = me.clientX - originX;
+        const currY = me.clientY - originY;
+        let currAngle = (Math.atan2(currY, currX) * 180) / Math.PI;
+        if (currAngle < 0) currAngle += 360;
+
+        let delta = currAngle - startPointerAngle;
+        if (delta < -180) delta += 360;
+        if (delta > 180) delta -= 360;
+
+        if (Math.abs(delta) > 3) hasDragged = true;
+
+        if (delta > 0) {
+          this.currentRotationDeg = Math.min(targetTravelDeg, delta);
+          this.dialFaceEl.style.transform = `rotate(${this.currentRotationDeg}deg)`;
+        }
+      };
+
+      const onPointerUp = (ue: PointerEvent) => {
+        try {
+          hole.releasePointerCapture(ue.pointerId);
+        } catch {
+          // Safe fallback
+        }
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('pointercancel', onPointerUp);
+
+        if (!hasDragged) {
+          // Synthetic click or tap: animate smoothly to stop
+          this.dialFaceEl.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.4, 1)';
+          this.dialFaceEl.style.transform = `rotate(${targetTravelDeg}deg)`;
+          this.currentRotationDeg = targetTravelDeg;
+
+          setTimeout(() => {
+            this.dialFaceEl.style.transition = '';
+            if (this.onDigitDialed && this.activeDigit !== null) {
+              this.onDigitDialed(this.activeDigit);
+            }
+            this.isDialing = false;
+            this.springReturn();
+          }, 300);
+        } else {
+          // Dragged: if past 70% of target travel, accept dial
+          const reachedTarget = this.currentRotationDeg >= targetTravelDeg * 0.7;
+          if (reachedTarget && this.onDigitDialed && this.activeDigit !== null) {
+            this.onDigitDialed(this.activeDigit);
+          }
+          this.isDialing = false;
+          this.springReturn();
+        }
+      };
+
+      window.addEventListener('pointermove', onPointerMove);
+      window.addEventListener('pointerup', onPointerUp);
+      window.addEventListener('pointercancel', onPointerUp);
     };
 
-    hole.addEventListener('pointerup', finishDial, { once: true });
-    hole.addEventListener('pointercancel', finishDial, { once: true });
+    hole.addEventListener('pointerdown', onPointerDown);
+
+    hole.addEventListener('click', (e: MouseEvent) => {
+      // Direct click handler for testing environments without pointer events
+      if (this.isDialing || this.isReturning) return;
+      e.stopPropagation();
+      this.simulateDialDigit(digit);
+    });
+
+    hole.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.simulateDialDigit(digit);
+      }
+    });
   }
 
   public simulateDialDigit(digit: number): void {
-    if (this.isDialing) return;
+    if (this.isDialing || this.isReturning) return;
     this.isDialing = true;
     this.activeDigit = digit;
 
     const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
     const idx = digits.indexOf(digit);
-    const digitAngleDeg = 45 + idx * 26;
-    const targetTravelDeg = 310 - digitAngleDeg;
+    const digitAngleDeg = RotaryDial.BASE_ANGLE_DEG + idx * RotaryDial.SPACING_DEG;
+    const targetTravelDeg = RotaryDial.STOP_ANGLE_DEG - digitAngleDeg;
 
-    // Smooth forward rotation
-    this.dialFaceEl.style.transition = 'transform 0.35s ease-out';
+    this.dialFaceEl.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.4, 1)';
     this.dialFaceEl.style.transform = `rotate(${targetTravelDeg}deg)`;
+    this.currentRotationDeg = targetTravelDeg;
 
     setTimeout(() => {
       this.dialFaceEl.style.transition = '';
       if (this.onDigitDialed) this.onDigitDialed(digit);
-      this.currentRotationDeg = targetTravelDeg;
       this.isDialing = false;
       this.springReturn();
-    }, 380);
+    }, 300);
   }
 
   private springReturn(): void {
-    // Mechanical spring-back return loop
-    const returnSpeed = 14; // deg per frame
+    if (this.animId !== null) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+    this.isReturning = true;
+
+    // Mechanical governor return velocity (degrees per tick)
+    const returnSpeed = 16;
     const step = () => {
       this.currentRotationDeg -= returnSpeed;
       if (this.currentRotationDeg <= 0) {
         this.currentRotationDeg = 0;
-        this.dialFaceEl.style.transform = `rotate(0deg)`;
+        this.dialFaceEl.style.transform = 'rotate(0deg)';
+        this.isReturning = false;
         this.animId = null;
         return;
       }

@@ -559,28 +559,60 @@
 
     .rotary-escutcheon {
       position: relative;
-      width: 160px;
-      height: 160px;
+      box-sizing: content-box;
+      width: 180px;
+      height: 180px;
       border-radius: 50%;
-      background: #141816;
-      border: 4px solid #2B322F;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      background: radial-gradient(circle at 45% 45%, #242a27, #101412);
+      border: 5px solid #2B322F;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.7), inset 0 2px 6px rgba(255, 255, 255, 0.05);
+      overflow: hidden;
     }
 
-    .rotary-number-ring { position: absolute; inset: 0; pointer-events: none; }
+    .rotary-number-ring {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+    }
 
     .rotary-digit-label {
       position: absolute;
-      width: 20px;
-      height: 20px;
-      margin-left: -10px;
-      margin-top: -10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-family: var(--font-mono);
-      font-size: 12px;
+      font-family: var(--font-mono, monospace);
+      font-size: 13px;
       font-weight: 700;
+      color: #8B9991;
+      user-select: none;
+    }
+
+    .rotary-center-boss {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 40% 40%, #1e2421, #0a0d0c);
+      border: 2px solid #C28833;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      pointer-events: none;
+    }
+
+    .rotary-center-boss .boss-text {
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.1;
+      letter-spacing: 0.1em;
       color: #8B9991;
     }
 
@@ -588,35 +620,39 @@
       position: absolute;
       inset: 0;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.04);
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 70%, transparent 100%);
       touch-action: none;
+      z-index: 2;
     }
 
     .rotary-hole {
       position: absolute;
-      width: 26px;
-      height: 26px;
-      margin-left: -13px;
-      margin-top: -13px;
       border-radius: 50%;
-      background: rgba(20, 24, 22, 0.85);
+      background: radial-gradient(circle at 40% 40%, rgba(28, 34, 31, 0.95), rgba(12, 16, 14, 0.98));
       border: 2px solid #3D4642;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 2px 4px rgba(0, 0, 0, 0.5);
       cursor: pointer;
       outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .rotary-hole:hover { border-color: var(--color-brass-bright); }
+    .rotary-hole:hover, .rotary-hole:focus-visible {
+      border-color: var(--color-brass-bright, #E5A84B);
+      box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.9), 0 0 8px rgba(229, 168, 75, 0.4);
+    }
 
     .rotary-finger-stop {
       position: absolute;
-      width: 16px;
-      height: 6px;
-      background: #C28833;
-      bottom: 24px;
-      right: 28px;
+      width: 20px;
+      height: 8px;
+      margin-left: -10px;
+      margin-top: -4px;
+      background: linear-gradient(135deg, #E5A84B, #9A6820);
+      border: 1px solid #C28833;
       border-radius: 2px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+      z-index: 5;
     }
 
     /* 5. Switchboard Jack Matrix Widget */
@@ -1033,7 +1069,333 @@
     }
 
     #copy-toast.show { opacity: 1; transform: translateY(0); }
-  </style>
+  
+    /* 7. Clinical Patient Clipboard Widget */
+    .clinical-clipboard-widget {
+      background: #C2BAA6;
+      border: 2px solid #8A816E;
+      border-radius: var(--radius-sm, 4px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(255, 255, 255, 0.2);
+      padding: 16px 20px 24px 20px;
+      position: relative;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .clipboard-brass-clip {
+      display: flex;
+      justify-content: center;
+      position: relative;
+      margin-top: -28px;
+      margin-bottom: 12px;
+      z-index: 10;
+    }
+    .clip-bracket {
+      background: linear-gradient(180deg, #E5A84B 0%, #A37025 100%);
+      border: 1px solid #784F14;
+      border-radius: 4px 4px 2px 2px;
+      padding: 4px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    .clip-rivet {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #5A390C;
+      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
+    }
+    .clip-emboss {
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: #3D2605;
+    }
+    .clipboard-tabs-bar {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .clipboard-tab-btn {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 6px 12px;
+      background: #AFA691;
+      border: 1px solid #8A816E;
+      border-radius: 3px 3px 0 0;
+      color: #3A362C;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .clipboard-tab-btn:hover { background: #D5CEBE; color: #1A1813; }
+    .clipboard-tab-btn.active {
+      background: #F4EFE6;
+      border-color: #7A7260;
+      color: #11100D;
+      border-bottom: 1px solid #F4EFE6;
+      margin-bottom: -1px;
+    }
+    .clipboard-paper-body {
+      background: #F4EFE6;
+      border: 1px solid #C8BEAA;
+      border-radius: 2px;
+      padding: 24px;
+      box-shadow: inset 0 0 12px rgba(180, 168, 145, 0.15);
+      position: relative;
+      min-height: 280px;
+    }
+    .paper-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .paper-institution {
+      display: block;
+      font-family: var(--font-sans, sans-serif);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: #1A1813;
+    }
+    .paper-form-id {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      color: #6A6252;
+    }
+    .paper-meta-badge {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 8px;
+      background: #E2DAC8;
+      border: 1px solid #B4AA94;
+      border-radius: 2px;
+      color: #2D4A3E;
+    }
+    .paper-meta-badge.badge-vacant {
+      background: #EED5D2;
+      border-color: #C99692;
+      color: #8C2520;
+    }
+    .paper-divider {
+      height: 1px;
+      background: #D8CFBD;
+      margin-bottom: 14px;
+    }
+    .patient-info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 16px;
+      margin-bottom: 14px;
+    }
+    .info-field { display: flex; flex-direction: column; }
+    .field-label {
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      letter-spacing: 0.12em;
+      color: #7A7260;
+    }
+    .field-value {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      font-weight: 600;
+      color: #1A1813;
+    }
+    .field-value.status-highlight { color: #1B4D3E; }
+    .vitals-strip-section { margin-bottom: 14px; }
+    .strip-label {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      letter-spacing: 0.12em;
+      color: #7A7260;
+      margin-bottom: 4px;
+    }
+    .vitals-strip-graph {
+      background: #EBE5D8;
+      border: 1px solid #C4BAA6;
+      height: 36px;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .vitals-svg { width: 100%; height: 100%; }
+    .clinical-notes-section { margin-bottom: 12px; }
+    .notes-heading {
+      display: block;
+      font-family: var(--font-mono, monospace);
+      font-size: 8px;
+      letter-spacing: 0.12em;
+      color: #7A7260;
+      margin-bottom: 4px;
+    }
+    .notes-typewriter-text {
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      line-height: 1.6;
+      color: #24221D;
+      background: rgba(255, 255, 255, 0.4);
+      padding: 8px 12px;
+      border-left: 3px solid #7A7260;
+    }
+    .paper-rubber-stamp {
+      position: absolute;
+      bottom: 20px;
+      right: 24px;
+      font-family: var(--font-mono, monospace);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 4px 12px;
+      border: 2px solid;
+      border-radius: 3px;
+      transform: rotate(-4deg);
+      opacity: 0.85;
+    }
+    .paper-rubber-stamp.stamp-amber { color: #A37025; border-color: #A37025; }
+    .paper-rubber-stamp.stamp-red { color: #8C2520; border-color: #8C2520; }
+
+    /* 8. Sight Glass Manometer Widget */
+    .sight-glass-widget {
+      background: #141816;
+      border: 2px solid #2B322F;
+      border-radius: var(--radius-sm, 4px);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 140px;
+      margin: 0 auto;
+    }
+    .manometer-bezel {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+    .manometer-cap {
+      width: 44px;
+      height: 12px;
+      background: linear-gradient(180deg, #E5A84B 0%, #A37025 100%);
+      border: 1px solid #784F14;
+      border-radius: 2px;
+    }
+    .manometer-glass-tube {
+      width: 28px;
+      height: 160px;
+      background: rgba(255, 255, 255, 0.05);
+      border-left: 2px solid rgba(255, 255, 255, 0.15);
+      border-right: 2px solid rgba(255, 255, 255, 0.15);
+      position: relative;
+      overflow: hidden;
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
+    }
+    .manometer-scale { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+    .scale-tick {
+      position: absolute;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+    }
+    .tick-line { width: 6px; height: 1px; background: #627267; }
+    .target-tick .tick-line { background: #4ADE80; width: 10px; }
+    .tick-label { font-family: var(--font-mono, monospace); font-size: 7px; color: #8B9991; }
+    .target-tick .tick-label { color: #4ADE80; font-weight: 700; }
+    .manometer-fluid-column {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, rgba(74, 222, 128, 0.6) 0%, rgba(34, 197, 94, 0.3) 100%);
+      transition: height 0.25s cubic-bezier(0.2, 0.8, 0.4, 1);
+      z-index: 1;
+    }
+    .fluid-meniscus {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50% 50% 0 0;
+    }
+    .manometer-readout-panel { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .manometer-level-value {
+      font-family: var(--font-mono, monospace);
+      font-size: 12px;
+      font-weight: 700;
+      color: #E2ECE5;
+    }
+    .manometer-status-badge {
+      font-family: var(--font-mono, monospace);
+      font-size: 7px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      border-radius: 2px;
+    }
+    .badge-stable { background: rgba(74, 222, 128, 0.15); color: #4ADE80; border: 1px solid #4ADE80; }
+    .badge-arrhythmic { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid #EF4444; }
+
+    /* 9. Mechanical Tumbler Bank Widget */
+    .mechanical-tumbler-bank-widget {
+      background: #141816;
+      border: 2px solid #2B322F;
+      border-radius: var(--radius-sm, 4px);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .tumbler-bank-housing { display: flex; gap: 12px; justify-content: center; }
+    .tumbler-wheel-column { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .tumbler-column-label { font-family: var(--font-mono, monospace); font-size: 8px; letter-spacing: 0.12em; color: #8B9991; }
+    .tumbler-step-btn {
+      background: #1F2522;
+      border: 1px solid #343E38;
+      color: #8B9991;
+      font-size: 9px;
+      padding: 2px 10px;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .tumbler-step-btn:hover { background: #2D4A3E; color: #FFFFFF; border-color: #4ADE80; }
+    .tumbler-drum-viewport {
+      width: 58px;
+      height: 48px;
+      background: linear-gradient(180deg, #0A0D0C 0%, #1A211D 50%, #0A0D0C 100%);
+      border: 2px solid #343E38;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.9);
+      cursor: pointer;
+      outline: none;
+    }
+    .tumbler-drum-viewport:focus-visible { border-color: #E5A84B; box-shadow: 0 0 8px rgba(229, 168, 75, 0.4); }
+    .tumbler-drum-face {
+      font-family: var(--font-mono, monospace);
+      font-size: 16px;
+      font-weight: 700;
+      color: #C8D3CB;
+      user-select: none;
+    }
+    .tumbler-drum-face.aligned { color: #4ADE80; text-shadow: 0 0 6px rgba(74, 222, 128, 0.5); }
+</style>
 </head>
 <body>
 
@@ -1149,6 +1511,42 @@
           <span style="font-family: var(--font-mono); font-size: 10px; color: #8B9991; letter-spacing: 0.15em; display: block; margin-bottom: 4px;">REGISTERED INTAKE SEQUENCE</span>
           <span style="font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: #4ADE80; letter-spacing: 0.25em;" id="dialed-history">_ _ _</span>
         </div>
+      </div>
+
+      <!-- Widget 6: Clinical Patient Clipboard -->
+      <div class="lab-card" style="grid-column: span 2;">
+        <div class="lab-card-title">
+          <span>Clinical Patient Clipboard (Ward 02 Ledger)</span>
+          <span style="color: var(--color-sage-deep);">FORM 104-MED • BRASS CLIP</span>
+        </div>
+        <p style="font-size: 12px; color: var(--ink-secondary); margin: 0;">
+          Tactile 1970s aluminium/Masonite medical clipboard with spring clip, tabbed patient selection (Subjects 101–104), limbic ECG telemetry trace, typed notes, and rubber stamps.
+        </p>
+        <div id="mount-clinical-clipboard"></div>
+      </div>
+
+      <!-- Widget 7: Peristaltic Sight Glass Manometer -->
+      <div class="lab-card">
+        <div class="lab-card-title">
+          <span>Peristaltic Sight Glass Manometer</span>
+          <span style="color: var(--color-sage-deep);">BOROSILICATE • MENISCUS</span>
+        </div>
+        <p style="font-size: 12px; color: var(--ink-secondary); margin: 0;">
+          Calibrated glass manometer column with fluid meniscus physics, cardiac BPM pulse wave, and clinical brutalist brass bezel.
+        </p>
+        <div id="mount-sight-glass"></div>
+      </div>
+
+      <!-- Widget 8: Mechanical Tumbler Combination Bank -->
+      <div class="lab-card">
+        <div class="lab-card-title">
+          <span>Mechanical Tumbler Combination Bank</span>
+          <span style="color: var(--color-sage-deep);">3-DRUM RATCHET • 1-0-4</span>
+        </div>
+        <p style="font-size: 12px; color: var(--ink-secondary); margin: 0;">
+          Heavy cylindrical combination tumbler drums with ratcheted step buttons and keyboard arrow key navigation.
+        </p>
+        <div id="mount-tumbler-bank"></div>
       </div>
 
     </div>
@@ -1883,76 +2281,93 @@
      4. ROTARY TELEPHONE DIAL IMPLEMENTATION
      ========================================================================== */
   class RotaryDial {
+    static DIAL_DIAMETER = 180;
+    static CENTER = 90;
+    static HOLE_ORBIT_RADIUS = 56;
+    static HOLE_SIZE = 28;
+    static STOP_ANGLE_DEG = 310;
+    static BASE_ANGLE_DEG = 45;
+    static SPACING_DEG = 26;
+
     constructor(mountPoint, options = {}) {
       this.onDialed = options.onDigitDialed;
       this.currentRotation = 0;
       this.isDialing = false;
+      this.isReturning = false;
+      this.animId = null;
 
       this.container = document.createElement('div');
       this.container.className = 'rotary-dial-widget';
+      this.container.setAttribute('role', 'region');
+      this.container.setAttribute('aria-label', 'Rotary Telephone Dial Mechanism');
 
       const esc = document.createElement('div');
       esc.className = 'rotary-escutcheon';
+      esc.style.width = `${RotaryDial.DIAL_DIAMETER}px`;
+      esc.style.height = `${RotaryDial.DIAL_DIAMETER}px`;
 
       const ring = document.createElement('div');
       ring.className = 'rotary-number-ring';
 
+      const centerBoss = document.createElement('div');
+      centerBoss.className = 'rotary-center-boss';
+      centerBoss.innerHTML = '<span class="boss-text">FACILITY<br>1974</span>';
+
       this.wheelEl = document.createElement('div');
       this.wheelEl.className = 'rotary-wheel';
+      this.wheelEl.style.transformOrigin = `${RotaryDial.CENTER}px ${RotaryDial.CENTER}px`;
 
       const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
       digits.forEach((digit, idx) => {
-        const angle = 45 + idx * 26;
+        const angle = RotaryDial.BASE_ANGLE_DEG + idx * RotaryDial.SPACING_DEG;
         const rad = (angle * Math.PI) / 180;
-        const cx = 80 + Math.cos(rad) * 58;
-        const cy = 80 + Math.sin(rad) * 58;
+        const cx = RotaryDial.CENTER + Math.cos(rad) * RotaryDial.HOLE_ORBIT_RADIUS;
+        const cy = RotaryDial.CENTER + Math.sin(rad) * RotaryDial.HOLE_ORBIT_RADIUS;
 
         const lbl = document.createElement('div');
         lbl.className = 'rotary-digit-label';
         lbl.textContent = digit.toString();
         lbl.style.left = `${cx}px`;
         lbl.style.top = `${cy}px`;
+        lbl.style.marginLeft = `-${RotaryDial.HOLE_SIZE / 2}px`;
+        lbl.style.marginTop = `-${RotaryDial.HOLE_SIZE / 2}px`;
+        lbl.style.width = `${RotaryDial.HOLE_SIZE}px`;
+        lbl.style.height = `${RotaryDial.HOLE_SIZE}px`;
         ring.appendChild(lbl);
 
         const hole = document.createElement('div');
         hole.className = 'rotary-hole';
+        hole.id = `btn-dial-${digit}`;
+        hole.setAttribute('data-testid', `btn-dial-${digit}`);
+        hole.setAttribute('role', 'button');
+        hole.setAttribute('aria-label', `Dial digit ${digit}`);
+        hole.setAttribute('tabindex', '0');
         hole.style.left = `${cx}px`;
         hole.style.top = `${cy}px`;
-        hole.setAttribute('role', 'button');
-        hole.setAttribute('aria-label', `Dial ${digit}`);
+        hole.style.marginLeft = `-${RotaryDial.HOLE_SIZE / 2}px`;
+        hole.style.marginTop = `-${RotaryDial.HOLE_SIZE / 2}px`;
+        hole.style.width = `${RotaryDial.HOLE_SIZE}px`;
+        hole.style.height = `${RotaryDial.HOLE_SIZE}px`;
 
-        hole.addEventListener('pointerdown', (e) => {
-          if (this.isDialing) return;
-          this.isDialing = true;
-          const targetDeg = 310 - angle;
-          hole.setPointerCapture(e.pointerId);
-          this.wheelEl.style.transform = `rotate(${targetDeg}deg)`;
-
-          const end = () => {
-            try { hole.releasePointerCapture(e.pointerId); } catch (_) {}
-            if (this.onDialed) this.onDialed(digit);
-            this.currentRotation = targetDeg;
-            this.isDialing = false;
-            this.springReturn();
-          };
-
-          hole.addEventListener('pointerup', end, { once: true });
-          hole.addEventListener('pointercancel', end, { once: true });
-        });
-
+        this.bindHoleEvents(hole, digit, angle);
         this.wheelEl.appendChild(hole);
       });
 
       const stop = document.createElement('div');
       stop.className = 'rotary-finger-stop';
+      const stopRad = (RotaryDial.STOP_ANGLE_DEG * Math.PI) / 180;
+      const stopX = RotaryDial.CENTER + Math.cos(stopRad) * (RotaryDial.HOLE_ORBIT_RADIUS + 4);
+      const stopY = RotaryDial.CENTER + Math.sin(stopRad) * (RotaryDial.HOLE_ORBIT_RADIUS + 4);
+      stop.style.left = `${stopX}px`;
+      stop.style.top = `${stopY}px`;
 
       esc.appendChild(ring);
       esc.appendChild(this.wheelEl);
+      esc.appendChild(centerBoss);
       esc.appendChild(stop);
       this.container.appendChild(esc);
       mountPoint.appendChild(this.container);
 
-      // Keyboard support
       window.addEventListener('keydown', (e) => {
         if (/^[0-9]$/.test(e.key)) {
           this.simulateDial(parseInt(e.key, 10));
@@ -1960,44 +2375,113 @@
       });
     }
 
+    bindHoleEvents(hole, digit, angle) {
+      const targetTravelDeg = RotaryDial.STOP_ANGLE_DEG - angle;
+      let startAngle = null;
+      let dragged = false;
+
+      const onDown = (e) => {
+        if (this.isDialing || this.isReturning) return;
+        this.isDialing = true;
+        dragged = false;
+        try { hole.setPointerCapture(e.pointerId); } catch (_) {}
+
+        const rect = this.wheelEl.getBoundingClientRect();
+        const ox = rect.left + rect.width / 2;
+        const oy = rect.top + rect.height / 2;
+        startAngle = (Math.atan2(e.clientY - oy, e.clientX - ox) * 180) / Math.PI;
+        if (startAngle < 0) startAngle += 360;
+
+        const onMove = (me) => {
+          if (!this.isDialing || startAngle === null) return;
+          let curr = (Math.atan2(me.clientY - oy, me.clientX - ox) * 180) / Math.PI;
+          if (curr < 0) curr += 360;
+          let delta = curr - startAngle;
+          if (delta < -180) delta += 360;
+          if (delta > 180) delta -= 360;
+          if (Math.abs(delta) > 3) dragged = true;
+          if (delta > 0) {
+            this.currentRotation = Math.min(targetTravelDeg, delta);
+            this.wheelEl.style.transform = `rotate(${this.currentRotation}deg)`;
+          }
+        };
+
+        const onUp = (ue) => {
+          try { hole.releasePointerCapture(ue.pointerId); } catch (_) {}
+          window.removeEventListener('pointermove', onMove);
+          window.removeEventListener('pointerup', onUp);
+          window.removeEventListener('pointercancel', onUp);
+
+          if (!dragged) {
+            this.wheelEl.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.4, 1)';
+            this.wheelEl.style.transform = `rotate(${targetTravelDeg}deg)`;
+            this.currentRotation = targetTravelDeg;
+            setTimeout(() => {
+              this.wheelEl.style.transition = '';
+              if (this.onDialed) this.onDialed(digit);
+              this.isDialing = false;
+              this.springReturn();
+            }, 300);
+          } else {
+            const reached = this.currentRotation >= targetTravelDeg * 0.7;
+            if (reached && this.onDialed) this.onDialed(digit);
+            this.isDialing = false;
+            this.springReturn();
+          }
+        };
+
+        window.addEventListener('pointermove', onMove);
+        window.addEventListener('pointerup', onUp);
+        window.addEventListener('pointercancel', onUp);
+      };
+
+      hole.addEventListener('pointerdown', onDown);
+      hole.addEventListener('click', (e) => {
+        if (this.isDialing || this.isReturning) return;
+        e.stopPropagation();
+        this.simulateDial(digit);
+      });
+    }
+
     simulateDial(digit) {
-      if (this.isDialing) return;
+      if (this.isDialing || this.isReturning) return;
       this.isDialing = true;
       const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
       const idx = digits.indexOf(digit);
-      const angle = 45 + idx * 26;
-      const targetDeg = 310 - angle;
+      const angle = RotaryDial.BASE_ANGLE_DEG + idx * RotaryDial.SPACING_DEG;
+      const targetTravelDeg = RotaryDial.STOP_ANGLE_DEG - angle;
 
-      this.wheelEl.style.transition = 'transform 0.35s ease-out';
-      this.wheelEl.style.transform = `rotate(${targetDeg}deg)`;
+      this.wheelEl.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.4, 1)';
+      this.wheelEl.style.transform = `rotate(${targetTravelDeg}deg)`;
+      this.currentRotation = targetTravelDeg;
 
       setTimeout(() => {
         this.wheelEl.style.transition = '';
         if (this.onDialed) this.onDialed(digit);
-        this.currentRotation = targetDeg;
         this.isDialing = false;
         this.springReturn();
-      }, 380);
+      }, 300);
     }
 
     springReturn() {
+      if (this.animId) cancelAnimationFrame(this.animId);
+      this.isReturning = true;
       const step = () => {
-        this.currentRotation -= 14;
+        this.currentRotation -= 16;
         if (this.currentRotation <= 0) {
           this.currentRotation = 0;
           this.wheelEl.style.transform = 'rotate(0deg)';
+          this.isReturning = false;
+          this.animId = null;
           return;
         }
         this.wheelEl.style.transform = `rotate(${this.currentRotation}deg)`;
-        requestAnimationFrame(step);
+        this.animId = requestAnimationFrame(step);
       };
-      requestAnimationFrame(step);
+      this.animId = requestAnimationFrame(step);
     }
   }
 
-  /* ==========================================================================
-     5. SWITCHBOARD JACK MATRIX IMPLEMENTATION
-     ========================================================================== */
   class PatchMatrix {
     constructor(mountPoint) {
       this.sockets = [
@@ -2198,6 +2682,257 @@
     }
   }
 
+  
+  /* ==========================================================================
+     6. CLINICAL PATIENT CLIPBOARD IMPLEMENTATION
+     ========================================================================== */
+  class ClinicalClipboard {
+    constructor(mountPoint, options = {}) {
+      this.records = {
+        '101': {
+          id: '101', cot: 'COT 101', name: 'SUBJECT 101 // MALE', status: 'SOMNIFEROUS INDUCTION ACTIVE', bpm: 68,
+          notes: 'Limbic sedation holding at therapeutic baseline. Resting cardiac tempo calibrated at 68 BPM. WARNING: Peristaltic infusion rate must match cardiac rhythm exactly to avoid autonomic neuro-shock.',
+          stamp: 'CLASSIFIED CLINICAL RECORD'
+        },
+        '102': {
+          id: '102', cot: 'COT 102', name: 'SUBJECT 102 // FEMALE', status: 'VOCAL DESENSITIZATION COMPLETE', bpm: 72,
+          notes: 'Acoustic vocal pathway severed under subliminal tone protocol. Subject is non-reactive. Mnemonic quartz crystal removed and secured inside Mobile Dispensary Cart under secondary lock.',
+          stamp: 'MONITORED REGIMEN'
+        },
+        '103': {
+          id: '103', cot: 'COT 103', name: 'SUBJECT 103 // MALE', status: 'PHASE DEPRIVATION SLEEP', bpm: 62,
+          notes: 'Continuous sleep cycle maintained via triple chemical infusion. NOTE: Mobile Dispensary Cart is double-locked. Outer security shutter is keyed to the 3-digit intake ID of the transferred subject [Vacant Cot 104].',
+          stamp: 'RESTRICTED CLEARANCE'
+        },
+        '104': {
+          id: '104', cot: 'COT 104 [VACANT]', name: 'SUBJECT 104 // UNKNOWN (TRANSFERRED)', status: 'COT VACANT • TRANSFERRED TO RECEPTION', bpm: 0,
+          notes: 'Cot vacant. Subject transferred to Sterile Reception (Room 04). Patient Intake ID: 104. Sedative formulation was recorded directly on headboard under diagnostic ultraviolet illumination: [NITROUS] - [BROMIDE] - [VALERIAN].',
+          stamp: 'TRANSFERRED TO ROOM 04', isVacant: true
+        }
+      };
+      this.currentId = options.initialSubject || '101';
+      this.container = document.createElement('div');
+      this.container.className = 'clinical-clipboard-widget';
+
+      const clip = document.createElement('div');
+      clip.className = 'clipboard-brass-clip';
+      clip.innerHTML = '<div class="clip-bracket"><div class="clip-rivet"></div><span class="clip-emboss">SANITARIUM RECORD DEPT</span><div class="clip-rivet"></div></div>';
+      this.container.appendChild(clip);
+
+      const tabs = document.createElement('div');
+      tabs.className = 'clipboard-tabs-bar';
+      this.tabBtns = {};
+      ['101', '102', '103', '104'].forEach(id => {
+        const btn = document.createElement('button');
+        btn.className = `clipboard-tab-btn ${id === this.currentId ? 'active' : ''}`;
+        btn.textContent = id === '104' ? 'COT 104 [VACANT]' : `SUBJECT ${id}`;
+        btn.addEventListener('click', () => this.selectSubject(id));
+        this.tabBtns[id] = btn;
+        tabs.appendChild(btn);
+      });
+      this.container.appendChild(tabs);
+
+      this.bodyEl = document.createElement('div');
+      this.bodyEl.className = 'clipboard-paper-body';
+      this.container.appendChild(this.bodyEl);
+
+      mountPoint.appendChild(this.container);
+      this.render();
+    }
+
+    selectSubject(id) {
+      this.currentId = id;
+      Object.keys(this.tabBtns).forEach(k => {
+        this.tabBtns[k].classList.toggle('active', k === id);
+      });
+      this.render();
+    }
+
+    render() {
+      const r = this.records[this.currentId];
+      if (!r) return;
+      this.bodyEl.innerHTML = `
+        <div class="paper-header">
+          <div class="paper-title-block">
+            <span class="paper-institution">ST. DYMPNA CLINICAL RESEARCH FACILITY</span>
+            <span class="paper-form-id">FORM 104-MED // WARD 02 SOMNIFEROUS LEDGER</span>
+          </div>
+          <div class="paper-meta-badge ${r.isVacant ? 'badge-vacant' : ''}">${r.cot}</div>
+        </div>
+        <div class="paper-divider"></div>
+        <div class="patient-info-grid">
+          <div class="info-field"><span class="field-label">SUBJECT IDENTIFIER:</span><span class="field-value">${r.name}</span></div>
+          <div class="info-field"><span class="field-label">CLINICAL STATUS:</span><span class="field-value status-highlight">${r.status}</span></div>
+          <div class="info-field"><span class="field-label">ATTENDING PHYSICIAN:</span><span class="field-value">DR. K. VANCE // ARCHIVE CHIEF</span></div>
+          <div class="info-field"><span class="field-label">RESTING CARDIAC RATE:</span><span class="field-value">${r.bpm > 0 ? r.bpm + ' BPM' : 'N/A (DISCHARGED)'}</span></div>
+        </div>
+        <div class="vitals-strip-section">
+          <span class="strip-label">TELEMETRY STRIP // LIMBIC ACTIVITY:</span>
+          <div class="vitals-strip-graph">
+            <svg viewBox="0 0 400 36" preserveAspectRatio="none" class="vitals-svg">
+              <path d="${this.ecg(r.bpm)}" fill="none" stroke="#2D4A3E" stroke-width="1.8" />
+            </svg>
+          </div>
+        </div>
+        <div class="clinical-notes-section">
+          <span class="notes-heading">PHYSICIAN OBSERVATION NOTES:</span>
+          <div class="notes-typewriter-text">${r.notes}</div>
+        </div>
+        ${r.stamp ? `<div class="paper-rubber-stamp ${r.isVacant ? 'stamp-red' : 'stamp-amber'}">${r.stamp}</div>` : ''}
+      `;
+    }
+
+    ecg(bpm) {
+      if (bpm === 0) return 'M 0 18 L 400 18';
+      const pts = ['M 0 18'];
+      for (let x = 0; x < 400; x += 50) {
+        pts.push(`L ${x + 10} 18 L ${x + 14} 14 L ${x + 18} 18 L ${x + 22} 24 L ${x + 26} 4 L ${x + 30} 30 L ${x + 34} 18 L ${x + 50} 18`);
+      }
+      return pts.join(' ');
+    }
+  }
+
+  /* ==========================================================================
+     7. SIGHT GLASS MANOMETER IMPLEMENTATION
+     ========================================================================== */
+  class SightGlassManometer {
+    constructor(mountPoint, options = {}) {
+      this.min = options.min || 30;
+      this.max = options.max || 120;
+      this.val = options.initialVal || 45;
+      this.target = options.targetVal || 68;
+
+      this.container = document.createElement('div');
+      this.container.className = 'sight-glass-widget';
+
+      const bezel = document.createElement('div');
+      bezel.className = 'manometer-bezel';
+      bezel.innerHTML = '<div class="manometer-cap top-cap"></div>';
+
+      const tube = document.createElement('div');
+      tube.className = 'manometer-glass-tube';
+
+      const scale = document.createElement('div');
+      scale.className = 'manometer-scale';
+      [120, 100, 80, 68, 50, 30].forEach(v => {
+        const tick = document.createElement('div');
+        tick.className = `scale-tick ${v === this.target ? 'target-tick' : ''}`;
+        const pct = ((v - this.min) / (this.max - this.min)) * 100;
+        tick.style.bottom = `${pct}%`;
+        tick.innerHTML = `<span class="tick-line"></span><span class="tick-label">${v}</span>`;
+        scale.appendChild(tick);
+      });
+      tube.appendChild(scale);
+
+      this.fluid = document.createElement('div');
+      this.fluid.className = 'manometer-fluid-column';
+      this.fluid.innerHTML = '<div class="fluid-meniscus"></div>';
+      tube.appendChild(this.fluid);
+
+      bezel.appendChild(tube);
+      bezel.appendChild(document.createElement('div')).className = 'manometer-cap bottom-cap';
+      this.container.appendChild(bezel);
+
+      const panel = document.createElement('div');
+      panel.className = 'manometer-readout-panel';
+      this.readout = document.createElement('span');
+      this.readout.className = 'manometer-level-value';
+      this.badge = document.createElement('span');
+      this.badge.className = 'manometer-status-badge';
+      panel.appendChild(this.readout);
+      panel.appendChild(this.badge);
+      this.container.appendChild(panel);
+
+      mountPoint.appendChild(this.container);
+      this.setVal(this.val);
+    }
+
+    setVal(v) {
+      this.val = Math.max(this.min, Math.min(this.max, v));
+      const pct = ((this.val - this.min) / (this.max - this.min)) * 100;
+      this.fluid.style.height = `${pct}%`;
+      this.readout.textContent = `${this.val} BPM`;
+      const isOk = Math.abs(this.val - this.target) <= 1;
+      if (isOk) {
+        this.badge.textContent = 'CARDIAC SYNC STABLE';
+        this.badge.className = 'manometer-status-badge badge-stable';
+      } else {
+        this.badge.textContent = 'ARRHYTHMIC PRESSURE';
+        this.badge.className = 'manometer-status-badge badge-arrhythmic';
+      }
+    }
+  }
+
+  /* ==========================================================================
+     8. MECHANICAL TUMBLER BANK IMPLEMENTATION
+     ========================================================================== */
+  class MechanicalTumblerBank {
+    constructor(mountPoint, options = {}) {
+      this.wheels = options.wheels || [
+        { label: 'TUMBLER 1', options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { label: 'TUMBLER 2', options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] },
+        { label: 'TUMBLER 3', options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] }
+      ];
+      this.indices = [0, 0, 0];
+      this.target = options.target || ['1', '0', '4'];
+      this.container = document.createElement('div');
+      this.container.className = 'mechanical-tumbler-bank-widget';
+
+      const housing = document.createElement('div');
+      housing.className = 'tumbler-bank-housing';
+      this.faceEls = [];
+
+      this.wheels.forEach((w, idx) => {
+        const col = document.createElement('div');
+        col.className = 'tumbler-wheel-column';
+        col.innerHTML = `<span class="tumbler-column-label">${w.label}</span>`;
+
+        const btnUp = document.createElement('button');
+        btnUp.className = 'tumbler-step-btn';
+        btnUp.innerHTML = '&#9650;';
+        btnUp.onclick = () => this.step(idx, -1);
+        col.appendChild(btnUp);
+
+        const drum = document.createElement('div');
+        drum.className = 'tumbler-drum-viewport';
+        drum.tabIndex = 0;
+        const face = document.createElement('div');
+        face.className = 'tumbler-drum-face';
+        face.textContent = w.options[0];
+        drum.appendChild(face);
+        this.faceEls.push(face);
+        drum.onclick = () => this.step(idx, 1);
+        col.appendChild(drum);
+
+        const btnDown = document.createElement('button');
+        btnDown.className = 'tumbler-step-btn';
+        btnDown.innerHTML = '&#9660;';
+        btnDown.onclick = () => this.step(idx, 1);
+        col.appendChild(btnDown);
+
+        housing.appendChild(col);
+      });
+
+      this.container.appendChild(housing);
+      mountPoint.appendChild(this.container);
+      this.update();
+    }
+
+    step(idx, dir) {
+      const total = this.wheels[idx].options.length;
+      this.indices[idx] = (this.indices[idx] + dir + total) % total;
+      this.update();
+    }
+
+    update() {
+      this.faceEls.forEach((el, idx) => {
+        const val = String(this.wheels[idx].options[this.indices[idx]]);
+        el.textContent = val;
+        el.classList.toggle('aligned', val === this.target[idx]);
+      });
+    }
+  }
+
   /* ==========================================================================
      INITIALIZATION ON DOM READY
      ========================================================================== */
@@ -2231,6 +2966,18 @@
         }
       });
     }
+
+    // 6. Mount Clinical Clipboard
+    const mountClipboard = document.getElementById('mount-clinical-clipboard');
+    if (mountClipboard) window.demoClipboard = new ClinicalClipboard(mountClipboard);
+
+    // 7. Mount Sight Glass Manometer
+    const mountSight = document.getElementById('mount-sight-glass');
+    if (mountSight) window.demoSight = new SightGlassManometer(mountSight);
+
+    // 8. Mount Tumbler Bank
+    const mountTumbler = document.getElementById('mount-tumbler-bank');
+    if (mountTumbler) window.demoTumbler = new MechanicalTumblerBank(mountTumbler);
 
     // 6. Palette & Icon Catalog
     renderPalette();
