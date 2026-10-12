@@ -527,10 +527,42 @@ Standardized z-index layers prevent cross-modal occlusion:
 * **Cleared Stamp (`.stamp-cleared`)**: 2px solid `var(--color-sage-deep)` border, sage-deep monospace text, rotated `1.5deg`.
 * **Redaction Bar (`.redaction-bar`)**: Solid carbon black block (`background: var(--ink-primary)`) obscuring classified intelligence text until player clearance is verified.
 
-### 4.7. Bourdon Pressure Gauges
-* **Geometry**: 160px–220px circular brass-rimmed dial.
-* **Face**: Terrazzo-tinted ivory face with radial dial ticks (10 kPa increments).
-* **Needle**: High-contrast needle with physical oscillation physics (damped second-order spring harmonic motion).
+### 4.7. Bourdon Hydrostatic Pressure Gauge 2.0 (`BourdonGauge.ts`)
+* **Geometry**: 180px–220px circular dial housed in machined brass or dark Bakelite.
+* **Dual-Needle System**:
+  * **Dynamic Measurement Needle**: High-contrast black carbon needle with counter-balance tail, driven by second-order damped spring harmonic physics (`k = 0.08`, `damping = 0.86`).
+  * **Target Limit Needle**: Translucent crimson indicator needle (`#8B1E23`) marking target equilibrium threshold.
+* **Interactive Relief Valve**: Mechanical bleeder knob (`.bourdon-valve-knob`) with pointer capture (`setPointerCapture`) allowing vertical drag-to-bleed adjustments.
+* **Accessibility & Keyboard Support**: Standardized ARIA `role="slider"`, `aria-valuemin`, `aria-valuemax`, and `aria-valuenow`. Supports keyboard adjustments via `ArrowUp`/`ArrowDown` (1.0 kPa) and `PageUp`/`PageDown` (10.0 kPa).
+* **Idle-Sleep Animation Contract**: The component automatically halts its `requestAnimationFrame` loop when needle velocity falls below `0.0001` and target delta below `0.0005`, resuming only on pressure change or pointer interaction.
+
+### 4.8. EEG / Polygraph Strip Chart Recorder (`StripChartRecorder.ts`)
+* **Substrate**: Calibrated pale sage green continuous chart paper (`#E8ECE6`) with 1mm/5mm divisional grid lines.
+* **Mechanical Pen-Plotter**: Oscillating galvanometer stylus nib rendering high-frequency physiological brainwave oscillations and micro-spikes.
+* **Paper Speed Selector**: Radio button group (`role="radiogroup"`) supporting `STOP` (0 mm/s), `25 MM/S`, and `50 MM/S`.
+* **Sleep Management**: When set to `STOP` or when the tab is blurred (`document.hidden`), the animation loop immediately halts to eliminate CPU overhead.
+
+### 4.9. Nagra SN Wiretap Tape Transport (`ReelTapeTransport.ts`)
+* **Reel Hubs**: Dual aluminium reels with authentic 3-spoke cutouts rotating at calibrated speeds during playback.
+* **Mechanical Odometer Index**: 4-digit mechanical counter that rolls forward during playback and decrements rapidly during rewind.
+* **Backlit Analogue VU Meter**: Recessed meter well illuminated with warm amber filament glow (`rgba(251, 191, 36, 0.15)`), driving a damped meter needle responding to simulated playback amplitude.
+* **Transport Modes**: `PLAY`, `STOP`, `REWIND`, and `0.5x HALF-SPEED` with keyboard shortcuts (`Space` to toggle playback, `R` to rewind). Enters complete sleep state when stopped.
+
+### 4.10. Rotary Telephone Dial Mechanism (`RotaryDial.ts`)
+* **Geometry**: 160px circular Bakelite escutcheon with 10 finger holes (digits 1–9, 0) and stationary number backing ring.
+* **Tactile Spring Physics**: Dragging a finger hole to the metal finger stop bracket at 310 degrees locks the digit; releasing triggers an authentic decelerating spring-back return loop.
+* **Keyboard Dialing**: Pressing numeric keys `0` through `9` on the keyboard automatically triggers physical mechanical dial travel and return.
+
+### 4.11. Switchboard Jack Matrix & Patch Cords (`PatchMatrix.ts`)
+* **Sockets & Bezels**: Brass audio jack receptacles with independent contact LED lamps indicating unrouted, pending (`#FBBF24`), and connected (`#4ADE80`) states.
+* **Dynamic Catenary Cables**: Clicking two sockets connects them with a flexible, catenary SVG Bezier curve simulating braided fabric-wrapped patch cables with subtle drop shadows.
+* **Reflow Resilience**: Uses `ResizeObserver` on the board container to dynamically recalculate socket anchor coordinates, guaranteeing zero cord drift during responsive window resizing.
+
+### 4.12. Manila Dossier Folder & Form 104-B (`.dossier-folder-widget`)
+* **Folder Housing**: Heavy manila paper cover (`#E8E2D2`, border `#C4BA9F`) with top filing tabs (`FORM 104-B: INTAKE`, `EEG CLINICAL CHART`, `DIRECTOR'S MEMO`).
+* **Tactile Fasteners**: Authentic brass paperclip SVG (`stroke-width: 1.8`) and staple punctures holding attached diagnostic sheets.
+* **Redaction Security**: Classified names, timestamps, and doctor signatures rendered with interactive carbon black blocks (`.redaction-bar`) that reveal confidential text on click.
+
 
 ---
 

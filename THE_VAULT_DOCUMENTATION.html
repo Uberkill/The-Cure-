@@ -541,11 +541,49 @@ Avoid arbitrary <code>page.waitForTimeout(1000)</code> calls. In test mode (<cod
 <li><strong>Cleared Stamp (<code>.stamp-cleared</code>)</strong>: 2px solid <code>var(--color-sage-deep)</code> border, sage-deep monospace text, rotated <code>1.5deg</code>.</li>
 <li><strong>Redaction Bar (<code>.redaction-bar</code>)</strong>: Solid carbon black block (<code>background: var(--ink-primary)</code>) obscuring classified intelligence text until player clearance is verified.</li>
 </ul>
-<h3>4.7. Bourdon Pressure Gauges</h3>
+<h3>4.7. Bourdon Hydrostatic Pressure Gauge 2.0 (<code>BourdonGauge.ts</code>)</h3>
 <ul>
-<li><strong>Geometry</strong>: 160px–220px circular brass-rimmed dial.</li>
-<li><strong>Face</strong>: Terrazzo-tinted ivory face with radial dial ticks (10 kPa increments).</li>
-<li><strong>Needle</strong>: High-contrast needle with physical oscillation physics (damped second-order spring harmonic motion).</li>
+<li><strong>Geometry</strong>: 180px–220px circular dial housed in machined brass or dark Bakelite.</li>
+<li><strong>Dual-Needle System</strong>:<ul>
+<li><strong>Dynamic Measurement Needle</strong>: High-contrast black carbon needle with counter-balance tail, driven by second-order damped spring harmonic physics (<code>k = 0.08</code>, <code>damping = 0.86</code>).</li>
+<li><strong>Target Limit Needle</strong>: Translucent crimson indicator needle (<code>#8B1E23</code>) marking target equilibrium threshold.</li>
+</ul>
+</li>
+<li><strong>Interactive Relief Valve</strong>: Mechanical bleeder knob (<code>.bourdon-valve-knob</code>) with pointer capture (<code>setPointerCapture</code>) allowing vertical drag-to-bleed adjustments.</li>
+<li><strong>Accessibility &amp; Keyboard Support</strong>: Standardized ARIA <code>role=&quot;slider&quot;</code>, <code>aria-valuemin</code>, <code>aria-valuemax</code>, and <code>aria-valuenow</code>. Supports keyboard adjustments via <code>ArrowUp</code>/<code>ArrowDown</code> (1.0 kPa) and <code>PageUp</code>/<code>PageDown</code> (10.0 kPa).</li>
+<li><strong>Idle-Sleep Animation Contract</strong>: The component automatically halts its <code>requestAnimationFrame</code> loop when needle velocity falls below <code>0.0001</code> and target delta below <code>0.0005</code>, resuming only on pressure change or pointer interaction.</li>
+</ul>
+<h3>4.8. EEG / Polygraph Strip Chart Recorder (<code>StripChartRecorder.ts</code>)</h3>
+<ul>
+<li><strong>Substrate</strong>: Calibrated pale sage green continuous chart paper (<code>#E8ECE6</code>) with 1mm/5mm divisional grid lines.</li>
+<li><strong>Mechanical Pen-Plotter</strong>: Oscillating galvanometer stylus nib rendering high-frequency physiological brainwave oscillations and micro-spikes.</li>
+<li><strong>Paper Speed Selector</strong>: Radio button group (<code>role=&quot;radiogroup&quot;</code>) supporting <code>STOP</code> (0 mm/s), <code>25 MM/S</code>, and <code>50 MM/S</code>.</li>
+<li><strong>Sleep Management</strong>: When set to <code>STOP</code> or when the tab is blurred (<code>document.hidden</code>), the animation loop immediately halts to eliminate CPU overhead.</li>
+</ul>
+<h3>4.9. Nagra SN Wiretap Tape Transport (<code>ReelTapeTransport.ts</code>)</h3>
+<ul>
+<li><strong>Reel Hubs</strong>: Dual aluminium reels with authentic 3-spoke cutouts rotating at calibrated speeds during playback.</li>
+<li><strong>Mechanical Odometer Index</strong>: 4-digit mechanical counter that rolls forward during playback and decrements rapidly during rewind.</li>
+<li><strong>Backlit Analogue VU Meter</strong>: Recessed meter well illuminated with warm amber filament glow (<code>rgba(251, 191, 36, 0.15)</code>), driving a damped meter needle responding to simulated playback amplitude.</li>
+<li><strong>Transport Modes</strong>: <code>PLAY</code>, <code>STOP</code>, <code>REWIND</code>, and <code>0.5x HALF-SPEED</code> with keyboard shortcuts (<code>Space</code> to toggle playback, <code>R</code> to rewind). Enters complete sleep state when stopped.</li>
+</ul>
+<h3>4.10. Rotary Telephone Dial Mechanism (<code>RotaryDial.ts</code>)</h3>
+<ul>
+<li><strong>Geometry</strong>: 160px circular Bakelite escutcheon with 10 finger holes (digits 1–9, 0) and stationary number backing ring.</li>
+<li><strong>Tactile Spring Physics</strong>: Dragging a finger hole to the metal finger stop bracket at 310 degrees locks the digit; releasing triggers an authentic decelerating spring-back return loop.</li>
+<li><strong>Keyboard Dialing</strong>: Pressing numeric keys <code>0</code> through <code>9</code> on the keyboard automatically triggers physical mechanical dial travel and return.</li>
+</ul>
+<h3>4.11. Switchboard Jack Matrix &amp; Patch Cords (<code>PatchMatrix.ts</code>)</h3>
+<ul>
+<li><strong>Sockets &amp; Bezels</strong>: Brass audio jack receptacles with independent contact LED lamps indicating unrouted, pending (<code>#FBBF24</code>), and connected (<code>#4ADE80</code>) states.</li>
+<li><strong>Dynamic Catenary Cables</strong>: Clicking two sockets connects them with a flexible, catenary SVG Bezier curve simulating braided fabric-wrapped patch cables with subtle drop shadows.</li>
+<li><strong>Reflow Resilience</strong>: Uses <code>ResizeObserver</code> on the board container to dynamically recalculate socket anchor coordinates, guaranteeing zero cord drift during responsive window resizing.</li>
+</ul>
+<h3>4.12. Manila Dossier Folder &amp; Form 104-B (<code>.dossier-folder-widget</code>)</h3>
+<ul>
+<li><strong>Folder Housing</strong>: Heavy manila paper cover (<code>#E8E2D2</code>, border <code>#C4BA9F</code>) with top filing tabs (<code>FORM 104-B: INTAKE</code>, <code>EEG CLINICAL CHART</code>, <code>DIRECTOR&#39;S MEMO</code>).</li>
+<li><strong>Tactile Fasteners</strong>: Authentic brass paperclip SVG (<code>stroke-width: 1.8</code>) and staple punctures holding attached diagnostic sheets.</li>
+<li><strong>Redaction Security</strong>: Classified names, timestamps, and doctor signatures rendered with interactive carbon black blocks (<code>.redaction-bar</code>) that reveal confidential text on click.</li>
 </ul>
 <hr>
 <h2>5. Motion &amp; Animation Standards</h2>

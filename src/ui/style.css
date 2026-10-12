@@ -1037,3 +1037,436 @@ body, html {
   color: #ffffff !important;
   border-color: var(--color-crimson-wax) !important;
 }
+
+/* ==========================================================================
+   REUSABLE ANALOGUE CLINICAL BRUTALISM WIDGETS
+   ========================================================================== */
+
+/* 1. Bourdon Gauge Widget */
+.bourdon-gauge-widget {
+  background: var(--color-chassis-panel, #1E2220);
+  border: 2px solid var(--color-chassis-border, #3D4642);
+  border-radius: var(--radius-lg, 8px);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--elevation-chassis);
+}
+.bourdon-dial-wrap {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.bourdon-dial-wrap canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.bourdon-dial-glare {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 40% 30%, rgba(255, 255, 255, 0.25) 0%, transparent 60%);
+}
+.bourdon-controls-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.bourdon-readout {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--color-crt-phosphor, #4ADE80);
+}
+.bourdon-valve-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bourdon-valve-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted, #718096);
+}
+.bourdon-valve-knob {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--color-brass-cast, #C28833);
+  border: 2px solid #5F4218;
+  cursor: ns-resize;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.5);
+  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  touch-action: none;
+}
+.bourdon-valve-knob:hover, .bourdon-valve-knob.active {
+  transform: scale(1.08);
+  background: var(--color-brass-bright, #E5A84B);
+  box-shadow: 0 0 12px rgba(229, 168, 75, 0.5);
+}
+
+/* 2. Strip Chart Recorder Widget */
+.chart-recorder-widget {
+  background: #141816;
+  border: 2px solid #3D4642;
+  border-radius: var(--radius-lg, 8px);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+.chart-title { color: #8B9991; font-weight: 600; }
+.chart-status { color: var(--color-crt-amber, #FBBF24); }
+.chart-viewport {
+  position: relative;
+  height: 140px;
+  border: 2px solid #233E31;
+  border-radius: var(--radius-xs, 2px);
+  overflow: hidden;
+}
+.chart-viewport canvas { width: 100%; height: 100%; display: block; }
+.chart-stylus-line {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(139, 30, 35, 0.4);
+  pointer-events: none;
+}
+.chart-controls { display: flex; gap: 8px; justify-content: flex-end; }
+.chart-btn-speed {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  padding: 4px 10px;
+  border-radius: var(--radius-xs, 2px);
+  background: #1E2420;
+  border: 1px solid #3D4642;
+  color: #8B9991;
+  cursor: pointer;
+}
+.chart-btn-speed:hover { background: #2B342E; color: #FFFFFF; }
+.chart-btn-speed.active { background: var(--color-sage-deep, #2D4A3E); color: #FFFFFF; border-color: #4ADE80; }
+
+/* 3. Tape Transport Widget */
+.tape-transport-widget {
+  background: #1A1E1C;
+  border: 2px solid #3D4642;
+  border-radius: var(--radius-lg, 8px);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.tape-transport-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+}
+.tape-transport-title { color: #8B9991; font-weight: 600; }
+.tape-status-badge {
+  padding: 2px 8px;
+  border-radius: var(--radius-xs, 2px);
+  background: rgba(255, 255, 255, 0.08);
+  color: #8B9991;
+}
+.tape-status-badge.active { background: rgba(74, 222, 128, 0.2); color: #4ADE80; }
+.tape-status-badge.rewind { background: rgba(251, 191, 36, 0.2); color: #FBBF24; }
+.tape-bay { display: flex; justify-content: space-around; align-items: center; }
+.tape-reel-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.tape-reel {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #101412;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tape-reel-caption {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #718096;
+}
+.tape-center-bridge { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.tape-odometer-wrap {
+  background: #0A0D0B;
+  border: 1px solid #233E31;
+  border-radius: 2px;
+  padding: 4px 8px;
+  text-align: center;
+}
+.tape-odometer-label { font-family: var(--font-mono); font-size: 8px; color: #718096; display: block; }
+.tape-odometer-digits {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: #EDF0EB;
+}
+.tape-vu-meter {
+  width: 74px;
+  height: 44px;
+  background: #251E14;
+  border: 1px solid #5F4218;
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 0 10px rgba(251, 191, 36, 0.2);
+}
+.tape-vu-face {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: linear-gradient(to top, rgba(251, 191, 36, 0.15), transparent);
+}
+.tape-vu-needle {
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  width: 1.5px;
+  height: 38px;
+  background: #E5A84B;
+  transform-origin: bottom center;
+  transform: rotate(-35deg);
+  box-shadow: 0 0 4px rgba(229, 168, 75, 0.8);
+}
+.tape-transport-controls { display: flex; gap: 8px; justify-content: center; }
+.tape-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 6px 14px;
+  background: #252C28;
+  border: 1px solid #3C4842;
+  color: #C8D3CB;
+  border-radius: var(--radius-xs, 2px);
+  cursor: pointer;
+}
+.tape-btn:hover { background: #323C37; color: #FFFFFF; }
+.tape-btn.active { background: var(--color-sage-deep, #2D4A3E); color: #FFFFFF; border-color: #4ADE80; }
+
+/* 4. Rotary Dial Widget */
+.rotary-dial-widget {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+  outline: none;
+}
+.rotary-escutcheon {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: #141816;
+  border: 4px solid #2B322F;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+.rotary-number-ring { position: absolute; inset: 0; pointer-events: none; }
+.rotary-digit-label {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  margin-left: -10px;
+  margin-top: -10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 700;
+  color: #8B9991;
+}
+.rotary-wheel {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.04);
+  touch-action: none;
+}
+.rotary-hole {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  margin-left: -13px;
+  margin-top: -13px;
+  border-radius: 50%;
+  background: rgba(20, 24, 22, 0.85);
+  border: 2px solid #3D4642;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+  cursor: pointer;
+  outline: none;
+}
+.rotary-hole:hover { border-color: var(--color-brass-bright, #E5A84B); }
+.rotary-finger-stop {
+  position: absolute;
+  width: 16px;
+  height: 6px;
+  background: #C28833;
+  bottom: 24px;
+  right: 28px;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+}
+
+/* 5. Patch Matrix Widget */
+.patch-matrix-widget {
+  background: #1E2220;
+  border: 2px solid #3D4642;
+  border-radius: var(--radius-lg, 8px);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.patch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.15em;
+}
+.patch-title { color: #8B9991; font-weight: 600; }
+.patch-status { color: var(--color-crt-phosphor, #4ADE80); }
+.patch-board-area { position: relative; min-height: 140px; }
+.patch-svg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+.patch-sockets-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+}
+.patch-socket-box {
+  background: #141816;
+  border: 1px solid #2B322F;
+  border-radius: var(--radius-sm, 4px);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  outline: none;
+}
+.patch-socket-box:hover { background: #1C221E; border-color: #4ADE80; }
+.patch-socket-box.selected { border-color: var(--color-crt-amber, #FBBF24); box-shadow: 0 0 10px rgba(251, 191, 36, 0.3); }
+.patch-socket-box.connected { border-color: #4ADE80; }
+.patch-led {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3B4640;
+}
+.patch-led.active { background: #4ADE80; box-shadow: 0 0 8px #4ADE80; }
+.patch-led.pending { background: #FBBF24; box-shadow: 0 0 8px #FBBF24; }
+.patch-jack-hole {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #080D0A;
+  border: 3px solid #C28833;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.9);
+}
+.patch-socket-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #C8D3CB;
+}
+.patch-footer { display: flex; justify-content: flex-end; }
+
+/* 6. Classified Period Dossier Folder */
+.dossier-folder-widget {
+  background: #E8E2D2;
+  border: 1px solid #C4BA9F;
+  border-radius: var(--radius-sm, 4px);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+.dossier-tab-row {
+  display: flex;
+  gap: 4px;
+  background: #D8D1BE;
+  padding: 8px 16px 0 16px;
+  border-bottom: 1px solid #C4BA9F;
+}
+.dossier-tab-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  background: #CFC7B2;
+  border: 1px solid #B8AE94;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  color: #4A5568;
+  cursor: pointer;
+}
+.dossier-tab-btn:hover { background: #E2DBD0; color: #141A21; }
+.dossier-tab-btn.active {
+  background: #FBFBF9;
+  color: #141A21;
+  font-weight: 600;
+  border-color: #C4BA9F;
+  margin-bottom: -1px;
+  padding-bottom: 7px;
+}
+.dossier-sheet {
+  background: #FBFBF9;
+  padding: 28px;
+  min-height: 220px;
+  position: relative;
+}
+.dossier-paperclip {
+  position: absolute;
+  top: -8px;
+  left: 28px;
+  width: 14px;
+  height: 38px;
+  z-index: 10;
+}
+.dossier-typewriter {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.8;
+  color: var(--ink-primary);
+}
