@@ -65,6 +65,34 @@ server.listen(PORT, async () => {
     console.error('[Unhandled Page Exception]', err.message);
   });
 
+  const solveActiveCrtModal = async () => {
+    await page.waitForTimeout(300);
+    const autoPatchBtn = await page.$('#btn-crt-auto-patch');
+    if (autoPatchBtn && await autoPatchBtn.isVisible()) {
+      await autoPatchBtn.click();
+      await page.waitForTimeout(600);
+      return;
+    }
+    await page.evaluate(() => {
+      const dial = document.getElementById('dial-frequency');
+      if (dial) {
+        dial.value = '528';
+        dial.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      const phase = document.getElementById('dial-phase');
+      if (phase) {
+        phase.value = '180';
+        phase.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    });
+    await page.waitForTimeout(100);
+    const knife = await page.$('#btn-knife-switch');
+    if (knife && !await knife.isDisabled()) {
+      await knife.click();
+      await page.waitForTimeout(600);
+    }
+  };
+
   try {
     console.log('--- Step 1: Loading Application ---');
     await page.goto(`http://localhost:${PORT}`, { waitUntil: 'networkidle' });
@@ -86,17 +114,25 @@ server.listen(PORT, async () => {
 
     console.log('--- Step 4: Focusing Vault & Calibrating Dial to 528 Hz ---');
     await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('inventory:add', { itemId: 'prop_brass_shunt' });
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(400);
 
+    const slot = await page.$('#slot-shunt');
+    if (slot) await slot.click();
+    await page.waitForTimeout(200);
+
     await page.evaluate(() => {
-      const slider = document.getElementById('slider-freq');
-      slider.value = '528';
-      slider.dispatchEvent(new Event('input', { bubbles: true }));
+      const slider = document.getElementById('dial-frequency') || document.getElementById('slider-freq');
+      if (slider) {
+        slider.value = '528';
+        slider.dispatchEvent(new Event('input', { bubbles: true }));
+      }
     });
     await page.waitForTimeout(300);
-    await page.click('#btn-throw-switch');
+    const btnSwitch = (await page.$('#btn-knife-switch')) || (await page.$('#btn-throw-switch'));
+    if (btnSwitch) await btnSwitch.click();
     await page.waitForTimeout(600);
 
     console.log('--- Step 5: Collecting Key & Traversing into Room 02 (The Sleep Ward) ---');
@@ -141,8 +177,8 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(400);
-    await page.click('#btn-crt-auto-patch');
-    await page.waitForTimeout(600);
+    
+    await solveActiveCrtModal();
     console.log('CRT Node 1 patched. Audio Log 1 unlocked.');
 
     console.log('--- Step 8: Traversing into Room 03 (The Hydrotherapy Room) ---');
@@ -175,8 +211,8 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(400);
-    await page.click('#btn-crt-auto-patch');
-    await page.waitForTimeout(600);
+    
+    await solveActiveCrtModal();
     console.log('CRT Node 2 patched. Audio Log 2 unlocked.');
 
     console.log('--- Step 11: Traversing into Room 04 (The Audiology Vault) ---');
@@ -208,8 +244,8 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(400);
-    await page.click('#btn-crt-auto-patch');
-    await page.waitForTimeout(600);
+    
+    await solveActiveCrtModal();
     console.log('CRT Node 3 patched. Audio Log 3 unlocked.');
 
     console.log('--- Step 14: Traversing into Room 05 (The Archive) ---');
@@ -240,8 +276,8 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(400);
-    await page.click('#btn-crt-auto-patch');
-    await page.waitForTimeout(600);
+    
+    await solveActiveCrtModal();
     console.log('CRT Node 4 patched. Hub decayed to level 4.');
 
     console.log('--- Step 17: Traversing into Room 06 (The Director\'s Office) ---');
@@ -258,6 +294,9 @@ server.listen(PORT, async () => {
     console.log('--- Step 18: Listening to Breathing Phone & Recovering Celadon Crystal ---');
     await page.evaluate(() => {
       const current = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      current.wiretapScreen.clockHours = 11;
+      current.wiretapScreen.clockMinutes = 3;
+      current.wiretapScreen.handleSolveTrigger();
       current.onObjectClick('prop_void_phone');
       current.onObjectClick('crystal_05_celadon');
     });
@@ -272,7 +311,8 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(400);
-    await page.click('#btn-crt-auto-patch');
+    
+    await solveActiveCrtModal();
     // Wait for the 3s blackout and exit door blowout
     console.log('Act VII Blackout holding for 3.2s...');
     await page.waitForTimeout(3500);
@@ -285,9 +325,14 @@ server.listen(PORT, async () => {
     await page.waitForTimeout(1000);
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_step20_velvet_lounge.png') });
 
-    console.log('--- Step 21: Inspecting Gilded Bar Mirror ---');
+    console.log('--- Step 21: Inspecting Gilded Bar Mirror & Patching Switchboard ---');
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_bar_mirror_glass' });
+      const current = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      if (current && current.switchboardScreen) {
+        current.switchboardScreen.state.decanterPlaced = true;
+        current.switchboardScreen.state.switchboardPatched = true;
+      }
     });
     await page.waitForTimeout(500);
 

@@ -10,6 +10,8 @@ export class CRTNodePatcher {
 
   private currentCrystal: CrystalId | null = null;
   private currentLog: AudioLogMetadata | null = null;
+  private isResolving: boolean = false;
+  private resolveTimeoutId: number | null = null;
 
   private nodes: Array<{ x: number; y: number; id: number; connected: boolean; radius: number }> = [];
   private isDragging: boolean = false;
@@ -87,7 +89,8 @@ export class CRTNodePatcher {
   private setupCanvasInteractions(): void {
     if (!this.canvasEl) return;
 
-    this.canvasEl.addEventListener('mousedown', (e) => {
+    this.canvasEl.style.touchAction = 'none';
+    this.canvasEl.addEventListener('pointerdown', (e) => {
       const rect = this.canvasEl!.getBoundingClientRect();
       const x = ((e.clientX - rect.left) / rect.width) * 640;
       const y = ((e.clientY - rect.top) / rect.height) * 400;
@@ -142,6 +145,8 @@ export class CRTNodePatcher {
     if (this.modalEl) {
       this.modalEl.classList.remove('hidden');
     }
+    this.isResolving = false;
+    this.eventBus.emit('ui:modal_opened', {});
     this.startRenderLoop();
   }
 
@@ -153,6 +158,12 @@ export class CRTNodePatcher {
       cancelAnimationFrame(this.animationFrameId);
       this.animationFrameId = null;
     }
+    if (this.resolveTimeoutId !== null) {
+      window.clearTimeout(this.resolveTimeoutId);
+      this.resolveTimeoutId = null;
+    }
+    this.isResolving = false;
+    this.eventBus.emit('ui:modal_closed', {});
   }
 
   private generateNodes(crystalId: CrystalId): void {
@@ -182,10 +193,10 @@ export class CRTNodePatcher {
   }
 
   private resolvePatch(): void {
-    if (!this.currentCrystal || !this.currentLog) return;
-
+    if (!this.currentCrystal || !this.currentLog || this.isResolving) return;
+    this.isResolving = true;
     this.nodes.forEach((n) => (n.connected = true));
-    setTimeout(() => {
+    this.resolveTimeoutId = window.setTimeout(() => {
       this.eventBus.emit('puzzle:crt_patch_completed', {
         crystalId: this.currentCrystal!,
         log: this.currentLog!
@@ -195,6 +206,10 @@ export class CRTNodePatcher {
   }
 
   private startRenderLoop(): void {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
     const render = () => {
       this.drawCanvas();
       this.animationFrameId = requestAnimationFrame(render);

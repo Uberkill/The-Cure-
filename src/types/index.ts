@@ -43,6 +43,22 @@ export interface GameSettings {
   subtitlesEnabled: boolean;
 }
 
+export interface SaveGameData {
+  version: number;
+  timestamp: number;
+  currentStage: GameStage;
+  currentRoomId: string;
+  inventory: string[];
+  collectedCrystals: CrystalId[];
+  patchedCrystals: CrystalId[];
+  pendingCrystalToPatch: CrystalId | null;
+  calibratedFrequency: number;
+  synthesisComplete: boolean;
+  visitedRooms: string[];
+  flavorIndices: Record<string, number>;
+  settings: Partial<GameSettings>;
+}
+
 export interface CameraPreset {
   name: string;
   position: THREE.Vector3;
@@ -74,7 +90,7 @@ export interface AudioLogMetadata {
 }
 
 export interface EventPayloadMap {
-  'input:object_clicked': { objectId: string; point?: THREE.Vector3 };
+  'input:object_clicked': { objectId: string; point?: THREE.Vector3; flavorText?: string };
   'input:object_hovered': { objectId: string | null; label: string };
   'game:stage_transition': { from: GameStage; to: GameStage };
   'scenario:switch_room': { targetRoomId: string; doorThresholdId?: string; isDevJump?: boolean };
@@ -92,6 +108,8 @@ export interface EventPayloadMap {
   'puzzle:payphone_answered': Record<string, never>;
   'puzzle:key_aligned': { pinExtended: boolean };
   'puzzle:key_inserted': Record<string, never>;
+  'puzzle:shutter_unlocked': Record<string, never>;
+  'puzzle:shutter_digits_changed': { digits: number[] };
   'puzzle:frequency_changed': { frequency: number; isResonating: boolean };
   'puzzle:switch_thrown': Record<string, never>;
   'puzzle:synthesis_complete': Record<string, never>;
@@ -106,10 +124,13 @@ export interface EventPayloadMap {
   'ui:view_changed': { view: ViewState };
   'ui:modal_opened': Record<string, never>;
   'ui:modal_closed': Record<string, never>;
+  'ui:open_facility_map': Record<string, never>;
   'ui:subtitle_changed': { text: string };
-  'ui:chapter_display': { act: string; title: string; durationMs?: number };
+  'ui:chapter_display': { act: string; title: string; roomCode?: string; durationMs?: number };
   'audio:toggle_synth': { type: 'drone' | 'ballast' | 'phone'; active: boolean };
   'settings:updated': Partial<GameSettings>;
+  'save:updated': { save: SaveGameData };
+  'save:cleared': Record<string, never>;
   'telemetry:log': TelemetryRecord;
   'editor:rebuild_visualizers': Record<string, never>;
   'editor:toggle_visualizers': { visible: boolean };

@@ -98,30 +98,122 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       exitGlow.name = 'amber_exit_spill_light';
       this.entities.group.add(exitGlow);
 
-      // Galvanometer Grid Wall Console Mesh
+      // Overloaded Specimen Cathode Core Discharge
+      if (this.entities.specimenCore) {
+        (this.entities.specimenCore.material as THREE.MeshStandardMaterial).emissive.setHex(0x4ade80);
+        (this.entities.specimenCore.material as THREE.MeshStandardMaterial).emissiveIntensity = 2.4;
+
+        const coreAura = new THREE.PointLight(0x4ade80, 2.2, 5);
+        coreAura.position.copy(this.entities.specimenCore.position);
+        coreAura.name = 'mesh_cathode_discharge_light';
+        this.entities.vaultGroup.add(coreAura);
+
+        const fluxRing = new THREE.Mesh(
+          new THREE.TorusGeometry(0.24, 0.012, 8, 24),
+          new THREE.MeshBasicMaterial({ color: 0x86efac })
+        );
+        fluxRing.position.copy(this.entities.specimenCore.position);
+        fluxRing.rotation.x = Math.PI / 3;
+        fluxRing.raycast = () => {};
+        this.entities.vaultGroup.add(fluxRing);
+      }
+
+      // Articulated 5-Channel Galvanometer Grid Wall Console
       const gridConsole = new THREE.Group();
       gridConsole.position.set(-3.2, 1.4, 0.0);
       gridConsole.rotation.y = Math.PI / 2;
       gridConsole.name = 'prop_galvanometer_grid';
 
       const panelMesh = new THREE.Mesh(
-        new THREE.BoxGeometry(1.6, 0.9, 0.15),
-        new THREE.MeshStandardMaterial({ color: 0x18201c, roughness: 0.6, metalness: 0.4 })
+        new THREE.BoxGeometry(1.85, 1.15, 0.22),
+        new THREE.MeshStandardMaterial({ color: 0x161e1a, roughness: 0.55, metalness: 0.5 })
       );
+      panelMesh.castShadow = true;
       gridConsole.add(panelMesh);
 
-      // 5 miniature dials on panel
-      [-0.6, -0.3, 0, 0.3, 0.6].forEach(x => {
-        const dial = new THREE.Mesh(
-          new THREE.CylinderGeometry(0.08, 0.08, 0.03, 16),
-          new THREE.MeshStandardMaterial({ color: 0x090e0c, roughness: 0.2 })
+      const matMeterFace = new THREE.MeshBasicMaterial({ color: 0x86efac });
+      const matMeterBezel = new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.85, roughness: 0.25 });
+
+      [-0.72, -0.36, 0.0, 0.36, 0.72].forEach((mx) => {
+        const meterCase = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.22, 0.04), matMeterBezel);
+        meterCase.position.set(mx, 0.32, 0.12);
+        meterCase.raycast = () => {};
+        gridConsole.add(meterCase);
+
+        const meterScale = new THREE.Mesh(new THREE.PlaneGeometry(0.22, 0.16), matMeterFace);
+        meterScale.position.set(mx, 0.32, 0.142);
+        meterScale.raycast = () => {};
+        gridConsole.add(meterScale);
+
+        const needle = new THREE.Mesh(
+          new THREE.BoxGeometry(0.006, 0.12, 0.002),
+          new THREE.MeshBasicMaterial({ color: 0x0a0f0d })
         );
-        dial.rotation.x = Math.PI / 2;
-        dial.position.set(x, 0.15, 0.09);
-        gridConsole.add(dial);
+        needle.position.set(mx, 0.30, 0.144);
+        needle.raycast = () => {};
+        gridConsole.add(needle);
+
+        const sliderTrack = new THREE.Mesh(
+          new THREE.BoxGeometry(0.04, 0.32, 0.02),
+          new THREE.MeshStandardMaterial({ color: 0x080b09, roughness: 0.8 })
+        );
+        sliderTrack.position.set(mx, -0.05, 0.12);
+        sliderTrack.raycast = () => {};
+        gridConsole.add(sliderTrack);
+
+        const sliderKnob = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.03), matMeterBezel);
+        sliderKnob.position.set(mx, -0.05, 0.135);
+        sliderKnob.raycast = () => {};
+        gridConsole.add(sliderKnob);
       });
 
+      const breakerBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.18, 0.22, 0.06),
+        new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.4 })
+      );
+      breakerBox.position.set(0.78, 0.32, 0.15);
+      breakerBox.raycast = () => {};
+      gridConsole.add(breakerBox);
+
+      const busLever = new THREE.Mesh(
+        new THREE.BoxGeometry(0.55, 0.08, 0.08),
+        new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.3, metalness: 0.6 })
+      );
+      busLever.position.set(0, -0.38, 0.16);
+      busLever.raycast = () => {};
+      gridConsole.add(busLever);
+
+      gridConsole.userData.interactionPrompt = '[INSPECT: POWER BUS GALVANOMETER]';
       this.entities.group.add(gridConsole);
+
+      // Heavy Copper Power Conduits Running from Console to Vault
+      const busbarGeo = new THREE.TubeGeometry(
+        new THREE.CatmullRomCurve3([
+          new THREE.Vector3(-3.2, 0.8, 0.0),
+          new THREE.Vector3(-2.2, 0.2, 0.0),
+          new THREE.Vector3(-1.2, 0.2, 0.0),
+          new THREE.Vector3(0.0, 0.4, 0.0)
+        ]),
+        24, 0.05, 8, false
+      );
+      const busbar = new THREE.Mesh(
+        busbarGeo,
+        new THREE.MeshStandardMaterial({ color: 0xb45309, metalness: 0.85, roughness: 0.25 })
+      );
+      busbar.raycast = () => {};
+      this.entities.group.add(busbar);
+
+      // Floor Debris (scattered fallen tiles; decorative)
+      for (let d = 0; d < 8; d++) {
+        const debrisTile = new THREE.Mesh(
+          new THREE.BoxGeometry(0.35, 0.02, 0.35),
+          new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 })
+        );
+        debrisTile.position.set(-1.5 + (Math.random() - 0.5) * 3, 0.012, (Math.random() - 0.5) * 3);
+        debrisTile.rotation.y = Math.random() * Math.PI;
+        debrisTile.raycast = () => {};
+        this.entities.group.add(debrisTile);
+      }
     }
 
     if (GameState.getInstance().isSynthesisComplete()) {
@@ -145,7 +237,13 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'prop_door' || objectId === 'exit_airlock_passage') {
-      bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge' });
+      if (this.galvanometerScreen.getState().gridBalanced || GameState.getInstance().isSynthesisComplete()) {
+        bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge' });
+      } else {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The heavy blastdoor is electromagnetically locked. The galvanometer circuit bus remains unbalanced.'
+        });
+      }
       return true;
     }
 

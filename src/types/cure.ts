@@ -14,6 +14,8 @@ export interface Act01SterileState {
 
 export interface Act02SleepWardState {
   uvLightActive: boolean;
+  shutterUnlocked: boolean;
+  shutterDigits: [number, number, number];
   ivDripBpm: number;
   ivCalibrated: boolean;
   tumblerGlyphs: [string, string, string];

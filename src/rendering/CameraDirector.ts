@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { EventBus } from '../core/EventBus';
 import { CameraPreset } from '../types';
+import { ScenarioRegistry } from '../scenarios/ScenarioRegistry';
 
 export class CameraDirector {
   public camera: THREE.PerspectiveCamera;
@@ -125,8 +126,8 @@ export class CameraDirector {
     this.controls.enabled = false;
     this.eventBus.emit('camera:transition_start', {});
 
-
-
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('test')) durationMs = 0;
 
     if (durationMs === 0) {
       this.camera.position.copy(endPos);
@@ -174,7 +175,7 @@ export class CameraDirector {
       ceiling: {
         name: 'ceiling',
         position: new THREE.Vector3(1.0, 1.8, 1.0),
-        target: new THREE.Vector3(1.0, 5.0, 1.0)
+        target: new THREE.Vector3(1.0, 5.0, 0.95)
       },
       dossier_intro: {
         name: 'dossier_intro',
@@ -208,7 +209,14 @@ export class CameraDirector {
       }
     };
 
-    const targetPreset = presets[hotspotId] || presets.overview;
+    let targetPreset: CameraPreset | undefined;
+    const current = ScenarioRegistry.getInstance().getCurrentScenario();
+    if (current && current.hotspots && current.hotspots[hotspotId]) {
+      targetPreset = current.hotspots[hotspotId].cameraPreset;
+    }
+    if (!targetPreset) {
+      targetPreset = presets[hotspotId] || presets.overview;
+    }
     this.moveToPreset(targetPreset, durationMs);
   }
 

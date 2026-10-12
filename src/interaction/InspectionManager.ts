@@ -1,6 +1,7 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
+import { GameState } from '../core/GameState';
 
 export class InspectionManager {
   public inspectScene: THREE.Scene;
@@ -60,6 +61,7 @@ export class InspectionManager {
   }
 
   private buildHighResKey(): void {
+    this.keyPins = [];
     const brassMat = new THREE.MeshStandardMaterial({
       color: 0xc28833,
       roughness: 0.22,
@@ -75,17 +77,20 @@ export class InspectionManager {
     // Barrel
     const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.065, 0.6, 32), brassMat);
     barrel.rotation.z = Math.PI / 2;
+    barrel.userData.isLocalClone = true;
     this.inspectGroup.add(barrel);
 
     // Ornate Bauhaus Handle Ring
     const ring = new THREE.Mesh(new THREE.TorusGeometry(0.16, 0.032, 16, 48), brassMat);
     ring.position.x = -0.32;
+    ring.userData.isLocalClone = true;
     this.inspectGroup.add(ring);
 
     // Tension Notch / Slider on barrel
     const slider = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.04, 0.04), steelMat);
     slider.position.set(0.05, 0.065, 0);
     slider.name = 'slider_pin';
+    slider.userData.isLocalClone = true;
     this.inspectGroup.add(slider);
 
     // Extendable Keypins
@@ -93,18 +98,21 @@ export class InspectionManager {
     const pin1 = new THREE.Mesh(pinGeo, brassMat);
     pin1.position.set(0.14, 0.05, 0);
     pin1.name = 'cipher_pin';
+    pin1.userData.isLocalClone = true;
     this.inspectGroup.add(pin1);
     this.keyPins.push(pin1);
 
     const pin2 = new THREE.Mesh(pinGeo, brassMat);
     pin2.position.set(0.22, 0.06, 0);
     pin2.name = 'cipher_pin';
+    pin2.userData.isLocalClone = true;
     this.inspectGroup.add(pin2);
     this.keyPins.push(pin2);
 
     const pin3 = new THREE.Mesh(pinGeo, brassMat);
     pin3.position.set(0.28, 0.04, 0);
     pin3.name = 'cipher_pin';
+    pin3.userData.isLocalClone = true;
     this.inspectGroup.add(pin3);
     this.keyPins.push(pin3);
   }
@@ -151,9 +159,40 @@ export class InspectionManager {
       }
     });
 
-    this.eventBus.on('inspect:open', () => {
+    this.eventBus.on('inspect:open', ({ targetMesh }) => {
       this.isActive = true;
       this.inspectGroup.rotation.set(0.2, -0.4, 0);
+      
+      // Clear previous inspect group children
+      while (this.inspectGroup.children.length > 0) {
+        const child = this.inspectGroup.children[0];
+        this.inspectGroup.remove(child);
+      }
+      
+      if (targetMesh && targetMesh.clone) {
+        const cloned = targetMesh.clone();
+        
+        // Hide child meshes if they are already in the player's inventory
+        const gs = GameState.getInstance();
+        cloned.traverse((child) => {
+          if (child.name && gs.hasItem(child.name)) {
+            child.visible = false;
+          }
+        });
+        // Center and scale to fit view
+        const box = new THREE.Box3().setFromObject(cloned);
+        const center = box.getCenter(new THREE.Vector3());
+        const size = box.getSize(new THREE.Vector3());
+        const maxDim = Math.max(size.x, size.y, size.z);
+        const scale = 0.5 / maxDim;
+        cloned.scale.setScalar(scale);
+        cloned.position.sub(center.multiplyScalar(scale));
+        cloned.userData.isLocalClone = true;
+    this.inspectGroup.add(cloned);
+        this.keyPins = []; // Not applicable for generic meshes
+      } else {
+        this.buildHighResKey();
+      }
     });
 
     this.eventBus.on('inspect:close', () => {
@@ -175,10 +214,12 @@ export class InspectionManager {
 
   public togglePins(): void {
     this.isPinsExtended = !this.isPinsExtended;
-    const targetYOffset = this.isPinsExtended ? 0.05 : 0;
 
     for (const pin of this.keyPins) {
-      pin.position.y += targetYOffset * (this.isPinsExtended ? 1 : -1);
+      if (pin.userData.baseY === undefined) {
+        pin.userData.baseY = pin.position.y;
+      }
+      pin.position.y = pin.userData.baseY + (this.isPinsExtended ? 0.05 : 0);
     }
 
     this.audioEngine.playTumblerClick();
@@ -189,6 +230,18 @@ export class InspectionManager {
         text: 'The cipher pins click outward. The key is now mechanically aligned.'
       });
     }
+  }
+
+  public getPinExtended(): boolean {
+    return this.isPinsExtended;
+  }
+
+  public getPinCount(): number {
+    return this.keyPins.length;
+  }
+
+  public getPinOffsets(): number[] {
+    return this.keyPins.map((p) => p.position.y);
   }
 
   private setupResize(): void {

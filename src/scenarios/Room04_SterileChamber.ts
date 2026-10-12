@@ -7,6 +7,8 @@ import { AudioEngine } from '../audio/AudioEngine';
 import { HubDecayManager } from '../entities/HubDecayManager';
 import { ModelLoader } from '../loaders/ModelLoader';
 import { TektronixCrtScreen } from '../ui/screens/TektronixCrtScreen';
+import { EditorServerSync } from '../editor/EditorServerSync';
+import { EditorPrefabs } from '../editor/EditorPrefabs';
 
 export class Room04_SterileChamber implements RoomScenario {
   public id = 'room_04';
@@ -53,7 +55,7 @@ export class Room04_SterileChamber implements RoomScenario {
       id: 'envelope',
       name: 'IV. The Envelope',
       position: new THREE.Vector3(-0.75, 0.88, 0.22),
-      interactionPrompt: '[CLICK TO READ DOSSIER]',
+      interactionPrompt: '[UNSEAL: CLINICAL DOSSIER]',
       cameraPreset: {
         name: 'envelope',
         position: new THREE.Vector3(-0.75, 1.65, 0.55),
@@ -116,12 +118,18 @@ export class Room04_SterileChamber implements RoomScenario {
     // Dev layout overrides MUST be applied BEFORE stage-specific overrides
     await this.applyDevLayoutOverridesAsync();
 
-    if (GameState.getInstance().hasItem('prop_key') && this.entities.cipherKey) {
-      this.entities.cipherKey.visible = false;
+    if (GameState.getInstance().hasItem('prop_key')) {
+      const keyMesh = this.entities.group.getObjectByName('prop_key');
+      if (keyMesh) keyMesh.visible = false;
     }
-    if (GameState.getInstance().hasItem('prop_brass_shunt') && this.entities.brassShunt) {
-      this.entities.brassShunt.visible = false;
-    }
+    if (GameState.getInstance().hasItem('prop_brass_shunt')) {
+        const shuntMesh = this.entities.group.getObjectByName('prop_brass_shunt');
+        if (shuntMesh) shuntMesh.visible = false;
+      }
+      if (GameState.getInstance().hasItem('prop_envelope')) {
+        const envMesh = this.entities.group.getObjectByName('prop_envelope');
+        if (envMesh) envMesh.visible = false;
+      }
 
     if (stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
       this.exitBlownOpen = true;
@@ -152,6 +160,20 @@ export class Room04_SterileChamber implements RoomScenario {
         if (!p.fallback) continue;
         const custom = await loader.loadProp(p.name, () => p.fallback as THREE.Group);
         if (custom !== p.fallback) {
+          custom.userData = { ...p.fallback.userData };
+          // Fix memory leak: dispose fallback geometry before removing
+          p.fallback.traverse((child) => {
+            if (child instanceof THREE.Mesh) {
+              if (child.geometry) child.geometry.dispose();
+              if (child.material) {
+                if (Array.isArray(child.material)) {
+                  child.material.forEach((m) => { if (m.dispose) m.dispose(); });
+                } else if (child.material.dispose) {
+                  child.material.dispose();
+                }
+              }
+            }
+          });
           this.entities.group.remove(p.fallback);
           custom.name = p.name;
           this.entities.group.add(custom);
@@ -161,37 +183,63 @@ export class Room04_SterileChamber implements RoomScenario {
       // Procedural fallback already active
     }
 
+    // Wall-mounted Sub-Level 04 Facility Blueprint board next to corridor portal
+    const mapGroup = new THREE.Group();
+    mapGroup.name = 'prop_facility_map';
+    mapGroup.position.set(2.2, 1.7, -6.65);
+
+    const frameMat = new THREE.MeshStandardMaterial({ color: 0x242d28, metalness: 0.6, roughness: 0.4 });
+    const mapFrame = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.72, 0.04), frameMat);
+    mapFrame.castShadow = true;
+    mapGroup.add(mapFrame);
+
+    const boardMat = new THREE.MeshStandardMaterial({
+      color: 0x0f2938,
+      emissive: 0x081a24,
+      emissiveIntensity: 0.35,
+      roughness: 0.3
+    });
+    const mapBoard = new THREE.Mesh(new THREE.PlaneGeometry(0.92, 0.64), boardMat);
+    mapBoard.position.z = 0.022;
+    mapGroup.add(mapBoard);
+
+    mapGroup.userData.interactionPrompt = '[EXAMINE: SUB-LEVEL 04 FACILITY BLUEPRINT]';
+    this.entities.group.add(mapGroup);
+
     return this.entities.group;
   }
 
   private async applyDevLayoutOverridesAsync(): Promise<void> {
     if (!this.entities) return;
     
-    // Dynamic import to avoid circular dependencies
-    const { EditorServerSync } = await import('../editor/EditorServerSync');
+    
     const layout = await EditorServerSync.fetchLayout();
       
       this.entities!.group.traverse((child) => {
         let meshLayout = layout[child.name] as any;
         if (!meshLayout && layout.overrides) meshLayout = layout.overrides[child.name];
-      if (meshLayout && meshLayout.x !== undefined) {
-        child.position.set(meshLayout.x, meshLayout.y, meshLayout.z);
-        child.rotation.set(meshLayout.rx, meshLayout.ry, meshLayout.rz);
-        child.scale.set(meshLayout.sx, meshLayout.sy, meshLayout.sz);
-        if (meshLayout.animation) {
-          child.userData.animType = meshLayout.animation.type;
-          child.userData.animAxis = meshLayout.animation.axis;
-          child.userData.animStart = meshLayout.animation.start;
-          child.userData.animEnd = meshLayout.animation.end;
-          child.userData.animTrigger = meshLayout.animation.trigger || 'none';
-          child.userData.animDuration = meshLayout.animation.duration || 800;
-          child.userData.animState = false; // Initial state (false = start, true = end)
+      if (meshLayout) {
+        if (meshLayout.x !== undefined) {
+          child.position.set(meshLayout.x, meshLayout.y, meshLayout.z);
+          child.rotation.set(meshLayout.rx, meshLayout.ry, meshLayout.rz);
+          child.scale.set(meshLayout.sx, meshLayout.sy, meshLayout.sz);
+          if (meshLayout.animation) {
+            child.userData.animType = meshLayout.animation.type;
+            child.userData.animAxis = meshLayout.animation.axis;
+            child.userData.animStart = meshLayout.animation.start;
+            child.userData.animEnd = meshLayout.animation.end;
+            child.userData.animTrigger = meshLayout.animation.trigger || 'none';
+            child.userData.animDuration = meshLayout.animation.duration || 800;
+            child.userData.animState = false;
+          }
+          child.updateMatrixWorld();
         }
-        child.updateMatrixWorld();
+        if (meshLayout.interactionPrompt !== undefined) child.userData.interactionPrompt = meshLayout.interactionPrompt;
+        if (meshLayout.flavorText !== undefined) child.userData.flavorText = meshLayout.flavorText;
       }
     });
     
-    const { EditorPrefabs } = await import('../editor/EditorPrefabs');
+    
     if (layout.prefabs && Array.isArray(layout.prefabs)) {
       for (const p of layout.prefabs) {
         let prefab;
@@ -215,7 +263,7 @@ export class Room04_SterileChamber implements RoomScenario {
             prefab.userData.paintingUrl = p.paintingUrl;
             const canvasMesh = prefab.children[1] as any;
             if (canvasMesh && canvasMesh.material) {
-              const loader = new (await import('three')).TextureLoader();
+              const loader = new THREE.TextureLoader();
               loader.load(p.paintingUrl, (tex) => {
                 canvasMesh.material.map = tex;
                 canvasMesh.material.color.setHex(0xffffff);
@@ -241,12 +289,18 @@ export class Room04_SterileChamber implements RoomScenario {
     const bus = EventBus.getInstance();
 
     const unsubInv = bus.on('inventory:add', ({ itemId }) => {
-      if (itemId === 'prop_key' && this.entities?.cipherKey) {
-        this.entities.cipherKey.visible = false;
+      if (itemId === 'prop_key') {
+        const keyMesh = this.entities?.group.getObjectByName('prop_key');
+        if (keyMesh) keyMesh.visible = false;
       }
-      if (itemId === 'prop_brass_shunt' && this.entities?.brassShunt) {
-        this.entities.brassShunt.visible = false;
-      }
+      if (itemId === 'prop_brass_shunt') {
+          const shuntMesh = this.entities?.group.getObjectByName('prop_brass_shunt');
+          if (shuntMesh) shuntMesh.visible = false;
+        }
+        if (itemId === 'prop_envelope') {
+          const envMesh = this.entities?.group.getObjectByName('prop_envelope');
+          if (envMesh) envMesh.visible = false;
+        }
     });
 
     const unsubStage = bus.on('game:stage_transition', ({ to }) => {
@@ -414,6 +468,28 @@ export class Room04_SterileChamber implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'prop_envelope') {
+      this.audioElement.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'envelope' });
+      bus.emit('ui:view_changed', { view: 'dossier' });
+      return true;
+    }
+
+    if (objectId === 'prop_bell_jar' || objectId === 'prop_key') {
+      this.audioElement.playTumblerClick();
+      if (GameState.getInstance().hasItem('prop_key')) {
+        bus.emit('ui:subtitle_changed', { text: 'The glass isolation bell jar is empty.' });
+      } else {
+        bus.emit('inspect:open', {
+          itemId: 'prop_key',
+          targetMesh: null as any,
+          title: 'OBSERVATION CIPHER KEY',
+          subtitle: 'Room 04 • The Sterile Chamber'
+        });
+      }
+      return true;
+    }
+
     if (objectId === 'prop_telephone') {
       this.audioElement.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'telephone' });
@@ -422,6 +498,8 @@ export class Room04_SterileChamber implements RoomScenario {
       });
       return true;
     }
+
+
 
     if (objectId === 'door_corridor' || objectId === 'door_corridor_passage') {
       const stage = GameState.getInstance().getStage();
@@ -464,7 +542,8 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'prop_door' || objectId === 'exit_airlock_passage') {
       const stage = GameState.getInstance().getStage();
       if (this.exitBlownOpen || stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
-        bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge' });
+        const targetRoom = stage >= GameStage.ACT_8_VELVET_LOUNGE ? 'velvet_lounge' : 'synthesis_blackout';
+        bus.emit('scenario:switch_room', { targetRoomId: targetRoom });
       } else {
         bus.emit('camera:move_to_hotspot', { hotspotId: 'door' });
         bus.emit('ui:subtitle_changed', {
@@ -474,16 +553,32 @@ export class Room04_SterileChamber implements RoomScenario {
       return true;
     }
 
-    if (objectId === 'prop_oscilloscope' || objectId === 'vault_crt_screen') {
+    if (objectId === 'prop_facility_map') {
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
+      bus.emit('ui:open_facility_map', {});
+      return true;
+    }
+
+    if (objectId === 'prop_oscilloscope' || objectId === 'vault_crt_screen' || objectId === 'prop_vault') {
       const stage = GameState.getInstance().getStage();
       if (stage === GameStage.ACT_1_HUB_AWAKEN) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
         this.tektronixScreen.open();
         return true;
       }
-    }
 
-    if (objectId === 'prop_vault') {
-      return false; // Handled cleanly by GameState without re-emitting or recursion
+      const pending = GameState.getInstance().getPendingCrystal();
+      if (pending) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+        bus.emit('puzzle:crt_patch_opened', { crystalId: pending });
+        return true;
+      }
+
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'Tektronix 545B oscilloscope calibrated. No unpatched crystals pending.'
+      });
+      return true;
     }
 
     return false;

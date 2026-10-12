@@ -111,6 +111,14 @@ export class RaycastManager {
     this.exclusiveTargetId = objectId;
   }
 
+  public resolveInteractiveTarget(obj: THREE.Object3D | null): THREE.Object3D | null {
+    return this.findInteractiveParent(obj);
+  }
+
+  public resolveInteractionLabel(name: string): string {
+    return this.getInteractionLabel(name);
+  }
+
   private findInteractiveParent(obj: THREE.Object3D | null): THREE.Object3D | null {
     let curr = obj;
     while (curr) {
@@ -124,6 +132,8 @@ export class RaycastManager {
             curr.name.startsWith('prop_') ||
             curr.name.startsWith('door_') ||
             curr.name.startsWith('crystal_') ||
+            curr.name.startsWith('exit_') ||
+            curr.name === 'exit_airlock_passage' ||
             curr.name === 'vault_crt_screen'
           ) {
             return curr;
@@ -149,14 +159,15 @@ export class RaycastManager {
       prop_envelope: '[CLICK TO UNSEAL DOSSIER]',
       prop_bell_jar: '[CLICK TO UNSEAT BELL JAR]',
       prop_key: '[CLICK TO EXAMINE KEY]',
-      prop_vault: '[CLICK TO INSPECT VAULT & CRT]',
-      prop_oscilloscope: '[CLICK TO INSPECT CRT OSCILLOSCOPE]',
-      vault_crt_screen: '[CLICK TO INSPECT CRT OSCILLOSCOPE]',
+      prop_vault: '[TUNE: HARMONIC APPARATUS]',
+      prop_oscilloscope: '[TUNE: HARMONIC APPARATUS]',
+      vault_crt_screen: '[TUNE: HARMONIC APPARATUS]',
       prop_telephone: '[CLICK TO LISTEN TO RECEIVER]',
       prop_brass_shunt: '[COLLECT: MACHINED BRASS SHUNT]',
       door_corridor: '[ENTER: OBSERVATION CORRIDOR]',
       door_corridor_passage: '[ENTER: OBSERVATION CORRIDOR]',
       door_return_hub: '[RETURN: CENTRAL HUB]',
+      prop_facility_map: '[EXAMINE: SUB-LEVEL 04 FACILITY BLUEPRINT]',
 
       // Sleep Ward
       prop_uv_toggle: '[TOGGLE: SURGICAL ULTRAVIOLET LAMP]',
@@ -169,6 +180,8 @@ export class RaycastManager {
       prop_clipboard_102: '[READ: SUBJECT 102 MEDICAL CHART]',
       prop_clipboard_103: '[READ: SUBJECT 103 MEDICAL CHART]',
       prop_clipboard_104: '[READ: SUBJECT 104 (VACANT) CHART]',
+      prop_cot_104: '[EXAMINE: VACANT COT 104]',
+      prop_headboard_104: '[EXAMINE: COT 104 HEADBOARD]',
       crystal_01_quartz: '[COLLECT: PRISMATIC QUARTZ]',
 
       // Hydrotherapy
@@ -179,6 +192,7 @@ export class RaycastManager {
       prop_valve_1: '[ROTATE BRASS VALVE B (RELIEF)]',
       prop_valve_2: '[ROTATE BRASS VALVE C (DRAIN)]',
       prop_drain: '[INSPECT FLOOR DRAIN HATCH]',
+      prop_drain_lid: '[INSPECT FLOOR DRAIN HATCH]',
       crystal_02_bronze: '[COLLECT: DRAINED BRONZE]',
 
       // Audiology
@@ -186,6 +200,9 @@ export class RaycastManager {
       prop_amplifier_monolith: '[INSPECT AMPLIFIER MONOLITH]',
       prop_amp_stack: '[TUNE AMPLIFIER HARMONIC FREQUENCY]',
       prop_speaker_cone: '[INSPECT 15-INCH SPEAKER CONE]',
+      prop_acoustic_horn_left: '[INSPECT LEFT DIRECTIONAL HORN (45 DEG)]',
+      prop_acoustic_horn_right: '[INSPECT RIGHT DIRECTIONAL HORN (135 DEG)]',
+      prop_chladni_plate: '[INSPECT CHLADNI RESONANCE PLATE]',
       crystal_03_amethyst: '[COLLECT: AMETHYST CORE]',
 
       // Archive
@@ -198,19 +215,25 @@ export class RaycastManager {
       prop_cabinet_6: '[SEARCH: PATIENT ARCHIVE 103]',
       prop_cabinet_7: '[SEARCH: PATIENT CABINET 104]',
       prop_drawer_104: '[SEARCH: PATIENT DRAWER 104]',
+      prop_microfiche_reader: '[ACCESS: OPTICAL MICROFICHE READER]',
       crystal_04_obsidian: '[COLLECT: PITCH-BLACK OBSIDIAN]',
 
       // Director's Office
       prop_void_phone: '[LIFT: UNPLUGGED ROTARY RECEIVER]',
       prop_director_desk: '[INSPECT MAHOGANY EXECUTIVE DESK]',
       prop_director_drawer: '[SEARCH: SECRET DESK DRAWER]',
+      prop_tape_deck: '[INSPECT: REEL-TO-REEL TAPE DECK]',
+      prop_carriage_clock: '[INSPECT: BRASS CARRIAGE CLOCK]',
       crystal_05_celadon: '[COLLECT: GLOWING CELADON CORE]',
 
       // Velvet Lounge
       prop_lounge_bar: '[INSPECT MAHOGANY BAR COUNTER]',
       prop_whiskey_glass: '[EXAMINE: AMBER WHISKEY & ICE]',
       prop_bar_mirror_glass: '[INSPECT GILDED MIRROR REFLECTION]',
+      prop_crystal_decanter: '[EXAMINE: CUT-CRYSTAL DECANTER]',
       prop_bar_mirror_silhouette: '[LOOK: SHADOW SILHOUETTE IN GLASS]',
+      prop_galvanometer_grid: '[INSPECT: POWER BUS GALVANOMETER]',
+      prop_switchboard: '[INSPECT: VINTAGE OPERATOR SWITCHBOARD]',
       prop_lounge_payphone: '[ANSWER: RINGING ANALOG PAYPHONE]'
     };
 
@@ -249,7 +272,7 @@ export class RaycastManager {
           this.domElement.style.cursor = 'pointer';
           if (this.hoveredObject !== target) {
             this.hoveredObject = target;
-            const label = this.getInteractionLabel(target.name);
+            const label = target.userData.interactionPrompt || this.getInteractionLabel(target.name);
             this.eventBus.emit('input:object_hovered', { objectId: target.name, label });
           }
           return;
@@ -257,9 +280,12 @@ export class RaycastManager {
           // Block X-ray vision: If we hit a solid opaque non-interactive object, abort the raycast
           const mat = (intersect.object as THREE.Mesh).material as THREE.Material | THREE.Material[];
           if (mat) {
-            const isOpaque = Array.isArray(mat) 
-              ? mat.some(m => !m.transparent && m.opacity === 1)
-              : (!mat.transparent && mat.opacity === 1);
+            const checkSolid = (m: THREE.Material) => {
+              if (m.transparent || m.opacity < 1) return false;
+              if ('transmission' in m && (m as any).transmission > 0) return false;
+              return true;
+            };
+            const isOpaque = Array.isArray(mat) ? mat.some(checkSolid) : checkSolid(mat);
             if (isOpaque) break;
           }
         }
@@ -297,16 +323,20 @@ export class RaycastManager {
         if (target) {
           this.eventBus.emit('input:object_clicked', {
             objectId: target.name,
-            point: intersect.point
+            point: intersect.point,
+            flavorText: target.userData.flavorText
           });
           return;
         } else {
           // Block X-ray vision
           const mat = (intersect.object as THREE.Mesh).material as THREE.Material | THREE.Material[];
           if (mat) {
-            const isOpaque = Array.isArray(mat) 
-              ? mat.some(m => !m.transparent && m.opacity === 1)
-              : (!mat.transparent && mat.opacity === 1);
+            const checkSolid = (m: THREE.Material) => {
+              if (m.transparent || m.opacity < 1) return false;
+              if ('transmission' in m && (m as any).transmission > 0) return false;
+              return true;
+            };
+            const isOpaque = Array.isArray(mat) ? mat.some(checkSolid) : checkSolid(mat);
             if (isOpaque) break;
           }
         }

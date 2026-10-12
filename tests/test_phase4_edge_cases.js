@@ -79,7 +79,7 @@ server.listen(PORT, async () => {
 
     await page.waitForFunction(() => {
       const app = window.__VAULT_APP__;
-      return app.scenarioRegistry.getCurrentScenario().id === 'synthesis_blackout';
+      return app.scenarioRegistry.getCurrentScenario().id === 'synthesis_blackout' && !window.__VAULT_APP__.scenarioRegistry.isSwitching;
     }, { timeout: 4000 });
 
     await page.evaluate(() => {
@@ -218,14 +218,14 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('scenario:switch_room', { targetRoomId: 'sleep_ward' });
     });
     await page.waitForFunction(() => {
-      return window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().id === 'sleep_ward';
+      return window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().id === 'sleep_ward' && !window.__VAULT_APP__.scenarioRegistry.isSwitching;
     }, { timeout: 4000 });
 
     await page.evaluate(() => {
       window.__VAULT_APP__.eventBus.emit('scenario:switch_room', { targetRoomId: 'synthesis_blackout' });
     });
     await page.waitForFunction(() => {
-      return window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().id === 'synthesis_blackout';
+      return window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().id === 'synthesis_blackout' && !window.__VAULT_APP__.scenarioRegistry.isSwitching;
     }, { timeout: 4000 });
 
     // Verify clicking prop_galvanometer_grid does not re-open modal
@@ -255,7 +255,7 @@ server.listen(PORT, async () => {
       window.__VAULT_APP__.eventBus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge' });
     });
     await page.waitForFunction(() => {
-      return window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().id === 'velvet_lounge';
+      return window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().id === 'velvet_lounge' && !window.__VAULT_APP__.scenarioRegistry.isSwitching;
     }, { timeout: 4000 });
 
     await page.evaluate(() => {

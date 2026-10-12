@@ -14,6 +14,7 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
   const smallBellJar = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.24, 20), mat.glass);
   smallBellJar.position.set(0.75, 0.97, -0.25);
   smallBellJar.name = 'prop_bell_jar';
+  smallBellJar.userData.flavorText = 'A vacuum-sealed borosilicate bell jar. It isolates its contents from the environment.';
   smallBellJar.renderOrder = 10;
 
   const cipherKey = new THREE.Group();
@@ -46,10 +47,12 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
   crimsonEnvelope.castShadow = true;
   crimsonEnvelope.receiveShadow = true;
   crimsonEnvelope.name = 'prop_envelope';
+  crimsonEnvelope.userData.flavorText = 'A heavy crimson envelope. Department of Cognitive Alignment embossed on the front.';
 
   // Vintage Cream Rotary Phone (Front-Right of desk)
   const telephone = new THREE.Group();
   telephone.name = 'prop_telephone';
+  telephone.userData.flavorText = 'A bakelite rotary telephone. The line is dead, but it still hums faintly.';
   telephone.position.set(0.75, 0.85, 0.22);
   telephone.rotation.y = -0.3;
 

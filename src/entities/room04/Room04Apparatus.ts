@@ -13,6 +13,7 @@ export interface Room04ApparatusEntities {
 export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04ApparatusEntities {
   const vaultGroup = new THREE.Group();
   vaultGroup.name = 'prop_vault';
+  vaultGroup.userData.flavorText = 'The central frequency distillation unit. It requires precise acoustic calibration.';
   vaultGroup.position.set(0, 0.85, 0);
 
   // Outer Chassis
@@ -20,7 +21,7 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   casing.position.set(0, 0.27, 0);
   casing.castShadow = true;
   casing.receiveShadow = true;
-  casing.name = 'prop_vault';
+  casing.name = 'vault_casing';
   vaultGroup.add(casing);
 
   // Inner console backing
@@ -81,6 +82,7 @@ export function buildRoom04Apparatus(mat: Room04MaterialPalette): Room04Apparatu
   containmentBell.castShadow = true;
   containmentBell.renderOrder = 10;
   containmentBell.name = 'containment_bell';
+  containmentBell.userData.flavorText = 'A thick acoustic isolation bell designed to shield resonance fields.';
   vaultGroup.add(containmentBell);
 
   const coreGeo = new THREE.OctahedronGeometry(0.09, 0);

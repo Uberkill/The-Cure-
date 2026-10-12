@@ -1,4 +1,4 @@
-﻿import { RoomLayoutData } from '../types';
+import { RoomLayoutData } from '../types';
 
 export class EditorServerSync {
   public static async saveLayout(data: RoomLayoutData): Promise<boolean> {

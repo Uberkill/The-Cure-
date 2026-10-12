@@ -81,6 +81,31 @@ server.listen(PORT, async () => {
     }
     console.log('PASSED: Telephone monologue hook triggered cleanly.');
 
+    console.log('--- Step 2.5: Act I - Dossier Unsealing & Shunt Independence ---');
+    await page.evaluate(() => {
+      const app = window.__VAULT_APP__;
+      app.scenarioRegistry.getCurrentScenario().onObjectClick('prop_envelope');
+    });
+    await page.waitForSelector('#modal-dossier:not(.hidden)', { timeout: 3000 });
+    await page.click('#btn-take-dossier');
+    await page.waitForSelector('#modal-dossier', { state: 'hidden', timeout: 3000 });
+
+    const dossierCheck = await page.evaluate(() => {
+      const app = window.__VAULT_APP__;
+      const gs = app.gameState;
+      const shuntMesh = app.scenarioRegistry.getCurrentScenario().entities?.brassShunt;
+      return {
+        hasEnvelope: gs.hasItem('prop_envelope'),
+        hasShunt: gs.hasItem('prop_brass_shunt'),
+        shuntVisible: shuntMesh ? shuntMesh.visible : false
+      };
+    });
+
+    if (!dossierCheck.hasEnvelope) throw new Error('Envelope not added to inventory after taking dossier');
+    if (dossierCheck.hasShunt) throw new Error('Regression: Brass shunt was automatically collected when taking dossier');
+    if (!dossierCheck.shuntVisible) throw new Error('Regression: Brass shunt 3D mesh vanished when taking dossier');
+    console.log('PASSED: Dossier unsealed independently. Brass shunt remains uncollected and visible on desk.');
+
     console.log('--- Step 3: Act I - Brass Shunt Collection ---');
     await page.evaluate(() => {
       const app = window.__VAULT_APP__;
@@ -173,6 +198,17 @@ server.listen(PORT, async () => {
     const isCartVisible = await page.isVisible('#screen-dispensary-cart');
     if (!isCartVisible) throw new Error('Dispensary Cart Screen failed to open');
     console.log('PASSED: Mobile Dispensary Cart Screen visible.');
+
+    console.log('--- Step 11.5: Act II - Stage 1 Mechanical Shutter Lock (1-0-4) ---');
+    await page.click('#shutter-dial-0');
+    for (let i = 0; i < 4; i++) {
+      await page.click('#shutter-dial-2');
+    }
+    const shutterText = await page.textContent('#shutter-status');
+    if (!shutterText.includes('SHUTTER RETRACTED')) {
+      throw new Error(`Shutter failed to unlatch with 1-0-4: ${shutterText}`);
+    }
+    console.log('PASSED: Mechanical shutter unlatched [1-0-4], exposing infusion console.');
 
     console.log('--- Step 12: Act II - Calibrate Peristaltic Drip to 68 BPM ---');
     await page.fill('#slider-drip-rate', '68');

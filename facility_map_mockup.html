@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sub-Level 04 Architectural Schematic • UI/UX Interactive Mockup</title>
+  
+  <!-- Typography from Design System -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+  <style>
+    /* ==========================================================================
+       DESIGN SYSTEM TOKENS: ANALOGUE CLINICAL BRUTALISM
+       ========================================================================== */
+    :root {
+      --color-alabaster: #EDF0EB;
+      --color-sage-deep: #2D4A3E;
+      --color-terrazzo-base: #D8DED6;
+      --color-brass-cast: #C28833;
+      --color-teak-smoked: #1F1A18;
+      --color-crimson-wax: #8B1E23;
+      --color-crimson-glow: #B8282E;
+      --color-chrome-tubular: #D4D8DB;
+      --color-crt-phosphor: #4ADE80;
+      --color-crt-amber: #FBBF24;
+
+      --ink-primary: #141A21;
+      --ink-secondary: #4A5568;
+      --ink-muted: #718096;
+
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body, html {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background-color: #2b332d;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(45, 74, 62, 0.25) 0%, rgba(20, 26, 33, 0.85) 100%),
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 32px 32px, 32px 32px;
+      font-family: var(--font-sans);
+      color: var(--ink-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Modal Backdrop Layer */
+    .mockup-viewport {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       SUB-LEVEL 04 ARCHITECTURAL DOSSIER SCHEMATIC (REFINED HOUSING)
+       ========================================================================== */
+    .facility-map-housing {
+      background: var(--color-alabaster) !important;
+      color: var(--ink-primary);
+      border: 1px solid rgba(20, 26, 33, 0.25);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.55), 0 4px 16px rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+      max-width: 1080px;
+      width: 95vw;
+      height: 84vh;
+      max-height: 760px;
+      min-height: 580px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+      transition: height 0.2s ease, max-height 0.2s ease;
+    }
+
+    /* Top Modal Header */
+    .diegetic-header {
+      background: #e2e7df;
+      border-bottom: 1px solid rgba(20, 26, 33, 0.18);
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 16px;
+    }
+
+    .header-left-group {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .diegetic-model {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      color: var(--color-sage-deep);
+      text-transform: uppercase;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .doc-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--color-sage-deep);
+      background: rgba(45, 74, 62, 0.08);
+      padding: 2px 8px;
+      border-radius: 2px;
+      border: 1px solid var(--color-sage-deep);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .header-right-group {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      flex-shrink: 0;
+      margin-left: auto;
+    }
+
+    /* Red Rubber Classification Stamp */
+    .stamp-badge {
+      display: inline-flex;
+      align-items: center;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      border: 1.5px solid;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .stamp-restricted {
+      color: var(--color-crimson-wax);
+      border-color: var(--color-crimson-wax);
+      background: rgba(139, 30, 35, 0.08);
+      transform: rotate(-1.5deg);
+    }
+
+    .stamp-cleared {
+      color: var(--color-sage-deep);
+      border-color: var(--color-sage-deep);
+      background: rgba(45, 74, 62, 0.08);
+    }
+
+    .stamp-active {
+      color: #15803d;
+      border-color: #15803d;
+      background: rgba(21, 128, 61, 0.08);
+    }
+
+    .stamp-ready {
+      color: var(--color-brass-cast);
+      border-color: var(--color-brass-cast);
+      background: rgba(194, 136, 51, 0.08);
+    }
+
+    /* Pill Buttons (Strict Design System Specification) */
+    .pill-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 7px 18px;
+      border-radius: 40px;
+      border: 1px solid var(--ink-primary);
+      background: transparent;
+      color: var(--ink-primary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .pill-btn:hover:not([disabled]) {
+      background: var(--ink-primary);
+      color: #ffffff;
+      border-color: var(--ink-primary);
+      transform: translateY(-1px);
+    }
+
+    .pill-btn:active:not([disabled]) {
+      transform: translateY(0);
+    }
+
+    .pill-btn[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+      border-color: rgba(20, 26, 33, 0.3);
+      color: var(--ink-muted);
+    }
+
+    /* Main Split Body */
+    .facility-map-body {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      background: var(--color-alabaster);
+    }
+
+    /* Left Column: Blueprint Viewport & Sector Manifest */
+    .facility-blueprint-viewport {
+      flex: 1.4;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid rgba(20, 26, 33, 0.15);
+      background: #e6ebe3;
+      overflow-y: auto;
+      gap: 10px;
+    }
+
+    .viewport-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(20, 26, 33, 0.15);
+      padding-bottom: 6px;
+      flex-shrink: 0;
+    }
+
+    /* Architectural Floorplan SVG Wrapper */
+    .facility-svg-container {
+      width: 100%;
+      flex: 1;
+      min-height: 330px;
+      border: 1px solid rgba(20, 26, 33, 0.14);
+      background: #f4f7f2;
+      border-radius: 3px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .facility-blueprint-svg {
+      width: 100%;
+      height: 100%;
+      max-height: 360px;
+      display: block;
+    }
+
+    .svg-room-node {
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .svg-room-node:hover rect {
+      filter: brightness(0.96);
+      stroke-width: 2.5px;
+    }
+
+    .svg-room-node.selected rect {
+      stroke: var(--color-brass-cast) !important;
+      stroke-width: 3px !important;
+      filter: drop-shadow(0 2px 6px rgba(194, 136, 51, 0.35));
+    }
+
+    .svg-beacon-dot {
+      animation: svg-beacon-pulse 2s infinite ease-in-out;
+    }
+
+    @keyframes svg-beacon-pulse {
+      0%, 100% {
+        r: 5px;
+        opacity: 1;
+      }
+      50% {
+        r: 9px;
+        opacity: 0.35;
+      }
+    }
+
+    /* Sector Manifest Grid */
+    .manifest-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+      flex-shrink: 0;
+    }
+
+    .facility-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .facility-sector-card {
+      background: #ffffff;
+      border: 1px solid rgba(20, 26, 33, 0.15);
+      border-radius: 3px;
+      padding: 8px 10px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      min-height: 48px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .facility-sector-card:hover {
+      border-color: var(--color-sage-deep);
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .facility-sector-card.current {
+      border-color: var(--color-sage-deep);
+      border-left: 4px solid var(--color-sage-deep);
+      background: #f3f7f2;
+    }
+
+    .facility-sector-card.selected {
+      border-color: var(--color-brass-cast);
+      box-shadow: 0 0 0 1px var(--color-brass-cast), 0 4px 10px rgba(194, 136, 51, 0.15);
+      background: #fffdfa;
+    }
+
+    .facility-sector-card.unvisited {
+      background: #e8ece6;
+      opacity: 0.88;
+    }
+
+    /* Right Column: Case File Dossier Panel */
+    .facility-dossier-panel {
+      flex: 1;
+      padding: 20px 22px;
+      display: flex;
+      flex-direction: column;
+      background: #fbfbf9;
+      overflow-y: auto;
+      gap: 12px;
+    }
+
+    .dossier-meta-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(20, 26, 33, 0.14);
+      padding-bottom: 8px;
+      flex-shrink: 0;
+    }
+
+    .dossier-title {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--ink-primary);
+      line-height: 1.15;
+      margin: 0;
+    }
+
+    .dossier-code {
+      font-size: 11px;
+      color: var(--color-sage-deep);
+      font-family: var(--font-mono);
+      letter-spacing: 0.12em;
+      margin-top: 2px;
+    }
+
+    /* Dossier Info Cards */
+    .dossier-card {
+      background: #ffffff;
+      border: 1px solid rgba(20, 26, 33, 0.12);
+      border-radius: 3px;
+      padding: 11px 14px;
+    }
+
+    .dossier-card-title {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: var(--ink-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+
+    .dossier-card-body {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--ink-primary);
+    }
+
+    /* Redaction bars */
+    .redaction-bar {
+      display: inline-block;
+      background: var(--ink-primary);
+      color: transparent !important;
+      user-select: none;
+      border-radius: 1px;
+      padding: 0 3px;
+      letter-spacing: -0.1em;
+      font-family: var(--font-mono);
+      line-height: 1.2;
+    }
+
+    .telemetry-row {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 3px 0;
+      border-bottom: 1px dashed rgba(20, 26, 33, 0.08);
+    }
+
+    .telemetry-row:last-child {
+      border-bottom: none;
+    }
+
+    .transit-action-box {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(20, 26, 33, 0.12);
+      flex-shrink: 0;
+    }
+
+    #map-transit-status {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      line-height: 1.4;
+      color: var(--color-crimson-wax);
+      min-height: 22px;
+    }
+
+    /* Testbench Controls Floating Bar */
+    .mockup-controls-bar {
+      position: absolute;
+      bottom: 16px;
+      background: rgba(20, 26, 33, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 30px;
+      padding: 8px 20px;
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      color: #edf0eb;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      z-index: 100;
+    }
+
+    .mockup-controls-bar button {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      padding: 4px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      transition: all 0.15s ease;
+    }
+
+    .mockup-controls-bar button:hover {
+      background: var(--color-brass-cast);
+      border-color: var(--color-brass-cast);
+      color: #141a21;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="mockup-viewport">
+    <!-- Sub-Level 04 Architectural Dossier Modal Housing -->
+    <div class="facility-map-housing" id="mockup-housing">
+      
+      <!-- Top Modal Header (Cleanly Separated Left and Right Groups) -->
+      <div class="diegetic-header">
+        <div class="header-left-group">
+          <span class="diegetic-model">SANATORIUM OF COGNITIVE ALIGNMENT // ARCHITECTURAL DOSSIER SUB-LEVEL 04</span>
+          <span class="doc-tag">DOC-SL4-MAP-73</span>
+        </div>
+        
+        <div class="header-right-group">
+          <span class="stamp-badge stamp-restricted">CLASSIFIED RECORD</span>
+          <button class="pill-btn" id="btn-close-mockup" title="Return to Chamber">CLOSE DOSSIER</button>
+        </div>
+      </div>
+
+      <!-- Main Body Split -->
+      <div class="facility-map-body">
+        
+        <!-- Left Column: Floorplan Blueprint & Sector Manifest -->
+        <div class="facility-blueprint-viewport">
+          <div class="viewport-header">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.2em; color: var(--color-sage-deep); font-weight: 700;">TOPOLOGICAL ARCHITECTURAL DRAFTING</span>
+            <span style="font-family: var(--font-mono); font-size: 10px; color: var(--ink-muted);">SCALE: 1:250 // METRIC DRAFTING</span>
+          </div>
+
+          <!-- Architectural Floorplan SVG (Prominent & Vertically Scaled) -->
+          <div class="facility-svg-container" id="svg-container">
+            <!-- Rendered dynamically via JavaScript -->
+          </div>
+
+          <div class="manifest-header">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.16em; color: var(--ink-secondary); font-weight: 700;">FACILITY SECTOR MANIFEST</span>
+            <span style="font-family: var(--font-mono); font-size: 9px; color: var(--ink-muted);">PRESSURIZED CORRIDORS: ACTIVE</span>
+          </div>
+
+          <!-- 8 Sector Cards Roster -->
+          <div class="facility-grid" id="sectors-grid">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Right Column: Case File Dossier Panel (Enriched & No Dead Void) -->
+        <div class="facility-dossier-panel">
+          
+          <div class="dossier-meta-header">
+            <span style="font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.22em; color: var(--color-sage-deep); font-weight: 700;">CLINICAL CASE FILE</span>
+            <span id="dossier-stamp" class="stamp-badge stamp-active">CURRENT POSITION</span>
+          </div>
+
+          <div>
+            <h2 class="dossier-title" id="dossier-title">STERILE RECEPTION</h2>
+            <div class="dossier-code" id="dossier-code">SL4-04-HUB • CENTRAL DECONTAMINATION & ALIGNMENT HUB</div>
+          </div>
+
+          <!-- Environmental & Atmospheric Telemetry Card -->
+          <div class="dossier-card">
+            <div class="dossier-card-title">ATMOSPHERIC TELEMETRY & RESONANCE</div>
+            <div class="telemetry-row">
+              <span style="color: var(--ink-muted);">BAROMETRIC PRESSURE:</span>
+              <span id="tel-pressure" style="color: var(--color-sage-deep); font-weight: 600;">101.3 kPa (NOMINAL SEAL)</span>
+            </div>
+            <div class="telemetry-row">
+              <span style="color: var(--ink-muted);">ROOM TONE / ACOUSTICS:</span>
+              <span id="tel-acoustics" style="color: var(--ink-primary);">45 Hz CONTINUOUS DRONE</span>
+            </div>
+            <div class="telemetry-row">
+              <span style="color: var(--ink-muted);">OPERATING HARMONIC:</span>
+              <span id="tel-harmonic" style="color: var(--color-sage-deep); font-weight: 600;">528 Hz BASELINE SYNC</span>
+            </div>
+          </div>
+
+          <!-- Architectural Survey Notes Card -->
+          <div class="dossier-card">
+            <div class="dossier-card-title">ARCHITECTURAL SURVEY NOTES</div>
+            <div class="dossier-card-body" id="dossier-notes">
+              Central hexagonal atrium equipped with Tektronix 545B harmonic oscilloscope apparatus, pneumatic intake conduits, and observation access corridors.
+            </div>
+          </div>
+
+          <!-- Diegetic Apparatus Specification Card -->
+          <div class="dossier-card">
+            <div class="dossier-card-title">PRIMARY DIEGETIC APPARATUS</div>
+            <div class="dossier-card-body" id="dossier-apparatus" style="font-family: var(--font-mono); font-weight: 600; color: var(--color-sage-deep);">
+              Tektronix 545B Oscilloscope / Phase I Harmonic Resonator
+            </div>
+          </div>
+
+          <!-- Patient Observation & Intake Status Card -->
+          <div class="dossier-card">
+            <div class="dossier-card-title">SUBJECT 104 OBSERVATION STATUS</div>
+            <div class="dossier-card-body" id="dossier-patient" style="font-size: 11.5px; line-height: 1.45; color: var(--ink-secondary);">
+              SUBJECT 104 CONSCIOUSNESS: AWAKENED // COGNITIVE ALIGNMENT CYCLE I IN PROGRESS
+            </div>
+          </div>
+
+          <!-- Access Clearance Requirements Card -->
+          <div class="dossier-card">
+            <div class="dossier-card-title">ACCESS CLEARANCE REQUIREMENTS</div>
+            <div class="dossier-card-body" id="dossier-clearance" style="font-family: var(--font-mono); color: var(--ink-primary);">
+              Unrestricted (Facility Baseline)
+            </div>
+          </div>
+
+          <!-- Transit Command Console (Firmly Docked) -->
+          <div class="transit-action-box">
+            <div id="map-transit-status">TRANSIT CORRIDOR READY. ARMED FOR HARMONIC DISPATCH.</div>
+            <button class="pill-btn" id="btn-mockup-transit" style="width: 100%; padding: 12px; font-weight: 700; letter-spacing: 0.14em;">
+              CURRENT LOCATION (HERE)
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Interactive Testbench Bar (Allows testing states and layouts in real-time) -->
+    <div class="mockup-controls-bar">
+      <span>TESTBENCH CONTROLS:</span>
+      <button id="btn-toggle-visited">Toggle Selected: Visited/Redacted</button>
+      <button id="btn-unlock-all">Unlock All Sectors</button>
+      <button id="btn-reset-baseline">Reset to Baseline</button>
+      <button id="btn-toggle-height">Toggle Housing Height (84vh / 74vh)</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================================================
+    // MOCK DATA & INTERACTIVE LOGIC
+    // ==========================================================================
+    const SECTORS = [
+      {
+        id: 'room_04',
+        code: 'SL4-04-HUB',
+        name: 'STERILE RECEPTION',
+        subtitle: 'Central Decontamination & Alignment Hub',
+        notes: 'Central hexagonal atrium equipped with Tektronix 545B harmonic oscilloscope apparatus, pneumatic intake conduits, and observation access corridors.',
+        apparatus: 'Tektronix 545B Oscilloscope / Phase I Harmonic Resonator',
+        apparatusShort: 'TEKTRONIX 545B CRT',
+        clearance: 'Unrestricted (Facility Baseline)',
+        pressure: '101.3 kPa (NOMINAL SEAL)',
+        acoustics: '45 Hz CONTINUOUS DRONE',
+        harmonic: '528 Hz BASELINE SYNC',
+        svgX: 235, svgY: 150, svgW: 110, svgH: 70,
+        corridorStart: [290, 185], corridorEnd: [290, 185],
+        discovered: true,
+        unlocked: true,
+        cleared: false
+      },
+      {
+        id: 'sleep_ward',
+        code: 'SL4-02-SLP',
+        name: 'SLEEP WARD',
+        subtitle: 'Somnambulist Isolation Unit',
+        notes: 'Long-term patient dormitories fitted with ultraviolet de-germing lamps, observation clipboards, and locked mobile dispensary cart units.',
+        apparatus: 'Mobile Dispensary Cart / Peristaltic Drip Manifold',
+        apparatusShort: 'DISPENSARY CART',
+        clearance: 'Requires Phase I Harmonic Tuning (528 Hz) & Cipher Key',
+        pressure: '98.7 kPa (NEGATIVE ISOLATION)',
+        acoustics: 'SLOW CARDIAC MONITORS (68 BPM)',
+        harmonic: 'UV CHEMICAL TRIAD (VALERIAN)',
+        svgX: 45, svgY: 40, svgW: 125, svgH: 65,
+        corridorStart: [245, 160], corridorEnd: [165, 105],
+        discovered: false,
+        unlocked: true,
+        cleared: false
+      },
+      {
+        id: 'hydrotherapy',
+        code: 'SL4-03-HYD',
+        name: 'HYDROTHERAPY SUITE',
+        subtitle: 'Sub-Thermal Immersion & Drainage',
+        notes: 'Dual deep porcelain immersion basins connected to high-pressure pneumatic hydraulic manifold with balance sight glass columns.',
+        apparatus: 'Triple-Valve Hydraulic Manifold / Immersion Basins',
+        apparatusShort: 'HYDRAULIC MANIFOLD',
+        clearance: 'Requires Act II Prismatic Quartz Crystal Alignment',
+        pressure: '145.2 kPa (PNEUMATIC LINE BALANCED)',
+        acoustics: 'ACOUSTIC WATER CAVITATION',
+        harmonic: '6-LITER FLUID CONSERVATION',
+        svgX: 228, svgY: 25, svgW: 124, svgH: 65,
+        corridorStart: [290, 150], corridorEnd: [290, 90],
+        discovered: false,
+        unlocked: false,
+        cleared: false
+      },
+      {
+        id: 'audiology',
+        code: 'SL4-04B-AUD',
+        name: 'AUDIOLOGY VAULT',
+        subtitle: 'Acoustic Resonance Chamber',
+        notes: 'Heavy acoustic dampening chamber housing dual flared brass directional horns and central Chladni binaural synthesizer monolith.',
+        apparatus: 'Binaural Synthesizer Monolith / Flared Horn Arrays',
+        apparatusShort: 'CHLADNI MONOLITH',
+        clearance: 'Requires Act III Sintered Bronze Crystal Alignment',
+        pressure: '101.3 kPa (ANECHOIC DAMPENED)',
+        acoustics: 'PURE SINE OSCILLATION (741 Hz)',
+        harmonic: 'BINAURAL STANDING WAVE',
+        svgX: 410, svgY: 40, svgW: 125, svgH: 65,
+        corridorStart: [335, 160], corridorEnd: [415, 105],
+        discovered: false,
+        unlocked: false,
+        cleared: false
+      },
+      {
+        id: 'archive',
+        code: 'SL4-05-ARC',
+        name: 'ARCHIVE & RECORDS',
+        subtitle: 'Microfilm Storage & Optical Terminals',
+        notes: 'Cold storage microfilm depository containing security document cabinets, steel shelving, and 16mm microfiche reader terminal.',
+        apparatus: 'Motorized Microfiche Reader / Film Gate Projection Unit',
+        apparatusShort: 'MICROFICHE READER',
+        clearance: 'Requires Act IV Violet Amethyst Crystal Alignment',
+        pressure: '100.8 kPa (DESICCATED STORAGE)',
+        acoustics: 'INTERMITTENT MOTOR ROTATION',
+        harmonic: '16mm FRAME REGISTRATION',
+        svgX: 415, svgY: 155, svgW: 125, svgH: 65,
+        corridorStart: [345, 185], corridorEnd: [415, 185],
+        discovered: false,
+        unlocked: false,
+        cleared: false
+      },
+      {
+        id: 'directors_office',
+        code: 'SL4-06-DIR',
+        name: "DIRECTOR'S OFFICE",
+        subtitle: 'Administration & Surveillance Quarters',
+        notes: 'Executive mahogany quarters containing brass carriage clock escapement, reel-to-reel wiretap recorder, and dead telephone receiver.',
+        apparatus: 'Nagra SN Reel-to-Reel Tape Deck / Brass Escapement Clock',
+        apparatusShort: 'NAGRA TAPE DECK',
+        clearance: 'Requires Act V Polished Obsidian Crystal Alignment',
+        pressure: '101.4 kPa (PRESSURIZED SUITE)',
+        acoustics: 'TICKING ESCAPEMENT (11:03 AM)',
+        harmonic: 'WIRETAP TAPE TRANSPORTS',
+        svgX: 410, svgY: 270, svgW: 125, svgH: 65,
+        corridorStart: [335, 210], corridorEnd: [415, 270],
+        discovered: false,
+        unlocked: false,
+        cleared: false
+      },
+      {
+        id: 'synthesis_blackout',
+        code: 'SL4-07-SYN',
+        name: 'SYNTHESIS CORE',
+        subtitle: 'High-Voltage Cathode Acceleration',
+        notes: 'High-amperage cathode array encased behind blast shielding, regulated by a 5-channel galvanometer resistance bridge.',
+        apparatus: '5-Channel Galvanometer Balancing Grid',
+        apparatusShort: 'GALVANOMETER GRID',
+        clearance: 'Requires Act VI Celadon Crystal & Airlock Depressurization',
+        pressure: '72.1 kPa (VACUUM EXHAUST HOLD)',
+        acoustics: '500A BUSBAR HUM & CRACKLE',
+        harmonic: '100Ω WHEATSTONE RESISTANCE',
+        svgX: 228, svgY: 280, svgW: 124, svgH: 65,
+        corridorStart: [290, 220], corridorEnd: [290, 280],
+        discovered: false,
+        unlocked: false,
+        cleared: false
+      },
+      {
+        id: 'velvet_lounge',
+        code: 'SL4-08-VEL',
+        name: 'VELVET LOUNGE',
+        subtitle: 'The Solarium & Final Intercept',
+        notes: 'Art Deco private quarters with walnut cocktail bar, mirror reflection surface, and 1950s manual telephone switchboard.',
+        apparatus: '3-Line Audio Patch Switchboard / Payphone Terminal',
+        apparatusShort: 'SWITCHBOARD MATRIX',
+        clearance: 'Requires Act VII Galvanometer Grid Stabilization',
+        pressure: '101.3 kPa (ISOLATED CABIN)',
+        acoustics: 'SOLITARY RINGING CADENCE',
+        harmonic: '3-CHANNEL AUDIO INTERCEPT',
+        svgX: 45, svgY: 270, svgW: 125, svgH: 65,
+        corridorStart: [245, 210], corridorEnd: [165, 270],
+        discovered: false,
+        unlocked: false,
+        cleared: false
+      }
+    ];
+
+    let currentRoomId = 'room_04';
+    let selectedSectorId = 'room_04';
+
+    function renderSVG() {
+      const container = document.getElementById('svg-container');
+      
+      let corridorsSvg = '';
+      SECTORS.forEach(sec => {
+        if (sec.id === 'room_04') return;
+        const color = sec.discovered ? '#2D4A3E' : sec.unlocked ? '#C28833' : '#94A3B8';
+        const dash = sec.discovered ? 'none' : '4 3';
+        corridorsSvg += `
+          <line x1="${sec.corridorStart[0]}" y1="${sec.corridorStart[1]}"
+                x2="${sec.corridorEnd[0]}" y2="${sec.corridorEnd[1]}"
+                stroke="${color}" stroke-width="6" stroke-linecap="square" />
+          <line x1="${sec.corridorStart[0]}" y1="${sec.corridorStart[1]}"
+                x2="${sec.corridorEnd[0]}" y2="${sec.corridorEnd[1]}"
+                stroke="#ffffff" stroke-width="2" stroke-dasharray="${dash}" />
+        `;
+      });
+
+      let roomsSvg = '';
+      SECTORS.forEach(sec => {
+        const isCurrent = sec.id === currentRoomId;
+        const isSelected = sec.id === selectedSectorId;
+        const strokeColor = isSelected ? '#C28833' : isCurrent ? '#2D4A3E' : sec.discovered ? '#2D4A3E' : sec.unlocked ? '#C28833' : '#94A3B8';
+        const strokeW = isSelected ? '3' : isCurrent ? '2.5' : '1.5';
+        const fill = sec.discovered ? '#ffffff' : 'url(#hatch-redact)';
+
+        let beacon = '';
+        if (isCurrent) {
+          beacon = `
+            <circle cx="${sec.svgX + sec.svgW - 14}" cy="${sec.svgY + 14}" r="5" fill="#16a34a" class="svg-beacon-dot" />
+            <circle cx="${sec.svgX + sec.svgW - 14}" cy="${sec.svgY + 14}" r="2.5" fill="#ffffff" />
+          `;
+        }
+
+        let innerContent = '';
+        if (sec.discovered) {
+          const statusText = isCurrent ? '[YOU ARE HERE]' : sec.cleared ? '[CLEARED]' : '[SURVEYED]';
+          const statusColor = sec.cleared ? '#15803d' : isCurrent ? '#16a34a' : '#2D4A3E';
+          innerContent = `
+            <text x="${sec.svgX + 8}" y="${sec.svgY + 16}" font-family="var(--font-mono)" font-size="8.5" font-weight="600" fill="#2D4A3E" letter-spacing="0.08em">${sec.code}</text>
+            <text x="${sec.svgX + 8}" y="${sec.svgY + 32}" font-family="var(--font-sans)" font-size="10" font-weight="700" fill="#141a21">${sec.name}</text>
+            <text x="${sec.svgX + 8}" y="${sec.svgY + 46}" font-family="var(--font-mono)" font-size="7.5" fill="#576574">${sec.apparatusShort}</text>
+            <text x="${sec.svgX + 8}" y="${sec.svgY + 58}" font-family="var(--font-mono)" font-size="7.5" font-weight="700" fill="${statusColor}">${statusText}</text>
+          `;
+        } else {
+          const prompt = sec.unlocked ? '[AWAITING ENTRY]' : '[RESTRICTED]';
+          const promptColor = sec.unlocked ? '#b45309' : '#dc2626';
+          innerContent = `
+            <text x="${sec.svgX + 8}" y="${sec.svgY + 16}" font-family="var(--font-mono)" font-size="8.5" fill="#64748b">SL4-??</text>
+            <rect x="${sec.svgX + 8}" y="${sec.svgY + 23}" width="${sec.svgW - 28}" height="14" fill="#141A21" rx="1" />
+            <text x="${sec.svgX + 12}" y="${sec.svgY + 34}" font-family="var(--font-mono)" font-size="8" font-weight="700" fill="#F8FAF7" letter-spacing="0.1em">UNSURVEYED</text>
+            <text x="${sec.svgX + 8}" y="${sec.svgY + 54}" font-family="var(--font-mono)" font-size="7.5" font-weight="700" fill="${promptColor}">${prompt}</text>
+          `;
+        }
+
+        roomsSvg += `
+          <g class="svg-room-node ${isSelected ? 'selected' : ''}" data-id="${sec.id}">
+            <rect x="${sec.svgX}" y="${sec.svgY}" width="${sec.svgW}" height="${sec.svgH}"
+                  fill="${fill}" stroke="${strokeColor}" stroke-width="${strokeW}"
+                  stroke-dasharray="${sec.discovered ? 'none' : '4 3'}" rx="4" />
+            ${innerContent}
+            ${beacon}
+          </g>
+        `;
+      });
+
+      container.innerHTML = `
+        <svg viewBox="0 0 580 370" class="facility-blueprint-svg">
+          <defs>
+            <pattern id="hatch-redact" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+              <line x1="0" y1="0" x2="0" y2="8" stroke="rgba(20, 26, 33, 0.16)" stroke-width="2.5" />
+            </pattern>
+          </defs>
+
+          <!-- Grid Lines covering whole 580x370 -->
+          <g stroke="rgba(45, 74, 62, 0.08)" stroke-width="1">
+            <line x1="40" y1="0" x2="40" y2="370" />
+            <line x1="120" y1="0" x2="120" y2="370" />
+            <line x1="200" y1="0" x2="200" y2="370" />
+            <line x1="280" y1="0" x2="280" y2="370" />
+            <line x1="360" y1="0" x2="360" y2="370" />
+            <line x1="440" y1="0" x2="440" y2="370" />
+            <line x1="520" y1="0" x2="520" y2="370" />
+
+            <line x1="0" y1="50" x2="580" y2="50" />
+            <line x1="0" y1="110" x2="580" y2="110" />
+            <line x1="0" y1="170" x2="580" y2="170" />
+            <line x1="0" y1="230" x2="580" y2="230" />
+            <line x1="0" y1="290" x2="580" y2="290" />
+            <line x1="0" y1="350" x2="580" y2="350" />
+          </g>
+
+          <!-- Cardinal Marker -->
+          <g transform="translate(550, 25)" font-family="var(--font-mono)" font-size="8" fill="#576574" text-anchor="middle">
+            <line x1="0" y1="-12" x2="0" y2="12" stroke="#576574" stroke-width="1" />
+            <line x1="-12" y1="0" x2="12" y2="0" stroke="#576574" stroke-width="1" />
+            <text x="0" y="-14">N</text>
+          </g>
+
+          ${corridorsSvg}
+          ${roomsSvg}
+        </svg>
+      `;
+
+      // Bind node clicks
+      container.querySelectorAll('.svg-room-node').forEach(node => {
+        node.addEventListener('click', () => {
+          selectedSectorId = node.getAttribute('data-id');
+          updateView();
+        });
+      });
+    }
+
+    function renderCards() {
+      const grid = document.getElementById('sectors-grid');
+      grid.innerHTML = '';
+
+      SECTORS.forEach(sec => {
+        const isCurrent = sec.id === currentRoomId;
+        const isSelected = sec.id === selectedSectorId;
+
+        const card = document.createElement('div');
+        card.className = `facility-sector-card ${isSelected ? 'selected' : ''} ${isCurrent ? 'current' : ''} ${!sec.discovered ? 'unvisited' : ''}`;
+        card.setAttribute('data-id', sec.id);
+
+        let badge = '<span style="color: var(--ink-muted); font-size: 8.5px; font-family: var(--font-mono);">SEALED</span>';
+        if (isCurrent) {
+          badge = '<span style="color: #15803d; font-weight: 700; font-size: 8.5px; font-family: var(--font-mono);">ACTIVE</span>';
+        } else if (sec.cleared) {
+          badge = '<span style="color: var(--color-sage-deep); font-weight: 700; font-size: 8.5px; font-family: var(--font-mono);">CLEARED</span>';
+        } else if (sec.discovered) {
+          badge = '<span style="color: var(--color-sage-deep); font-size: 8.5px; font-family: var(--font-mono);">SURVEYED</span>';
+        } else if (sec.unlocked) {
+          badge = '<span style="color: var(--color-brass-cast); font-weight: 700; font-size: 8.5px; font-family: var(--font-mono);">UNSEALED</span>';
+        }
+
+        const code = sec.discovered ? sec.code : 'SL4-??';
+        const name = sec.discovered ? sec.name : '<span class="redaction-bar">████████</span>';
+
+        card.innerHTML = `
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+            <span style="font-size: 9px; font-family: var(--font-mono); color: var(--color-sage-deep); font-weight: 600;">${code}</span>
+            ${badge}
+          </div>
+          <div style="font-size: 11px; font-weight: 600; color: var(--ink-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${name}
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          selectedSectorId = sec.id;
+          updateView();
+        });
+
+        grid.appendChild(card);
+      });
+    }
+
+    function updateDossier() {
+      const sec = SECTORS.find(s => s.id === selectedSectorId) || SECTORS[0];
+      const isCurrent = sec.id === currentRoomId;
+
+      const stampEl = document.getElementById('dossier-stamp');
+      const titleEl = document.getElementById('dossier-title');
+      const codeEl = document.getElementById('dossier-code');
+      const notesEl = document.getElementById('dossier-notes');
+      const appEl = document.getElementById('dossier-apparatus');
+      const clrEl = document.getElementById('dossier-clearance');
+      const btnTransit = document.getElementById('btn-mockup-transit');
+      const statusMsg = document.getElementById('map-transit-status');
+
+      const telPress = document.getElementById('tel-pressure');
+      const telAcoust = document.getElementById('tel-acoustics');
+      const telHarm = document.getElementById('tel-harmonic');
+
+      if (isCurrent) {
+        stampEl.className = 'stamp-badge stamp-active';
+        stampEl.textContent = 'CURRENT POSITION';
+      } else if (sec.cleared) {
+        stampEl.className = 'stamp-badge stamp-cleared';
+        stampEl.textContent = 'CRYSTAL PATCHED';
+      } else if (sec.discovered) {
+        stampEl.className = 'stamp-badge stamp-cleared';
+        stampEl.textContent = 'SURVEY UNSEALED';
+      } else if (sec.unlocked) {
+        stampEl.className = 'stamp-badge stamp-ready';
+        stampEl.textContent = 'CLEARANCE GRANTED';
+      } else {
+        stampEl.className = 'stamp-badge stamp-restricted';
+        stampEl.textContent = 'PROTOCOL SEALED';
+      }
+
+      if (sec.discovered) {
+        titleEl.textContent = sec.name;
+        codeEl.textContent = `${sec.code} • ${sec.subtitle}`;
+        notesEl.textContent = sec.notes;
+        appEl.textContent = sec.apparatus;
+        clrEl.textContent = sec.clearance;
+        telPress.textContent = sec.pressure;
+        telAcoust.textContent = sec.acoustics;
+        telHarm.textContent = sec.harmonic;
+        const patientEl = document.getElementById('dossier-patient');
+        if (patientEl) patientEl.textContent = sec.patientObservation || 'SUBJECT 104 TELEMETRY SYNCHRONIZED TO LOCAL SECTOR APPARATUS.';
+      } else {
+        titleEl.innerHTML = '<span class="redaction-bar" style="font-size: 22px;">██████████████</span>';
+        codeEl.textContent = 'SL4-??-??? • [CLASSIFIED SANATORIUM SECTOR]';
+        notesEl.innerHTML = `
+          <div class="redaction-bar" style="margin-bottom: 6px;">████████████████████████████████████████</div>
+          <div class="redaction-bar" style="margin-bottom: 8px;">██████████████████████████</div>
+          <div style="font-size: 11px; color: var(--ink-secondary); font-style: italic; line-height: 1.4;">
+            SEALED CASE RECORD. Physical entry through the observation corridor is required to break document seal and survey chamber telemetry.
+          </div>
+        `;
+        appEl.innerHTML = '<span class="redaction-bar">████████████████████</span>';
+        clrEl.textContent = sec.clearance;
+        telPress.innerHTML = '<span class="redaction-bar">████████████</span>';
+        telAcoust.innerHTML = '<span class="redaction-bar">████████████████</span>';
+        telHarm.innerHTML = '<span class="redaction-bar">████████████</span>';
+        const patientEl = document.getElementById('dossier-patient');
+        if (patientEl) patientEl.innerHTML = '<span class="redaction-bar">████████████████████████████████████████</span>';
+      }
+
+      if (isCurrent) {
+        btnTransit.disabled = true;
+        btnTransit.textContent = 'CURRENT LOCATION (HERE)';
+        statusMsg.textContent = 'ENTITY TELEMETRY CONFIRMED IN CURRENT SECTOR.';
+      } else if (!sec.unlocked) {
+        btnTransit.disabled = true;
+        btnTransit.textContent = 'ACCESS RESTRICTED (SEALED)';
+        statusMsg.textContent = 'SECURITY INTERLOCK: HARMONIC CALIBRATION REQUIRED FIRST.';
+      } else {
+        btnTransit.disabled = false;
+        btnTransit.textContent = `TRANSIT TO ${sec.name}`;
+        statusMsg.textContent = sec.discovered 
+          ? 'PRESSURIZED CORRIDOR CLEAR FOR TRANSIT.'
+          : 'CLEARANCE GRANTED. PHYSICAL ENTRY WILL UNSEAL SECTOR DOSSIER.';
+      }
+    }
+
+    function updateView() {
+      renderSVG();
+      renderCards();
+      updateDossier();
+    }
+
+    // Initialize View
+    updateView();
+
+    // Testbench Handlers
+    document.getElementById('btn-toggle-visited').addEventListener('click', () => {
+      const sec = SECTORS.find(s => s.id === selectedSectorId);
+      if (sec && sec.id !== 'room_04') {
+        sec.discovered = !sec.discovered;
+        updateView();
+      }
+    });
+
+    document.getElementById('btn-unlock-all').addEventListener('click', () => {
+      SECTORS.forEach(s => {
+        s.unlocked = true;
+        s.discovered = true;
+      });
+      updateView();
+    });
+
+    document.getElementById('btn-reset-baseline').addEventListener('click', () => {
+      SECTORS.forEach((s, idx) => {
+        s.discovered = idx === 0;
+        s.unlocked = idx <= 1;
+        s.cleared = false;
+      });
+      currentRoomId = 'room_04';
+      selectedSectorId = 'room_04';
+      updateView();
+    });
+
+    let heightToggled = false;
+    document.getElementById('btn-toggle-height').addEventListener('click', () => {
+      const housing = document.getElementById('mockup-housing');
+      heightToggled = !heightToggled;
+      housing.style.height = heightToggled ? '74vh' : '84vh';
+      housing.style.maxHeight = heightToggled ? '680px' : '760px';
+    });
+
+    document.getElementById('btn-close-mockup').addEventListener('click', () => {
+      alert('Mockup: "CLOSE DOSSIER" clicked. In game, this smoothly hides the modal.');
+    });
+
+    document.getElementById('btn-mockup-transit').addEventListener('click', () => {
+      const sec = SECTORS.find(s => s.id === selectedSectorId);
+      if (sec && sec.unlocked && sec.id !== currentRoomId) {
+        currentRoomId = sec.id;
+        sec.discovered = true;
+        updateView();
+      }
+    });
+  </script>
+</body>
+</html>

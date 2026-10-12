@@ -56,12 +56,24 @@ export class Room02_SleepWard implements RoomScenario {
         position: new THREE.Vector3(0, 1.8, 4.5),
         target: new THREE.Vector3(0, 1.8, 6.2)
       }
+    },
+    cot104: {
+      id: 'cot104',
+      name: 'V. Vacant Cot 104',
+      position: new THREE.Vector3(-2.8, 1.2, 4.5),
+      interactionPrompt: '[EXAMINE: VACANT COT 104]',
+      cameraPreset: {
+        name: 'cot104',
+        position: new THREE.Vector3(-1.2, 1.6, 5.2),
+        target: new THREE.Vector3(-2.8, 1.1, 3.8)
+      }
     }
   };
 
   private group: THREE.Group | null = null;
   private crystalMesh: THREE.Mesh | null = null;
   private crystalCollected: boolean = false;
+  private shutterUnlocked: boolean = false;
   private trolleyUnlocked: boolean = false;
   private digits = [0, 0, 0];
   private digitMeshes: THREE.Mesh[] = [];
@@ -69,7 +81,7 @@ export class Room02_SleepWard implements RoomScenario {
   private uvActive: boolean = false;
   private fluorescentLights: THREE.PointLight[] = [];
   private uvLights: THREE.PointLight[] = [];
-  private uvStencilMesh: THREE.Mesh | null = null;
+  private uvDecals: THREE.Mesh[] = [];
   private dispensaryScreen: DispensaryCartScreen;
   private unsubscribers: Array<() => void> = [];
 
@@ -82,10 +94,12 @@ export class Room02_SleepWard implements RoomScenario {
 
     const hasCrystal = GameState.getInstance().hasCrystal('crystal_01_quartz');
     if (hasCrystal) {
+      this.shutterUnlocked = true;
       this.trolleyUnlocked = true;
       this.crystalCollected = true;
       this.digits = [1, 0, 4];
     } else {
+      this.shutterUnlocked = false;
       this.trolleyUnlocked = false;
       this.crystalCollected = false;
       this.digits = [0, 0, 0];
@@ -93,6 +107,7 @@ export class Room02_SleepWard implements RoomScenario {
 
     const unsub = EventBus.getInstance().on('puzzle:crystal_collected', (payload) => {
       if (payload.crystalId === 'crystal_01_quartz') {
+        this.shutterUnlocked = true;
         this.trolleyUnlocked = true;
         this.crystalCollected = true;
         if (this.crystalMesh) {
@@ -105,6 +120,23 @@ export class Room02_SleepWard implements RoomScenario {
       }
     });
     this.unsubscribers.push(unsub);
+
+    const unsubShutter = EventBus.getInstance().on('puzzle:shutter_unlocked', () => {
+      this.shutterUnlocked = true;
+      this.digits = [1, 0, 4];
+      this.digitMeshes.forEach((mesh, idx) => {
+        mesh.rotation.z = (Math.PI * 2 * this.digits[idx]) / 10;
+      });
+    });
+    this.unsubscribers.push(unsubShutter);
+
+    const unsubDigits = EventBus.getInstance().on('puzzle:shutter_digits_changed', ({ digits }) => {
+      this.digits = [...digits];
+      this.digitMeshes.forEach((mesh, idx) => {
+        mesh.rotation.z = (Math.PI * 2 * this.digits[idx]) / 10;
+      });
+    });
+    this.unsubscribers.push(unsubDigits);
 
     // Architectural Shell: Long Clinical Ward
     const matWall = new THREE.MeshStandardMaterial({ color: 0xedf0eb, roughness: 0.5 });
@@ -158,6 +190,7 @@ export class Room02_SleepWard implements RoomScenario {
     cotZPositions.forEach((z, idx) => {
       const cotGroup = new THREE.Group();
       cotGroup.position.set(-2.8, 0, z);
+      cotGroup.name = idx === 3 ? 'prop_cot_104' : `prop_cot_${101 + idx}`;
 
       // Steel frame
       const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.45, 2.2), matMetal);
@@ -169,6 +202,13 @@ export class Room02_SleepWard implements RoomScenario {
       const mattress = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.2, 2.1), matOlive);
       mattress.position.y = 0.55;
       cotGroup.add(mattress);
+
+      // Headboard
+      const headboard = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.65, 0.06), matMetal);
+      headboard.position.set(0, 0.55, -1.05);
+      headboard.name = idx === 3 ? 'prop_headboard_104' : `prop_headboard_${101 + idx}`;
+      headboard.castShadow = true;
+      cotGroup.add(headboard);
 
       // Pillow
       const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.4), new THREE.MeshStandardMaterial({ color: 0xedf0eb }));
@@ -225,55 +265,162 @@ export class Room02_SleepWard implements RoomScenario {
     this.group.add(uvToggleGroup);
 
     // Glowing UV Stencil Texture on Tile Wall
-    const stencilCanvas = document.createElement('canvas');
-    stencilCanvas.width = 1024;
-    stencilCanvas.height = 512;
-    const sCtx = stencilCanvas.getContext('2d')!;
-    sCtx.fillStyle = '#000000';
-    sCtx.fillRect(0, 0, 1024, 512);
-    sCtx.fillStyle = '#4ade80';
-    sCtx.font = 'bold 32px monospace';
-    sCtx.fillText('WE ARE THE CURE', 60, 100);
-    sCtx.font = '24px monospace';
-    sCtx.fillText('DO NOT WAKE US // COMPLIANCE IS PEACE', 60, 160);
-    sCtx.fillStyle = '#fbbf24';
-    sCtx.fillText('SEDATIVE INFUSION CALIBRATION: 68 BPM', 60, 240);
-    sCtx.fillText('TRIAD FORMULA: [NITROUS • BROMIDE • VALERIAN]', 60, 310);
-    sCtx.fillStyle = '#60a5fa';
-    sCtx.fillText('SUBJECT 104 TRANSFERRED TO SECTOR 04', 60, 380);
+    this.uvDecals = [];
+    const createUVSign = (text1: string, text2: string | null, z: number, color: string = '#4ade80') => {
+      const cvs = document.createElement('canvas');
+      cvs.width = 512;
+      cvs.height = 128;
+      const c = cvs.getContext('2d')!;
+      c.fillStyle = '#000000';
+      c.fillRect(0, 0, 512, 128);
+      c.fillStyle = color;
+      c.font = '20px monospace';
+      c.textAlign = 'center';
+      c.fillText(text1, 256, 40);
+      if (text2) c.fillText(text2, 256, 80);
 
-    const stencilTex = new THREE.CanvasTexture(stencilCanvas);
-    const stencilMat = new THREE.MeshBasicMaterial({
-      map: stencilTex,
-      transparent: true,
-      opacity: 0.0,
-      blending: THREE.AdditiveBlending
-    });
-    this.uvStencilMesh = new THREE.Mesh(new THREE.PlaneGeometry(4.8, 2.4), stencilMat);
-    this.uvStencilMesh.position.set(-5.85, 2.4, 0);
-    this.uvStencilMesh.rotation.y = Math.PI / 2;
-    this.group.add(this.uvStencilMesh);
+      const tex = new THREE.CanvasTexture(cvs);
+      const mat = new THREE.MeshBasicMaterial({
+        map: tex, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false
+      });
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(3, 0.75), mat);
+      mesh.position.set(-5.88, 2.2, z);
+      mesh.rotation.y = Math.PI / 2;
+      this.group!.add(mesh);
+      this.uvDecals.push(mesh);
+      return mesh;
+    };
 
-    // Stainless Dispensary Trolley
+    createUVSign('HE CANNOT STOP CRYING', '// THE CURE EXTRACTS THE TEARS', -4.5);
+    createUVSign('THE VOCAL CORDS ARE RESISTANCE', '// CUT THEM TO CURE THEM', -1.5);
+    createUVSign('PATIENT ZERO // INTAKE ID: 104', '[ NITROUS ] - [ BROMIDE ] - [ VALERIAN ]', 4.5, '#fbbf24');
+    
+    // Chemical symbols on headboard of 104 (facing into ward down cot)
+    const headboardCvs = document.createElement('canvas');
+    headboardCvs.width = 512;
+    headboardCvs.height = 128;
+    const hc = headboardCvs.getContext('2d')!;
+    hc.fillStyle = '#000000';
+    hc.fillRect(0, 0, 512, 128);
+    hc.fillStyle = '#fbbf24';
+    hc.font = 'bold 24px monospace';
+    hc.textAlign = 'center';
+    hc.fillText('[ NITROUS ] - [ BROMIDE ] - [ VALERIAN ]', 256, 64);
+    
+    const hcTex = new THREE.CanvasTexture(headboardCvs);
+    const hcMat = new THREE.MeshBasicMaterial({ map: hcTex, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
+    const hcMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.32), hcMat);
+    hcMesh.position.set(-2.8, 1.25, 3.48);
+    hcMesh.rotation.y = 0;
+    this.group.add(hcMesh);
+    this.uvDecals.push(hcMesh);
+
+    // Articulated St. Jude Emergency Dispensary Trolley
     const trolleyGroup = new THREE.Group();
     trolleyGroup.position.set(1.8, 0, -1.2);
     trolleyGroup.name = 'prop_trolley';
 
-    const trolleyCart = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.9, 0.8), matMetal);
-    trolleyCart.position.y = 0.5;
+    // 4 Tubular Vertical Posts & Casters
+    [
+      [-0.56, -0.36],
+      [-0.56, 0.36],
+      [0.56, -0.36],
+      [0.56, 0.36]
+    ].forEach(([px, pz]) => {
+      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.016, 0.016, 0.92, 12), matMetal);
+      post.position.set(px, 0.49, pz);
+      post.castShadow = true;
+      post.raycast = () => {};
+      trolleyGroup.add(post);
+
+      const wheelFork = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.04, 0.03), matMetal);
+      wheelFork.position.set(px, 0.06, pz);
+      wheelFork.raycast = () => {};
+      trolleyGroup.add(wheelFork);
+
+      const wheel = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 0.04, 0.025, 16),
+        new THREE.MeshStandardMaterial({ color: 0x111613, roughness: 0.8 })
+      );
+      wheel.rotation.z = Math.PI / 2;
+      wheel.position.set(px, 0.04, pz);
+      wheel.raycast = () => {};
+      trolleyGroup.add(wheel);
+    });
+
+    // 3 Lipped Stainless Steel Shelves
+    [0.12, 0.52, 0.92].forEach((sy) => {
+      const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.03, 0.78), matMetal);
+      shelf.position.y = sy;
+      shelf.castShadow = true;
+      shelf.receiveShadow = true;
+      shelf.raycast = () => {};
+      trolleyGroup.add(shelf);
+    });
+
+    // Rear Tubular Push Handle Bar
+    const handleBar = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.74, 12), matMetal);
+    handleBar.rotation.x = Math.PI / 2;
+    handleBar.position.set(-0.62, 0.94, 0);
+    handleBar.raycast = () => {};
+    trolleyGroup.add(handleBar);
+
+    // Combination Lock Tumbler Housing
+    const trolleyCart = new THREE.Mesh(
+      new THREE.BoxGeometry(0.68, 0.22, 0.16),
+      new THREE.MeshStandardMaterial({ color: 0x3d4a41, metalness: 0.6, roughness: 0.35 })
+    );
+    trolleyCart.position.set(0, 0.74, 0.36);
     trolleyCart.name = 'prop_trolley_lock';
+    trolleyCart.castShadow = true;
     trolleyGroup.add(trolleyCart);
 
-    // 3 Rotary Tumbler Dials on front
+    // 3 Rotary Tumbler Dials on lock face
     for (let i = 0; i < 3; i++) {
-      const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.03, 16), matBrass);
+      const dial = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.03, 16), matBrass);
       dial.rotation.x = Math.PI / 2;
       dial.rotation.z = (Math.PI * 2 * this.digits[i]) / 10;
-      dial.position.set(-0.2 + i * 0.2, 0.75, 0.42);
+      dial.position.set(-0.2 + i * 0.2, 0.74, 0.45);
       dial.name = `prop_dial_${i}`;
       trolleyGroup.add(dial);
       this.digitMeshes.push(dial);
     }
+
+    // Upright Stainless IV Drip Pole
+    const ivPole = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.45, 12), matMetal);
+    ivPole.position.set(-0.52, 1.25, -0.32);
+    ivPole.castShadow = true;
+    ivPole.raycast = () => {};
+    trolleyGroup.add(ivPole);
+
+    // IV Crossbar & 3 Glass Infusion Flasks
+    const ivCross = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.015, 0.50), matMetal);
+    ivCross.position.set(-0.52, 1.95, -0.32);
+    ivCross.raycast = () => {};
+    trolleyGroup.add(ivCross);
+
+    const matFlaskGlass = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transmission: 0.85,
+      roughness: 0.1,
+      transparent: true,
+      opacity: 0.8
+    });
+    [-0.20, 0, 0.20].forEach((fz, fi) => {
+      const flask = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.18, 16), matFlaskGlass);
+      flask.position.set(-0.52, 1.82, -0.32 + fz);
+      flask.raycast = () => {};
+      trolleyGroup.add(flask);
+
+      const fluidColors = [0x10b981, 0xf59e0b, 0xef4444];
+      const fluid = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.04, 0.04, 0.12, 12),
+        new THREE.MeshStandardMaterial({ color: fluidColors[fi], roughness: 0.2 })
+      );
+      fluid.position.set(-0.52, 1.80, -0.32 + fz);
+      fluid.raycast = () => {};
+      trolleyGroup.add(fluid);
+    });
 
     // Memory Crystal 01 (Prismatic Quartz)
     const crystalGeo = new THREE.OctahedronGeometry(0.12, 0);
@@ -288,12 +435,55 @@ export class Room02_SleepWard implements RoomScenario {
       emissiveIntensity: 0.2
     });
     this.crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
-    this.crystalMesh.position.set(0, 1.05, 0);
+    this.crystalMesh.position.set(0, 1.08, 0);
     this.crystalMesh.name = 'crystal_01_quartz';
     this.crystalMesh.visible = this.trolleyUnlocked && !this.crystalCollected;
     trolleyGroup.add(this.crystalMesh);
 
     this.group.add(trolleyGroup);
+
+    // Ward Partition Curtain Rails & Drapes between Cots (drawn back against wall)
+    [-3.0, 0.0, 3.0].forEach((cz) => {
+      const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 3.6, 12), matMetal);
+      rail.position.set(-4.0, 3.8, cz);
+      rail.raycast = () => {};
+      this.group!.add(rail);
+
+      const curtain = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.4, 0.4), matOlive);
+      curtain.position.set(-5.6, 2.5, cz);
+      curtain.castShadow = true;
+      curtain.raycast = () => {};
+      this.group!.add(curtain);
+    });
+
+    // Bedside Vitals Stands next to Cots
+    cotZPositions.forEach((z) => {
+      const stand = new THREE.Mesh(
+        new THREE.BoxGeometry(0.48, 0.65, 0.48),
+        new THREE.MeshStandardMaterial({ color: 0xd4d8db, roughness: 0.4, metalness: 0.6 })
+      );
+      stand.position.set(-4.5, 0.325, z - 0.75);
+      stand.castShadow = true;
+      stand.raycast = () => {};
+      this.group!.add(stand);
+    });
+
+    // Right-Wall Oxygen Valve Manifold & Conduits
+    const o2Manifold = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.45, 1.8),
+      new THREE.MeshStandardMaterial({ color: 0x22352b, roughness: 0.5 })
+    );
+    o2Manifold.position.set(5.88, 1.6, 0);
+    o2Manifold.raycast = () => {};
+    this.group.add(o2Manifold);
+
+    [-0.6, -0.2, 0.2, 0.6].forEach((mz) => {
+      const valveGauge = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.04, 16), matBrass);
+      valveGauge.rotation.z = Math.PI / 2;
+      valveGauge.position.set(5.82, 1.6, mz);
+      valveGauge.raycast = () => {};
+      this.group!.add(valveGauge);
+    });
 
     // Overhead Clinical Fluorescent Lights
     const light1 = new THREE.PointLight(0xf4f9f4, 1.2, 12);
@@ -337,20 +527,16 @@ export class Room02_SleepWard implements RoomScenario {
     audio.playTumblerClick();
 
     if (this.uvActive) {
-      this.fluorescentLights.forEach(l => { l.intensity = 0.15; });
-      this.uvLights.forEach(l => { l.intensity = 2.4; });
-      if (this.uvStencilMesh) {
-        (this.uvStencilMesh.material as THREE.MeshBasicMaterial).opacity = 0.95;
-      }
+      this.fluorescentLights.forEach(l => { l.intensity = 0.05; });
+      this.uvLights.forEach(l => { l.intensity = 3.5; });
+      this.uvDecals.forEach(m => { (m.material as THREE.MeshBasicMaterial).opacity = 1.0; });
       EventBus.getInstance().emit('ui:subtitle_changed', {
-        text: 'Surgical ultraviolet lamp engaged. Deep indigo blacklight floods the ward. Hidden luminescent chemical markings and frantic handwriting glow across the tile walls.'
+        text: 'Surgical ultraviolet lamp engaged. Deep indigo blacklight reveals luminescent handwriting across the ward and glowing chemical formulas above Vacant Cot 104.'
       });
     } else {
       this.fluorescentLights.forEach(l => { l.intensity = 1.2; });
       this.uvLights.forEach(l => { l.intensity = 0.0; });
-      if (this.uvStencilMesh) {
-        (this.uvStencilMesh.material as THREE.MeshBasicMaterial).opacity = 0.0;
-      }
+      this.uvDecals.forEach(m => { (m.material as THREE.MeshBasicMaterial).opacity = 0.0; });
       EventBus.getInstance().emit('ui:subtitle_changed', {
         text: 'Ultraviolet lamp disengaged. Cold white fluorescent light restored.'
       });
@@ -367,7 +553,7 @@ export class Room02_SleepWard implements RoomScenario {
     }
     this.digitMeshes = [];
     this.crystalMesh = null;
-    this.uvStencilMesh = null;
+    this.uvDecals = [];
     this.fluorescentLights = [];
     this.uvLights = [];
   }
@@ -396,7 +582,32 @@ export class Room02_SleepWard implements RoomScenario {
       }
       audio.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
+      this.dispensaryScreen.setShutterDigits(this.digits as [number, number, number]);
       this.dispensaryScreen.open();
+      if (!this.shutterUnlocked) {
+        bus.emit('ui:subtitle_changed', {
+          text: `Dispensary Cart outer security shutter is locked [ ${this.digits.join(' - ')} ]. Align the 3 tumblers to Patient 104's intake ID to expose the infusion console.`
+        });
+      } else {
+        bus.emit('ui:subtitle_changed', {
+          text: 'Security shutter retracted [ 1 - 0 - 4 ]. Calibrate peristaltic infusion (68 BPM) and sedative triad.'
+        });
+      }
+      return true;
+    }
+
+    if (objectId === 'prop_cot_104' || objectId === 'prop_headboard_104') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'cot104' });
+      if (this.uvActive) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'Under ultraviolet illumination, frantic glowing amber text on Cot 104 reads: [ NITROUS ] - [ BROMIDE ] - [ VALERIAN ].'
+        });
+      } else {
+        bus.emit('ui:subtitle_changed', {
+          text: 'Cot 104 restraints are unbuckled and linens rumpled. Faint scratch marks are visible on the headboard, illegible under standard fluorescent light.'
+        });
+      }
       return true;
     }
 
@@ -405,7 +616,7 @@ export class Room02_SleepWard implements RoomScenario {
       const subjectNum = objectId.split('_')[2];
       if (subjectNum === '101') {
         bus.emit('ui:subtitle_changed', {
-          text: 'Chart 101 [Subject 101]: "Limbic sedation holding. Mirror recognition eliminated. Progressive alignment confirmed."'
+          text: 'Chart 101 [Subject 101]: "Limbic sedation holding. Resting cardiac tempo: 68 BPM. Infusion rate must match cardiac rhythm to prevent neuro-shock."'
         });
       } else if (subjectNum === '102') {
         bus.emit('ui:subtitle_changed', {
@@ -413,11 +624,11 @@ export class Room02_SleepWard implements RoomScenario {
         });
       } else if (subjectNum === '103') {
         bus.emit('ui:subtitle_changed', {
-          text: 'Chart 103 [Subject 103]: "Dispensary cart tumbler access is keyed to the 3-digit intake number of the transferred subject."'
+          text: 'Chart 103 [Subject 103]: "Mobile dispensary cart is double-locked. Outer security shutter is keyed to the 3-digit intake ID of the transferred subject [Vacant Cot 104]."'
         });
       } else if (subjectNum === '104') {
         bus.emit('ui:subtitle_changed', {
-          text: 'Chart 104 [Subject 104 • VACANT]: "Cot vacant. Subject transferred to Sterile Reception (Room 04). Patient Intake ID: 104."'
+          text: 'Chart 104 [Subject 104 • VACANT]: "Cot vacant. Subject transferred to Sterile Reception (Room 04). Patient Intake ID: 104. Chemical sedation regimen logged under diagnostic UV illumination."'
         });
       }
       return true;
@@ -426,7 +637,7 @@ export class Room02_SleepWard implements RoomScenario {
     if (objectId.startsWith('prop_dial_')) {
       if (this.trolleyUnlocked) {
         bus.emit('ui:subtitle_changed', {
-          text: 'Dispensary Cart is unlocked [ 1 - 0 - 4 ]. The tray is extended.'
+          text: 'Dispensary Cart is fully unlatched [ 1 - 0 - 4 ]. The tray is extended.'
         });
         return true;
       }
@@ -442,20 +653,22 @@ export class Room02_SleepWard implements RoomScenario {
         this.digitMeshes[dialIdx].rotation.z += (Math.PI * 2) / 10;
       }
 
-      bus.emit('ui:subtitle_changed', {
-        text: `Dispensary Cart Tumblers: [ ${this.digits[0]} - ${this.digits[1]} - ${this.digits[2]} ]`
-      });
+      this.dispensaryScreen.setShutterDigits(this.digits as [number, number, number]);
 
-      // Target code is 1-0-4 (legacy fallback)
+      // Check if 1-0-4 aligns
       if (this.digits[0] === 1 && this.digits[1] === 0 && this.digits[2] === 4) {
-        if (!this.trolleyUnlocked) {
-          this.trolleyUnlocked = true;
+        if (!this.shutterUnlocked) {
+          this.shutterUnlocked = true;
           audio.playPneumaticHiss();
-          if (this.crystalMesh) this.crystalMesh.visible = true;
           bus.emit('ui:subtitle_changed', {
-            text: 'Tumblers align: 1-0-4. The dispensary tray clicks open, revealing a pristine Prismatic Quartz crystal.'
+            text: 'Tumblers align: [ 1 - 0 - 4 ]. Outer security shutter unlatches, exposing the electronic Sedative Calibrator.'
           });
         }
+      } else {
+        this.shutterUnlocked = false;
+        bus.emit('ui:subtitle_changed', {
+          text: `Dispensary Cart Tumblers: [ ${this.digits[0]} - ${this.digits[1]} - ${this.digits[2]} ] (Shutter Locked)`
+        });
       }
       return true;
     }

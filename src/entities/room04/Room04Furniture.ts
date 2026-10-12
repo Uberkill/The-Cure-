@@ -11,6 +11,7 @@ export function buildRoom04Furniture(mat: Room04MaterialPalette): Room04Furnitur
   // Central Bauhaus Desk (y = 0.8, top surface at y = 0.85)
   const deskGroup = new THREE.Group();
   deskGroup.name = 'prop_desk';
+  deskGroup.userData.flavorText = 'An industrial stainless steel surgical desk. There is nothing special about it.';
 
   const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.3), mat.smokedTeak);
   deskTop.position.set(0, 0.8, 0);
@@ -36,6 +37,7 @@ export function buildRoom04Furniture(mat: Room04MaterialPalette): Room04Furnitur
   // Standard 4-Leg Office Chair
   const chairGroup = new THREE.Group();
   chairGroup.name = 'prop_chair';
+  chairGroup.userData.flavorText = 'A standard 4-leg office chair. It looks uncomfortable and sterile.';
   chairGroup.position.set(0, 0, -0.65);
 
   // Seat
@@ -80,6 +82,7 @@ export function buildRoom04Furniture(mat: Room04MaterialPalette): Room04Furnitur
   // Brutalist Planter Beside Desk
   const planterGroup = new THREE.Group();
   planterGroup.name = 'prop_planter';
+  planterGroup.userData.flavorText = 'A synthetic ficus plant. Its leaves are brittle and perfectly uniform.';
   planterGroup.position.set(2.2, 0, -0.2);
 
   const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.18, 0.5, 24), mat.chalkUpperWall);

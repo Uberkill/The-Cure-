@@ -82,22 +82,35 @@ export class ScenarioRegistry {
     return this.loadScenario(scenario, scene);
   }
 
-  public async loadScenario(scenario: RoomScenario, scene: THREE.Scene): Promise<THREE.Group> {
-    if (this.currentScenario && this.currentGroup) {
-      this.telemetry.record('info', `Tearing down previous scenario: ${this.currentScenario.id}`);
-      this.currentScenario.teardown(scene);
-      AudioEngine.getInstance().teardownScenarioAudio();
-      scene.remove(this.currentGroup);
-      disposeHierarchy(this.currentGroup);
-      this.currentGroup = null;
+  private isSwitching: boolean = false;
+
+  public async loadScenario(scenario: RoomScenario, scene: THREE.Scene): Promise<THREE.Group | null> {
+    if (this.isSwitching) {
+      this.telemetry.record('warn', `Scenario switch already in progress. Ignoring request for ${scenario.id}.`);
+      return null;
     }
+    this.isSwitching = true;
 
-    this.currentScenario = scenario;
-    this.telemetry.record('info', `Loading scenario: ${scenario.id}`);
-    this.currentGroup = await scenario.buildScene(scene);
-    scene.add(this.currentGroup);
+    try {
+      if (this.currentScenario && this.currentGroup) {
+        this.telemetry.record('info', `Tearing down previous scenario: ${this.currentScenario.id}`);
+        this.currentScenario.teardown(scene);
+        AudioEngine.getInstance().teardownScenarioAudio();
+        scene.remove(this.currentGroup);
+        disposeHierarchy(this.currentGroup);
+        this.currentGroup = null;
+      }
 
-    return this.currentGroup;
+      this.telemetry.record('info', `Loading scenario: ${scenario.id}`);
+      const newGroup = await scenario.buildScene(scene);
+      scene.add(newGroup);
+      this.currentGroup = newGroup;
+      this.currentScenario = scenario;
+
+      return this.currentGroup;
+    } finally {
+      this.isSwitching = false;
+    }
   }
 
   public getCurrentScenario(): RoomScenario | null {

@@ -199,10 +199,16 @@ server.listen(PORT, async () => {
     });
     await page.waitForSelector('#screen-dispensary-cart:not(.hidden)', { timeout: 3000 });
 
-    // Verify button is disabled when drip is at default 95 BPM
+    // Verify button is disabled when shutter is locked
     const isCartUnlockDisabled = await page.$eval('#btn-unlock-drawer', (el) => el.hasAttribute('disabled'));
     if (!isCartUnlockDisabled) {
       throw new Error('Dispensary cart drawer unlock should be disabled at initial non-synchronized BPM');
+    }
+
+    // Unlock Stage 1 shutter: dial 1-0-4
+    await page.click('#shutter-dial-0');
+    for (let i = 0; i < 4; i++) {
+      await page.click('#shutter-dial-2');
     }
 
     // Set slider to 68 BPM

@@ -63,7 +63,7 @@ export class Room05_Archive implements RoomScenario {
   private crystalMesh: THREE.Mesh | null = null;
   private crystalCollected: boolean = false;
   private drawerOpen: boolean = false;
-  private drawer104Mesh: THREE.Mesh | null = null;
+  private drawer104Mesh: THREE.Group | THREE.Mesh | null = null;
   private microficheScreen: MicroficheViewerScreen = new MicroficheViewerScreen();
   private unsubscribers: (() => void)[] = [];
 
@@ -163,9 +163,63 @@ export class Room05_Archive implements RoomScenario {
 
       // Designate idx 7 as Drawer 104
       if (idx === 7) {
-        this.drawer104Mesh = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.45, 0.9), new THREE.MeshStandardMaterial({ color: 0x1a261c, roughness: 0.5 }));
-        this.drawer104Mesh.position.set(0, 1.0, 0.5);
-        this.drawer104Mesh.name = 'prop_drawer_104';
+        const drawerGroup = new THREE.Group();
+        drawerGroup.position.set(0, 1.0, 0.5);
+        drawerGroup.name = 'prop_drawer_104';
+
+        // Outer drawer chassis shell
+        const drawerMat = new THREE.MeshStandardMaterial({ color: 0x1a261c, roughness: 0.5, metalness: 0.4 });
+        const drawerBody = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.45, 0.9), drawerMat);
+        drawerGroup.add(drawerBody);
+
+        // Stamped brass label cardholder
+        const labelHolder = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.02), matBrass);
+        labelHolder.position.set(0, 0, 0.46);
+        labelHolder.raycast = () => {};
+        drawerGroup.add(labelHolder);
+
+        // Aged paper label insert
+        const labelPaper = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.2, 0.08),
+          new THREE.MeshStandardMaterial({ color: 0xdcd1b4, roughness: 0.9 })
+        );
+        labelPaper.position.set(0, 0, 0.472);
+        labelPaper.raycast = () => {};
+        drawerGroup.add(labelPaper);
+
+        // Recessed brass drawer pull handle
+        const drawerHandle = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 0.05), matBrass);
+        drawerHandle.position.set(0, 0.1, 0.48);
+        drawerHandle.raycast = () => {};
+        drawerGroup.add(drawerHandle);
+
+        // Chromed steel suspension side slide rails
+        for (const side of [-0.43, 0.43]) {
+          const rail = new THREE.Mesh(
+            new THREE.BoxGeometry(0.02, 0.04, 0.88),
+            new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.9, roughness: 0.2 })
+          );
+          rail.position.set(side, 0, 0);
+          rail.raycast = () => {};
+          drawerGroup.add(rail);
+        }
+
+        // Hanging Manila folder dividers
+        const manilaMat = new THREE.MeshStandardMaterial({ color: 0xc4b595, roughness: 0.8 });
+        const tabMat = new THREE.MeshStandardMaterial({ color: 0xb5a07c, roughness: 0.7 });
+        for (let f = 0; f < 7; f++) {
+          const folder = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.36, 0.015), manilaMat);
+          folder.position.set(0, 0.02, -0.3 + f * 0.1);
+          folder.raycast = () => {};
+          drawerGroup.add(folder);
+
+          const tab = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.015), tabMat);
+          tab.position.set(-0.25 + (f % 3) * 0.25, 0.21, -0.3 + f * 0.1);
+          tab.raycast = () => {};
+          drawerGroup.add(tab);
+        }
+
+        this.drawer104Mesh = drawerGroup;
         cabGroup.add(this.drawer104Mesh);
 
         // Memory Crystal 04 (Pitch-Black Obsidian)
@@ -192,32 +246,305 @@ export class Room05_Archive implements RoomScenario {
     readerDesk.position.set(1.6, 0, -1.2);
     readerDesk.name = 'prop_microfiche_reader';
 
-    // Stand base
-    const standMat = new THREE.MeshStandardMaterial({ color: 0x1e2822, roughness: 0.7 });
+    // Stand base / pedestal chassis
+    const standMat = new THREE.MeshStandardMaterial({ color: 0x1e2822, roughness: 0.7, metalness: 0.3 });
     const stand = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.85, 0.8), standMat);
     stand.position.y = 0.425;
     stand.castShadow = true;
     readerDesk.add(stand);
 
+    // Beveled desktop trim
+    const trimMat = new THREE.MeshStandardMaterial({ color: 0x334139, roughness: 0.4, metalness: 0.6 });
+    const deskTrim = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.04, 0.84), trimMat);
+    deskTrim.position.y = 0.86;
+    deskTrim.raycast = () => {};
+    readerDesk.add(deskTrim);
+
+    // Lower equipment louver vents
+    const ventMat = new THREE.MeshStandardMaterial({ color: 0x111613, roughness: 0.9 });
+    for (let v = 0; v < 5; v++) {
+      const ventSlot = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.015, 0.01), ventMat);
+      ventSlot.position.set(0, 0.2 + v * 0.04, 0.405);
+      ventSlot.raycast = () => {};
+      readerDesk.add(ventSlot);
+    }
+
+    // Microfilm transport deck
+    const deckMat = new THREE.MeshStandardMaterial({ color: 0x25322a, roughness: 0.5, metalness: 0.4 });
+    const deck = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.06, 0.52), deckMat);
+    deck.position.set(0, 0.91, 0.08);
+    deck.raycast = () => {};
+    readerDesk.add(deck);
+
+    // Lateral Motorized Film Spools
+    const spoolAluMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, metalness: 0.85, roughness: 0.25 });
+    const filmMat = new THREE.MeshStandardMaterial({ color: 0x090d0b, roughness: 0.3, metalness: 0.2 });
+
+    for (const [spoolX, fillRadius] of [[-0.28, 0.09], [0.28, 0.06]] as const) {
+      const spindle = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.08, 16), matBrass);
+      spindle.position.set(spoolX, 0.96, 0.12);
+      spindle.raycast = () => {};
+      readerDesk.add(spindle);
+
+      for (const flangeY of [0.935, 0.985]) {
+        const flange = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.11, 0.006, 24), spoolAluMat);
+        flange.position.set(spoolX, flangeY, 0.12);
+        flange.raycast = () => {};
+        readerDesk.add(flange);
+      }
+
+      const filmPack = new THREE.Mesh(new THREE.CylinderGeometry(fillRadius, fillRadius, 0.04, 20), filmMat);
+      filmPack.position.set(spoolX, 0.96, 0.12);
+      filmPack.raycast = () => {};
+      readerDesk.add(filmPack);
+    }
+
+    // Glass sandwich film gate
+    const glassGateMat = new THREE.MeshPhysicalMaterial({
+      color: 0x6ee7b7,
+      transparent: true,
+      opacity: 0.45,
+      transmission: 0.6,
+      roughness: 0.1
+    });
+    const lowerPlate = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.01, 0.14), glassGateMat);
+    lowerPlate.position.set(0, 0.945, 0.12);
+    lowerPlate.raycast = () => {};
+    readerDesk.add(lowerPlate);
+
+    const upperPlate = new THREE.Mesh(new THREE.BoxGeometry(0.20, 0.01, 0.12), glassGateMat);
+    upperPlate.position.set(0, 0.965, 0.12);
+    upperPlate.raycast = () => {};
+    readerDesk.add(upperPlate);
+
+    // 16mm Film Strip spanning through gate
+    const filmStrip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.56, 0.002, 0.045),
+      new THREE.MeshStandardMaterial({ color: 0x111815, roughness: 0.2, transparent: true, opacity: 0.85 })
+    );
+    filmStrip.position.set(0, 0.955, 0.12);
+    filmStrip.raycast = () => {};
+    readerDesk.add(filmStrip);
+
+    // 3-Position Optical Lens Turret (under projection housing)
+    const turretBase = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 0.02, 16), matBrass);
+    turretBase.position.set(0, 1.01, 0.12);
+    turretBase.raycast = () => {};
+    readerDesk.add(turretBase);
+
+    for (let l = 0; l < 3; l++) {
+      const angle = (l * 2 * Math.PI) / 3;
+      const lensBarrel = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.018, 0.022, 0.04, 12),
+        new THREE.MeshStandardMaterial({ color: 0x222a24, metalness: 0.8, roughness: 0.3 })
+      );
+      lensBarrel.position.set(Math.cos(angle) * 0.035, 0.99, 0.12 + Math.sin(angle) * 0.035);
+      lensBarrel.raycast = () => {};
+      readerDesk.add(lensBarrel);
+    }
+
+    // Manual focus knob on right side
+    const focusKnob = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.035, 0.035, 0.025, 20),
+      new THREE.MeshStandardMaterial({ color: 0x111613, metalness: 0.5, roughness: 0.4 })
+    );
+    focusKnob.rotation.z = Math.PI / 2;
+    focusKnob.position.set(0.445, 0.95, 0.08);
+    focusKnob.raycast = () => {};
+    readerDesk.add(focusKnob);
+
     // Microfilm projector hood
-    const hood = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.45, 0.5), new THREE.MeshStandardMaterial({ color: 0x2b3831, roughness: 0.5 }));
-    hood.position.set(0, 1.05, 0);
+    const hoodMat = new THREE.MeshStandardMaterial({ color: 0x2b3831, roughness: 0.5, metalness: 0.3 });
+    const hood = new THREE.Mesh(new THREE.BoxGeometry(0.70, 0.50, 0.45), hoodMat);
+    hood.position.set(0, 1.15, -0.05);
     readerDesk.add(hood);
 
-    // Illuminated screen face
+    // Visor hood perimeter cowl framing (hollowed bezel leaving screen cavity open)
+    const cowlTop = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.07, 0.08), hoodMat);
+    cowlTop.position.set(0, 1.375, 0.18);
+    cowlTop.raycast = () => {};
+    readerDesk.add(cowlTop);
+
+    const cowlBottom = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.07, 0.08), hoodMat);
+    cowlBottom.position.set(0, 0.925, 0.18);
+    cowlBottom.raycast = () => {};
+    readerDesk.add(cowlBottom);
+
+    const cowlLeft = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.38, 0.08), hoodMat);
+    cowlLeft.position.set(-0.305, 1.15, 0.18);
+    cowlLeft.raycast = () => {};
+    readerDesk.add(cowlLeft);
+
+    const cowlRight = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.38, 0.08), hoodMat);
+    cowlRight.position.set(0.305, 1.15, 0.18);
+    cowlRight.raycast = () => {};
+    readerDesk.add(cowlRight);
+
+    // Illuminated CRT phosphor screen face (recessed inside cowl rim, fully visible)
     const screenFace = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.45, 0.35),
+      new THREE.PlaneGeometry(0.50, 0.38),
       new THREE.MeshStandardMaterial({
         color: 0x22c55e,
         emissive: 0x15803d,
-        emissiveIntensity: 0.6,
+        emissiveIntensity: 0.65,
         roughness: 0.2
       })
     );
-    screenFace.position.set(0, 1.05, 0.251);
+    screenFace.position.set(0, 1.15, 0.178);
     readerDesk.add(screenFace);
 
+    // Desk Task Lamp (vintage gooseneck archivist lamp)
+    const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.02, 16), matBrass);
+    lampBase.position.set(-0.48, 0.89, -0.22);
+    lampBase.raycast = () => {};
+    readerDesk.add(lampBase);
+
+    const gooseneck = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.32, 12), matBrass);
+    gooseneck.position.set(-0.44, 1.05, -0.15);
+    gooseneck.rotation.z = -0.3;
+    gooseneck.rotation.x = 0.2;
+    gooseneck.raycast = () => {};
+    readerDesk.add(gooseneck);
+
+    const lampshade = new THREE.Mesh(
+      new THREE.ConeGeometry(0.07, 0.10, 16, 1, true),
+      new THREE.MeshStandardMaterial({ color: 0x1f3427, roughness: 0.5 })
+    );
+    lampshade.position.set(-0.35, 1.18, -0.05);
+    lampshade.rotation.x = Math.PI * 0.75;
+    lampshade.rotation.z = -0.3;
+    lampshade.raycast = () => {};
+    readerDesk.add(lampshade);
+
+    const lampLight = new THREE.PointLight(0xfef08a, 0.5, 2.5);
+    lampLight.position.set(-0.35, 1.14, -0.05);
+    readerDesk.add(lampLight);
+
+    // Archivist Index Card Box
+    const cardBox = new THREE.Mesh(
+      new THREE.BoxGeometry(0.22, 0.12, 0.30),
+      new THREE.MeshStandardMaterial({ color: 0x543d2b, roughness: 0.7 })
+    );
+    cardBox.position.set(0.45, 0.94, -0.15);
+    cardBox.raycast = () => {};
+    readerDesk.add(cardBox);
+
     this.group.add(readerDesk);
+
+    // Industrial Utility Shelving Racks & Cardboard Transfer Boxes
+    const matShelfSteel = new THREE.MeshStandardMaterial({ color: 0x1e2722, metalness: 0.6, roughness: 0.5 });
+    const matBoxKraft = new THREE.MeshStandardMaterial({ color: 0x856e52, roughness: 0.85 });
+    const matBoxLabel = new THREE.MeshStandardMaterial({ color: 0xd6cebe, roughness: 0.9 });
+    const matCanisterAlu = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.8, roughness: 0.3 });
+
+    const buildShelvingUnit = (x: number, z: number, rotY: number) => {
+      const unit = new THREE.Group();
+      unit.position.set(x, 0, z);
+      unit.rotation.y = rotY;
+
+      // 4 Upright slotted angle posts
+      const postGeo = new THREE.BoxGeometry(0.05, 3.6, 0.05);
+      for (const px of [-1.15, 1.15]) {
+        for (const pz of [-0.35, 0.35]) {
+          const post = new THREE.Mesh(postGeo, matShelfSteel);
+          post.position.set(px, 1.8, pz);
+          post.raycast = () => {};
+          unit.add(post);
+        }
+      }
+
+      // 4 Shelf tiers
+      const shelfGeo = new THREE.BoxGeometry(2.36, 0.03, 0.72);
+      for (let s = 0; s < 4; s++) {
+        const shelfY = 0.4 + s * 0.9;
+        const shelf = new THREE.Mesh(shelfGeo, matShelfSteel);
+        shelf.position.set(0, shelfY, 0);
+        shelf.raycast = () => {};
+        unit.add(shelf);
+
+        // Kraft Archive Boxes ("Bankers Boxes")
+        for (let b = 0; b < 3; b++) {
+          const boxGroup = new THREE.Group();
+          const bx = -0.75 + b * 0.75;
+          boxGroup.position.set(bx, shelfY + 0.17, 0);
+
+          const boxBody = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.32, 0.44), matBoxKraft);
+          boxBody.raycast = () => {};
+          boxGroup.add(boxBody);
+
+          const label = new THREE.Mesh(new THREE.PlaneGeometry(0.20, 0.09), matBoxLabel);
+          label.position.set(0, 0, 0.222);
+          label.raycast = () => {};
+          boxGroup.add(label);
+
+          boxGroup.raycast = () => {};
+          unit.add(boxGroup);
+        }
+
+        // Stacks of 16mm Microfilm Canister Tins
+        if (s === 1 || s === 3) {
+          for (let c = 0; c < 2; c++) {
+            const tinCan = new THREE.Mesh(
+              new THREE.CylinderGeometry(0.12, 0.12, 0.05, 20),
+              matCanisterAlu
+            );
+            tinCan.position.set(0.85, shelfY + 0.03 + c * 0.055, 0.1);
+            tinCan.raycast = () => {};
+            unit.add(tinCan);
+          }
+        }
+      }
+
+      return unit;
+    };
+
+    // Rear wall archive shelving racks
+    const rearShelf1 = buildShelvingUnit(-3.2, -6.4, 0);
+    this.group.add(rearShelf1);
+    const rearShelf2 = buildShelvingUnit(3.2, -6.4, 0);
+    this.group.add(rearShelf2);
+
+    // Left wall secondary archive shelving
+    const leftShelf = buildShelvingUnit(-6.3, 0.5, Math.PI / 2);
+    this.group.add(leftShelf);
+
+    // Suspended Industrial Fluorescent Trough Lights
+    const matTrough = new THREE.MeshStandardMaterial({ color: 0x1f2b23, metalness: 0.5, roughness: 0.6 });
+    const matTube = new THREE.MeshStandardMaterial({
+      color: 0x86efac,
+      emissive: 0x4ade80,
+      emissiveIntensity: 0.8,
+      roughness: 0.2
+    });
+
+    for (const lz of [-2.5, 2.5]) {
+      const fixture = new THREE.Group();
+      fixture.position.set(0, 4.1, lz);
+
+      const trough = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.1, 0.45), matTrough);
+      trough.raycast = () => {};
+      fixture.add(trough);
+
+      for (const tx of [-0.12, 0.12]) {
+        const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.2, 12), matTube);
+        tube.rotation.z = Math.PI / 2;
+        tube.position.set(0, -0.06, tx);
+        tube.raycast = () => {};
+        fixture.add(tube);
+      }
+
+      for (const cx of [-0.9, 0.9]) {
+        const chain = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.005, 0.005, 0.3, 6),
+          new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8 })
+        );
+        chain.position.set(cx, 0.15, 0);
+        chain.raycast = () => {};
+        fixture.add(chain);
+      }
+
+      this.group.add(fixture);
+    }
 
     // Sickly Chemical Green Overhead Lighting
     const greenLight = new THREE.PointLight(0x4ade80, 1.4, 12);
@@ -243,6 +570,19 @@ export class Room05_Archive implements RoomScenario {
     this.microficheScreen.teardown();
     if (this.group) {
       scene.remove(this.group);
+      this.group.traverse((child) => {
+        if ((child as THREE.Mesh).geometry) {
+          (child as THREE.Mesh).geometry.dispose();
+        }
+        if ((child as THREE.Mesh).material) {
+          const mat = (child as THREE.Mesh).material;
+          if (Array.isArray(mat)) {
+            mat.forEach(m => m.dispose());
+          } else {
+            mat.dispose();
+          }
+        }
+      });
       this.group = null;
     }
     this.crystalMesh = null;

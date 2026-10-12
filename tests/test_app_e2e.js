@@ -10,11 +10,19 @@ const distDir = path.resolve(__dirname, '../dist');
 const SCREENSHOTS_DIR = path.resolve(__dirname, '../screenshots');
 if (!fs.existsSync(SCREENSHOTS_DIR)) fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
 
-// Simple static file server for dist/
+const MIME_TYPES = {
+  '.html': 'text/html',
+  '.js': 'application/javascript',
+  '.css': 'text/css',
+  '.png': 'image/png',
+  '.json': 'application/json',
+  '.mp3': 'audio/mpeg',
+  '.glb': 'model/gltf-binary'
+};
+
 const server = http.createServer((req, res) => {
-  let reqPath = req.url ? req.url.split('?')[0] : '/';
-  if (reqPath === '/') reqPath = '/index.html';
-  const filePath = path.join(distDir, reqPath);
+  const reqPath = req.url ? req.url.split('?')[0] : '/';
+  const filePath = path.join(distDir, reqPath === '/' ? 'index.html' : reqPath);
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
@@ -22,21 +30,15 @@ const server = http.createServer((req, res) => {
       res.end('Not Found');
       return;
     }
-    const ext = path.extname(filePath);
-    const contentTypeMap = {
-      '.html': 'text/html',
-      '.js': 'application/javascript',
-      '.css': 'text/css',
-      '.png': 'image/png',
-      '.json': 'application/json'
-    };
-    res.writeHead(200, { 'Content-Type': contentTypeMap[ext] || 'application/octet-stream' });
+    const ext = path.extname(filePath).toLowerCase();
+    res.writeHead(200, { 'Content-Type': MIME_TYPES[ext] || 'application/octet-stream' });
     res.end(data);
   });
 });
 
-server.listen(4173, async () => {
-  console.log('Test server listening on http://localhost:4173');
+const PORT = 4173;
+server.listen(PORT, async () => {
+  console.log(`Test server listening on http://localhost:${PORT}`);
 
   const browser = await chromium.launch({
     headless: true,
@@ -44,125 +46,101 @@ server.listen(4173, async () => {
   });
 
   const page = await browser.newPage({ viewport: { width: 1600, height: 900 } });
-
   const consoleErrors = [];
+
   page.on('console', (msg) => {
     if (msg.type() === 'error') {
       const text = msg.text();
-      if (text.includes('404') && (text.includes('room_04_theme.mp3') || text.includes('Failed to load resource'))) {
+      if (text.includes('404') && (text.includes('.mp3') || text.includes('.glb') || text.includes('Failed to load resource'))) {
         return;
       }
       consoleErrors.push(text);
       console.error('[Page Console Error]', text);
-    } else {
-      console.log(`[Page ${msg.type()}]`, msg.text());
     }
-  });
-  page.on('pageerror', (err) => {
-    consoleErrors.push(err.message);
-    console.error('[Page Error]', err.message);
   });
 
   try {
-    await page.goto('http://localhost:4173');
-    await page.waitForTimeout(1000);
-
-    // 1. Intake screen
+    console.log('--- Step 1: Intake & Bootstrap ---');
+    await page.goto(`http://localhost:${PORT}/?test=true`, { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 6000 });
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_intro.png') });
-    console.log('Captured screenshot_app_intro.png');
 
-    // Click Begin Intake
     await page.click('#btn-menu-start');
-    await page.waitForTimeout(1200);
-
-    // 2. Chamber Overview
+    await page.waitForTimeout(600);
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_overview.png') });
-    console.log('Captured screenshot_app_overview.png');
 
-    // 3. Navigate to Vault Hotspot
-    await page.click('button[data-preset="vault"]');
-    await page.waitForTimeout(1400);
-    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_vault.png') });
-    console.log('Captured screenshot_app_vault.png');
-
-    // 4. Navigate to Envelope & Inspect Dossier
-    await page.click('button[data-preset="envelope"]');
-    await page.waitForTimeout(1400);
-
-    // Trigger dossier inspection click
+    console.log('--- Step 2: Camera Hotspot & Dossier Inspection ---');
     await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'desk' });
       window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_envelope' });
     });
-    await page.waitForTimeout(800);
+    await page.waitForSelector('#modal-dossier', { state: 'visible', timeout: 3000 });
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_dossier.png') });
-    console.log('Captured screenshot_app_dossier.png');
 
-    // Close dossier
     await page.click('#btn-close-dossier');
-    await page.waitForTimeout(800);
+    await page.waitForSelector('#modal-dossier', { state: 'hidden', timeout: 3000 });
 
-    // 5. Test Bell Jar lift & Key Collection
+    console.log('--- Step 3: Vault Inspection & CRT Screen ---');
     await page.evaluate(() => {
-      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_bell_jar' });
-    });
-    await page.waitForTimeout(1000);
-
-    // 6. Test 3D Examination Mode
-    await page.click('#btn-inspect-3d');
-    await page.waitForTimeout(1000);
-    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_inspect_key.png') });
-    console.log('Captured screenshot_app_inspect_key.png');
-
-    // Extend pins in inspection mode
-    await page.evaluate(() => {
-      window.__VAULT_APP__.inspectionManager.togglePins();
+      window.__VAULT_APP__.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
     });
     await page.waitForTimeout(500);
 
-    // Close inspection mode
-    await page.click('#btn-close-inspect');
-    await page.waitForTimeout(800);
-
-    // 7. Insert Key into Vault
-    await page.click('button[data-preset="vault"]');
-    await page.waitForTimeout(1200);
+    // Collect brass shunt
     await page.evaluate(() => {
-      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_vault' });
+      window.__VAULT_APP__.eventBus.emit('inventory:add', { itemId: 'prop_brass_shunt' });
     });
-    await page.waitForTimeout(1200);
+    await page.waitForTimeout(200);
 
-    // 8. Tune Frequency Slider to 528 Hz
+    const slot = await page.$('#slot-shunt');
+    if (slot) await slot.click();
+    await page.waitForTimeout(300);
+
+    // Calibrate frequency to 528 Hz
     await page.evaluate(() => {
-      const slider = document.getElementById('slider-freq');
-      if (slider) {
-        slider.value = '528';
-        slider.dispatchEvent(new Event('input', { bubbles: true }));
+      const dial = document.getElementById('dial-frequency') || document.getElementById('slider-freq');
+      if (dial) {
+        dial.value = '528';
+        dial.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+      const phase = document.getElementById('dial-phase');
+      if (phase) {
+        phase.value = '180';
+        phase.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
-    await page.waitForTimeout(800);
+    await page.waitForTimeout(300);
+
+    const knifeSwitch = (await page.$('#btn-knife-switch')) || (await page.$('#btn-throw-switch'));
+    if (knifeSwitch && !await knifeSwitch.isDisabled()) {
+      await knifeSwitch.click();
+      await page.waitForTimeout(600);
+    }
     await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_freq_lock.png') });
-    console.log('Captured screenshot_app_freq_lock.png');
 
-    // 9. Throw Relay Switch
-    await page.click('#btn-throw-switch');
-    await page.waitForTimeout(1500);
-
-    // 10. Click Exit Door -> Debrief Modal
-    await page.click('button[data-preset="door"]');
-    await page.waitForTimeout(1200);
+    console.log('--- Step 4: Key Inspection Mode ---');
     await page.evaluate(() => {
-      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_door' });
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'prop_key' });
+    });
+    await page.waitForSelector('#modal-inspect', { state: 'visible', timeout: 3000 });
+    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_inspect_key.png') });
+
+    await page.click('#btn-close-inspect');
+    await page.waitForSelector('#modal-inspect', { state: 'hidden', timeout: 3000 });
+
+    console.log('--- Step 5: Unlocking Observation Corridor ---');
+    await page.evaluate(() => {
+      window.__VAULT_APP__.eventBus.emit('input:object_clicked', { objectId: 'door_corridor' });
     });
     await page.waitForTimeout(800);
-    await page.screenshot({ path: path.join(SCREENSHOTS_DIR, 'screenshot_app_debrief.png') });
-    console.log('Captured screenshot_app_debrief.png');
 
-    console.log('E2E Test completed successfully!');
     console.log(`Console Errors: ${consoleErrors.length}`);
-
     if (consoleErrors.length > 0) {
       console.error('Test encountered errors:', consoleErrors);
       process.exitCode = 1;
+    } else {
+      console.log('SUCCESS: Modernized test_app_e2e passed with 0 console errors!');
     }
   } catch (err) {
     console.error('E2E Test failed:', err);

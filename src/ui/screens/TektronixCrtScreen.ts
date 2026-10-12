@@ -1,7 +1,7 @@
+import { AudioEngine } from '../../audio/AudioEngine';
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act01SterileState } from '../../types/cure';
 import { GameState } from '../../core/GameState';
-import { GameStage } from '../../types';
 
 export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   public readonly id: string = 'screen-tektronix-crt';
@@ -10,7 +10,7 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
     telephoneAnswered: false,
     brassShuntInserted: false,
     frequencyHz: 440,
-    phaseOffsetDeg: 0,
+    phaseOffsetDeg: 180,
     harmonicLocked: false,
     knifeSwitchThrown: false
   };
@@ -26,6 +26,8 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   private slotShuntEl: HTMLElement | null = null;
   private dialFrequencyEl: HTMLInputElement | null = null;
   private labelFrequencyEl: HTMLElement | null = null;
+  private dialPhaseEl: HTMLInputElement | null = null;
+  private labelPhaseEl: HTMLElement | null = null;
   private btnKnifeSwitchEl: HTMLButtonElement | null = null;
   private solveTimeoutId: number | null = null;
 
@@ -55,6 +57,11 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
               <input type="range" min="400" max="700" value="440" id="dial-frequency" data-testid="dial-frequency">
               <span id="label-frequency" data-testid="label-frequency">440.0 HZ</span>
             </div>
+            <div class="dial-cluster">
+              <label for="dial-phase">PHASE ALIGNMENT (DEG)</label>
+              <input type="range" min="0" max="360" value="180" id="dial-phase" data-testid="dial-phase">
+              <span id="label-phase" data-testid="label-phase">180.0&deg;</span>
+            </div>
             <div class="switch-cluster">
               <button class="knife-switch-handle" id="btn-knife-switch" disabled data-testid="btn-knife-switch">
                 THROW PRIMARY RELAY
@@ -76,6 +83,8 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
     this.slotShuntEl = el.querySelector('#slot-shunt') as HTMLElement;
     this.dialFrequencyEl = el.querySelector('#dial-frequency') as HTMLInputElement;
     this.labelFrequencyEl = el.querySelector('#label-frequency') as HTMLElement;
+    this.dialPhaseEl = el.querySelector('#dial-phase') as HTMLInputElement;
+    this.labelPhaseEl = el.querySelector('#label-phase') as HTMLElement;
     this.btnKnifeSwitchEl = el.querySelector('#btn-knife-switch') as HTMLButtonElement;
 
     this.bindControlEvents();
@@ -86,6 +95,12 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   private bindControlEvents(): void {
     this.slotShuntEl?.addEventListener('click', () => {
       this.handleShuntClick();
+    });
+    this.slotShuntEl?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.handleShuntClick();
+      }
     });
 
     this.dialFrequencyEl?.addEventListener('input', () => {
@@ -98,12 +113,23 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
       this.updateResonance();
     });
 
+    this.dialPhaseEl?.addEventListener('input', () => {
+      this.ensureAudio();
+      const val = parseInt(this.dialPhaseEl!.value, 10);
+      this.state.phaseOffsetDeg = val;
+      if (this.labelPhaseEl) {
+        this.labelPhaseEl.innerHTML = `${val}.0&deg;`;
+      }
+      this.updateResonance();
+    });
+
     this.btnKnifeSwitchEl?.addEventListener('click', () => {
       this.handleKnifeSwitch();
     });
   }
 
   private handleShuntClick(): void {
+    AudioEngine.getInstance().playTumblerClick();
     if (this.state.brassShuntInserted) return;
 
     const gs = GameState.getInstance();
@@ -128,7 +154,8 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
 
   private updateResonance(): void {
     const is528 = Math.abs(this.state.frequencyHz - 528) <= 2;
-    this.state.harmonicLocked = is528 && this.state.brassShuntInserted;
+    const isPhase = Math.abs(this.state.phaseOffsetDeg - 180) <= 5;
+    this.state.harmonicLocked = is528 && isPhase && this.state.brassShuntInserted;
 
     if (this.oscNode && this.audioCtx && this.gainNode) {
       this.oscNode.frequency.setTargetAtTime(this.state.frequencyHz, this.audioCtx.currentTime, 0.05);
@@ -154,6 +181,7 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   }
 
   private handleKnifeSwitch(): void {
+    AudioEngine.getInstance().playTumblerClick();
     if (!this.state.harmonicLocked || this.state.knifeSwitchThrown) return;
 
     this.state.knifeSwitchThrown = true;
@@ -169,7 +197,6 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
     }
 
     this.eventBus.emit('puzzle:switch_thrown', {});
-    GameState.getInstance().transitionTo(GameStage.ACT_1_HUB_CORRIDOR_OPEN);
     this.eventBus.emit('ui:subtitle_changed', {
       text: 'Knife switch thrown. Relay coil snaps shut. The forward observation corridor pressure seal unlatches with a concussive gasp.'
     });
@@ -333,23 +360,24 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
       const radiusY = 90 + Math.cos(t * 2) * 6;
       const cx = w / 2;
       const cy = h / 2;
-      for (let angle = 0; angle <= Math.PI * 2; angle += 0.05) {
-        const lx = cx + Math.sin(angle * 1) * radiusX;
-        const ly = cy + Math.cos(angle * 1 + t) * radiusY;
+      const phaseRad = (this.state.phaseOffsetDeg * Math.PI) / 180;
+      for (let angle = 0; angle <= Math.PI * 2 + 0.1; angle += 0.05) {
+        const lx = cx + Math.sin(angle) * radiusX;
+        const ly = cy + Math.cos(angle + phaseRad) * radiusY;
         if (angle === 0) ctx.moveTo(lx, ly);
         else ctx.lineTo(lx, ly);
       }
-      ctx.closePath();
       ctx.stroke();
       ctx.shadowBlur = 0;
     } else {
-      // Sine wave with variable frequency
+      // Sine wave with variable frequency and phase
       ctx.strokeStyle = 'rgba(74, 222, 128, 0.75)';
       ctx.beginPath();
       const midY = h / 2;
       const cycles = (this.state.frequencyHz / 400) * 4;
+      const phaseRad = (this.state.phaseOffsetDeg * Math.PI) / 180;
       for (let x = 0; x < w; x += 2) {
-        const wave = Math.sin((x / w) * Math.PI * 2 * cycles + t * 4) * 50;
+        const wave = Math.sin((x / w) * Math.PI * 2 * cycles + t * 4 + phaseRad) * 50;
         if (x === 0) ctx.moveTo(x, midY + wave);
         else ctx.lineTo(x, midY + wave);
       }

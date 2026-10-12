@@ -91,7 +91,7 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     });
 
     this.btnUnsealMonolithEl?.addEventListener('click', () => {
-      if (!this.state.acousticNullAchieved) return;
+      if (!this.checkNullCondition()) return;
       this.handleSolveTrigger();
     });
   }
@@ -108,8 +108,6 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     this.binauralAudio.ensureAudio(this.state.carrierFreqHz);
     const isNull = this.checkNullCondition();
     this.binauralAudio.updateResonance(this.state.carrierFreqHz, isNull);
-    this.syncDom();
-
     if (isNull && !this.state.acousticNullAchieved) {
       this.handleSolveTrigger();
     }

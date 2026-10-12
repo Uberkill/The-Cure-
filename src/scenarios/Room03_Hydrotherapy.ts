@@ -111,6 +111,22 @@ export class Room03_Hydrotherapy implements RoomScenario {
     const matChrome = new THREE.MeshStandardMaterial({ color: 0xe2e6e9, metalness: 0.9, roughness: 0.15 });
     const matBrass = new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.85, roughness: 0.25 });
     const matCastIron = new THREE.MeshStandardMaterial({ color: 0x1f2421, metalness: 0.6, roughness: 0.7 });
+    const matWater = new THREE.MeshPhysicalMaterial({
+      color: 0x38bdf8,
+      transmission: 0.85,
+      roughness: 0.05,
+      transparent: true,
+      opacity: 0.75
+    });
+    const matGlass = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      transmission: 0.9,
+      roughness: 0.08,
+      transparent: true,
+      opacity: 0.85
+    });
+    const matWood = new THREE.MeshStandardMaterial({ color: 0x785135, roughness: 0.8 });
+    const matCanvas = new THREE.MeshStandardMaterial({ color: 0x5a6351, roughness: 0.9 });
 
     // Wet Hexagonal Turquoise Floor
     const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), matHexTile);
@@ -146,36 +162,112 @@ export class Room03_Hydrotherapy implements RoomScenario {
     wallRight.position.set(7, 2.25, 0);
     this.group.add(wallRight);
 
-    // 2 Deep Porcelain Immersion Tubs
+    // 2 Deep Porcelain Immersion Tubs with Inner Cavities & Water Meshes
     [-2.2, 0.8].forEach((x, idx) => {
       const tubGroup = new THREE.Group();
       tubGroup.position.set(x, 0, 0);
       tubGroup.name = `prop_tub_${idx + 1}`;
 
-      // Outer body
-      const tubBody = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.9, 2.4), matPorcelain);
-      tubBody.position.y = 0.45;
-      tubBody.castShadow = true;
-      tubGroup.add(tubBody);
+      // Hollow porcelain tub assembly (base floor and 4 rim walls framing open interior cavity)
+      const tubFloor = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.15, 2.4), matPorcelain);
+      tubFloor.position.y = 0.075;
+      tubFloor.castShadow = true;
+      tubFloor.receiveShadow = true;
+      tubGroup.add(tubFloor);
 
-      // Overhead steel winch & cable
+      const tubWallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.75, 2.4), matPorcelain);
+      tubWallLeft.position.set(-0.645, 0.525, 0);
+      tubWallLeft.castShadow = true;
+      tubGroup.add(tubWallLeft);
+
+      const tubWallRight = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.75, 2.4), matPorcelain);
+      tubWallRight.position.set(0.645, 0.525, 0);
+      tubWallRight.castShadow = true;
+      tubGroup.add(tubWallRight);
+
+      const tubWallBack = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.75, 0.11), matPorcelain);
+      tubWallBack.position.set(0, 0.525, -1.145);
+      tubWallBack.castShadow = true;
+      tubGroup.add(tubWallBack);
+
+      const tubWallFront = new THREE.Mesh(new THREE.BoxGeometry(1.18, 0.75, 0.11), matPorcelain);
+      tubWallFront.position.set(0, 0.525, 1.145);
+      tubWallFront.castShadow = true;
+      tubGroup.add(tubWallFront);
+
+      // Recessed porcelain basin bottom liner
+      const basinInterior = new THREE.Mesh(
+        new THREE.BoxGeometry(1.18, 0.02, 2.18),
+        new THREE.MeshStandardMaterial({ color: 0xe2e8e2, roughness: 0.1, metalness: 0.05 })
+      );
+      basinInterior.position.y = 0.16;
+      basinInterior.raycast = () => {};
+      tubGroup.add(basinInterior);
+
+      // Translucent Turquoise Water Surface
+      const waterMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.14, 2.14), matWater);
+      waterMesh.rotation.x = -Math.PI / 2;
+      waterMesh.position.y = 0.68;
+      waterMesh.raycast = () => {};
+      tubGroup.add(waterMesh);
+
+      // Canvas Restraint Straps spanning across rim
+      [-0.55, 0.55].forEach((sz) => {
+        const strap = new THREE.Mesh(new THREE.BoxGeometry(1.26, 0.02, 0.08), matCanvas);
+        strap.position.set(0, 0.91, sz);
+        strap.castShadow = true;
+        strap.raycast = () => {};
+        tubGroup.add(strap);
+
+        const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.03, 0.10), matBrass);
+        buckle.position.set(0, 0.92, sz);
+        buckle.raycast = () => {};
+        tubGroup.add(buckle);
+      });
+
+      // Overhead Steel Winch & Cable Rigging
       const winchCable = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.5, 8), matChrome);
       winchCable.position.set(0, 2.2, 0);
+      winchCable.raycast = () => {};
       tubGroup.add(winchCable);
 
       const winchHarness = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.08, 0.4), matChrome);
       winchHarness.position.set(0, 1.0, 0);
+      winchHarness.raycast = () => {};
       tubGroup.add(winchHarness);
 
-      // Chrome dry tap
+      // Dual Chrome Mixer Tap
       const tap = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.35, 12), matChrome);
-      tap.position.set(0, 0.95, -1.0);
+      tap.position.set(0, 0.95, -1.05);
+      tap.raycast = () => {};
       tubGroup.add(tap);
+
+      [-0.1, 0.1].forEach((hx) => {
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.02, 0.06), matChrome);
+        handle.position.set(hx, 1.1, -1.05);
+        handle.raycast = () => {};
+        tubGroup.add(handle);
+      });
+
+      // Wooden Duckboard Floor Walkway beside tub
+      const duckboardGroup = new THREE.Group();
+      duckboardGroup.position.set(0.9, 0.02, 0);
+      duckboardGroup.raycast = () => {};
+
+      for (let s = -1.0; s <= 1.0; s += 0.22) {
+        const slat = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.025, 0.16), matWood);
+        slat.position.z = s;
+        slat.castShadow = true;
+        slat.receiveShadow = true;
+        slat.raycast = () => {};
+        duckboardGroup.add(slat);
+      }
+      tubGroup.add(duckboardGroup);
 
       this.group!.add(tubGroup);
     });
 
-    // Wall Piping Manifold with 3 Brass Valves
+    // Articulated Wall Piping Manifold with Borosilicate Sight Columns
     const manifoldGroup = new THREE.Group();
     manifoldGroup.position.set(4.0, 1.5, -2.0);
     manifoldGroup.name = 'prop_manifold';
@@ -184,19 +276,48 @@ export class Room03_Hydrotherapy implements RoomScenario {
     pipeMain.rotation.z = Math.PI / 2;
     manifoldGroup.add(pipeMain);
 
-    // Gauge
+    // Vertical Supply Pipes to Ceiling and Floor
+    [-1.2, 1.2].forEach((px) => {
+      const vPipe = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 4.0, 16), matChrome);
+      vPipe.position.set(px, 0.5, 0);
+      vPipe.raycast = () => {};
+      manifoldGroup.add(vPipe);
+    });
+
+    // Main Brass Pressure Gauge
     const gauge = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 0.06, 24), matBrass);
     gauge.rotation.x = Math.PI / 2;
-    gauge.position.set(0, 0.3, 0.08);
+    gauge.position.set(0, 0.35, 0.08);
     manifoldGroup.add(gauge);
 
-    // 3 Valves
+    // 3 Valves & Vertical Sight Glass Columns
     [-0.8, 0, 0.8].forEach((xOffset, i) => {
       const valveWheel = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.03, 8, 24), matBrass);
       valveWheel.position.set(xOffset, 0, 0.15);
       valveWheel.name = `prop_valve_${i}`;
       manifoldGroup.add(valveWheel);
       this.valveMeshes.push(valveWheel);
+
+      // Vertical Borosilicate Glass Sight Column
+      const sightTube = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.52, 16), matGlass);
+      sightTube.position.set(xOffset, -0.42, 0.10);
+      sightTube.raycast = () => {};
+      manifoldGroup.add(sightTube);
+
+      [-0.24, 0.24].forEach((my) => {
+        const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.052, 0.04, 16), matBrass);
+        ring.position.set(xOffset, -0.42 + my, 0.10);
+        ring.raycast = () => {};
+        manifoldGroup.add(ring);
+      });
+
+      const floatBall = new THREE.Mesh(
+        new THREE.SphereGeometry(0.032, 12, 12),
+        new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3 })
+      );
+      floatBall.position.set(xOffset, -0.42 + (i === 1 ? 0.08 : -0.06), 0.10);
+      floatBall.raycast = () => {};
+      manifoldGroup.add(floatBall);
     });
 
     this.group.add(manifoldGroup);
@@ -281,6 +402,21 @@ export class Room03_Hydrotherapy implements RoomScenario {
 
     if (objectId === 'door_return_hub') {
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      return true;
+    }
+
+    if (objectId === 'prop_drain' || objectId === 'prop_drain_lid') {
+      audio.playTumblerClick();
+      if (this.manifoldScreen.getState().manifoldBalanced || GameState.getInstance().hasCrystal('crystal_02_bronze')) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The heavy cast-iron floor drain hatch is unsealed. The sump chamber beneath is drained.'
+        });
+      } else {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'manifold' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The floor drain hatch is clamped shut by hydraulic pressure. Balance the manifold to 0.0 PSI on the wall terminal.'
+        });
+      }
       return true;
     }
 

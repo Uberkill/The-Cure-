@@ -1,5 +1,5 @@
 import { EventBus } from './EventBus';
-import { GameStage, CrystalId, AudioLogMetadata } from '../types';
+import { GameStage, CrystalId, AudioLogMetadata, SaveGameData } from '../types';
 import { Telemetry } from './Telemetry';
 
 export class GameState {
@@ -9,6 +9,7 @@ export class GameState {
   private telemetry: Telemetry;
 
   private inventory: string[] = [];
+  private flavorIndices: Map<string, number> = new Map();
   private collectedCrystals: Set<CrystalId> = new Set();
   private patchedCrystals: Set<CrystalId> = new Set();
   private pendingCrystalToPatch: CrystalId | null = null;
@@ -16,6 +17,7 @@ export class GameState {
   private calibratedFrequency: number = 440;
   private readonly targetFrequency: number = 528;
   private synthesisComplete: boolean = false;
+  private visitedRooms: Set<string> = new Set(['room_04']);
 
   private constructor() {
     this.eventBus = EventBus.getInstance();
@@ -41,6 +43,15 @@ export class GameState {
     }
   }
 
+  public getFlavorIndex(objectId: string): number {
+    return this.flavorIndices.get(objectId) || 0;
+  }
+
+  public incrementFlavorIndex(objectId: string): void {
+    const current = this.getFlavorIndex(objectId);
+    this.flavorIndices.set(objectId, current + 1);
+  }
+
   public getInventory(): string[] {
     return [...this.inventory];
   }
@@ -49,10 +60,20 @@ export class GameState {
     return this.synthesisComplete;
   }
 
+  public markRoomVisited(roomId: string): void {
+    this.visitedRooms.add(roomId);
+  }
+
+  public hasVisitedRoom(roomId: string): boolean {
+    return this.visitedRooms.has(roomId);
+  }
+
+  public getVisitedRooms(): string[] {
+    return Array.from(this.visitedRooms);
+  }
+
   private setupListeners(): void {
-    this.eventBus.on('input:object_clicked', ({ objectId }) => {
-      this.handleObjectClick(objectId);
-    });
+    // Scene object click handling delegated directly to scenario onObjectClick handlers
 
     this.eventBus.on('puzzle:crystal_collected', ({ crystalId }) => {
       this.collectedCrystals.add(crystalId);
@@ -95,50 +116,17 @@ export class GameState {
 
     this.eventBus.on('puzzle:synthesis_complete', () => {
       this.synthesisComplete = true;
+      this.transitionTo(GameStage.ACT_8_VELVET_LOUNGE);
+    });
+
+    this.eventBus.on('scenario:switch_room', ({ targetRoomId }) => {
+      if (targetRoomId) {
+        this.markRoomVisited(targetRoomId);
+      }
     });
   }
 
-  private handleObjectClick(objectId: string): void {
-    switch (objectId) {
-      case 'prop_envelope':
-        this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'envelope' });
-        this.eventBus.emit('ui:view_changed', { view: 'dossier' });
-        break;
-
-      case 'prop_bell_jar':
-      case 'prop_key':
-        
-        this.eventBus.emit('inspect:open', {
-          itemId: 'prop_key',
-          targetMesh: null as any,
-          title: 'The Brass Tuning Key',
-          subtitle: 'SPECIMEN ARTIFACT • RECOVERED FROM BELL JAR'
-        });
-        break;
-
-      case 'prop_vault':
-      case 'prop_oscilloscope':
-      case 'vault_crt_screen':
-        this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
-        if (this.pendingCrystalToPatch) {
-          this.eventBus.emit('puzzle:crt_patch_opened', { crystalId: this.pendingCrystalToPatch });
-        } else if (this.currentStage === GameStage.ACT_1_HUB_AWAKEN) {
-          this.eventBus.emit('ui:subtitle_changed', {
-            text: 'Apparatus Core Unit 04: Harmonic frequency sweep required. Tune the rotary dial to 528 Hz.'
-          });
-        } else {
-          this.eventBus.emit('ui:subtitle_changed', {
-            text: 'The cathode-ray oscilloscope phosphor grid is steady. Retrieve the next memory fragment from the corridor.'
-          });
-        }
-        break;
-
-      case 'prop_telephone':
-        this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'telephone' });
-        this.handleTelephoneAudio();
-        break;
-    }
-  }
+  
 
   private handlePatchCompleted(crystalId: CrystalId, log: AudioLogMetadata): void {
     this.eventBus.emit('ui:subtitle_changed', {
@@ -158,25 +146,7 @@ export class GameState {
     }
   }
 
-  private handleTelephoneAudio(): void {
-    if (this.currentStage < GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
-      this.eventBus.emit('ui:subtitle_changed', {
-        text: '"Subject 104. Consciousness recovery noted. Do not search for windows; Room 04 is below the waterline. Tune receiver to 528 Hz."'
-      });
-    } else if (this.currentStage <= GameStage.ACT_3_PATCH_2_COMPLETE) {
-      this.eventBus.emit('ui:subtitle_changed', {
-        text: '"Observation 44: Sorrow is not an infection. Flesh is the infection. Proceed into the deeper wards."'
-      });
-    } else if (this.currentStage <= GameStage.ACT_5_PATCH_4_COMPLETE) {
-      this.eventBus.emit('ui:subtitle_changed', {
-        text: '"The ultimate silence is prepared. The carrier is ready. Return to the core."'
-      });
-    } else {
-      this.eventBus.emit('ui:subtitle_changed', {
-        text: 'The receiver emits only faint, rhythmic wet breathing against the microphone.'
-      });
-    }
-  }
+  
 
   public transitionTo(nextStage: GameStage): boolean {
     const previousStage = this.currentStage;
@@ -201,6 +171,7 @@ export class GameState {
       this.patchedCrystals.clear();
       this.pendingCrystalToPatch = null;
       this.synthesisComplete = false;
+      this.visitedRooms = new Set(['room_04']);
     } else if (stage === GameStage.ACT_7_SYNTHESIS_BLACKOUT || stage === GameStage.ACT_8_VELVET_LOUNGE) {
       this.patchedCrystals = new Set([
         'crystal_01_quartz',
@@ -213,6 +184,16 @@ export class GameState {
       if (stage === GameStage.ACT_8_VELVET_LOUNGE) {
         this.synthesisComplete = true;
       }
+      this.visitedRooms = new Set([
+        'room_04',
+        'sleep_ward',
+        'hydrotherapy',
+        'audiology',
+        'archive',
+        'directors_office',
+        'synthesis_blackout',
+        'velvet_lounge'
+      ]);
     }
 
     this.eventBus.emit('game:stage_transition', {
@@ -239,5 +220,57 @@ export class GameState {
 
   public getCalibratedFrequency(): number {
     return this.calibratedFrequency;
+  }
+
+  public getCollectedCrystals(): CrystalId[] {
+    return Array.from(this.collectedCrystals);
+  }
+
+  public getPatchedCrystals(): CrystalId[] {
+    return Array.from(this.patchedCrystals);
+  }
+
+  public getFlavorIndices(): Record<string, number> {
+    return Object.fromEntries(this.flavorIndices.entries());
+  }
+
+  public loadFromSaveData(data: SaveGameData): void {
+    const previousStage = this.currentStage;
+    this.currentStage = data.currentStage;
+    this.inventory = Array.isArray(data.inventory) ? [...data.inventory] : [];
+    this.collectedCrystals = new Set(data.collectedCrystals || []);
+    this.patchedCrystals = new Set(data.patchedCrystals || []);
+    this.pendingCrystalToPatch = data.pendingCrystalToPatch || null;
+    this.calibratedFrequency = typeof data.calibratedFrequency === 'number' ? data.calibratedFrequency : 440;
+    this.synthesisComplete = Boolean(data.synthesisComplete);
+    this.visitedRooms = new Set(data.visitedRooms || ['room_04']);
+    this.flavorIndices = new Map(Object.entries(data.flavorIndices || {}));
+
+    this.telemetry.record('info', `GameState hydrated from save: stage ${previousStage} -> ${this.currentStage}`);
+    this.eventBus.emit('ui:inventory_updated', { inventory: [...this.inventory] });
+    this.eventBus.emit('game:stage_transition', {
+      from: previousStage,
+      to: this.currentStage
+    });
+  }
+
+  public resetToBaseline(): void {
+    const previousStage = this.currentStage;
+    this.currentStage = GameStage.ACT_1_HUB_AWAKEN;
+    this.inventory = [];
+    this.flavorIndices.clear();
+    this.collectedCrystals.clear();
+    this.patchedCrystals.clear();
+    this.pendingCrystalToPatch = null;
+    this.calibratedFrequency = 440;
+    this.synthesisComplete = false;
+    this.visitedRooms = new Set(['room_04']);
+
+    this.telemetry.record('info', 'GameState reset to baseline ACT_1_HUB_AWAKEN');
+    this.eventBus.emit('ui:inventory_updated', { inventory: [] });
+    this.eventBus.emit('game:stage_transition', {
+      from: previousStage,
+      to: GameStage.ACT_1_HUB_AWAKEN
+    });
   }
 }

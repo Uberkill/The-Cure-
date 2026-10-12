@@ -89,7 +89,7 @@ server.listen(PORT, async () => {
 
     // Click Close X button
     console.log('Testing Dossier Close X button...');
-    await page.click('#btn-close-dossier-x');
+    await page.click('#btn-close-dossier');
     await page.waitForTimeout(400);
     const isDossierClosedByX = !(await page.isVisible('#modal-dossier'));
     console.log(`Dossier Closed by X: ${isDossierClosedByX}`);

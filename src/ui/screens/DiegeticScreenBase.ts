@@ -61,19 +61,22 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
   protected bindKeyboardTrapping(): void {
     this.keydownHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        const settingsEl = document.getElementById('modal-settings');
+        if (settingsEl && !settingsEl.classList.contains('hidden')) {
+          return;
+        }
         e.preventDefault();
-        e.stopPropagation();
         this.close();
       } else {
         this.handleKeyDown(e);
       }
     };
-    window.addEventListener('keydown', this.keydownHandler, true);
+    window.addEventListener('keydown', this.keydownHandler, false);
   }
 
   protected unbindKeyboardTrapping(): void {
     if (this.keydownHandler) {
-      window.removeEventListener('keydown', this.keydownHandler, true);
+      window.removeEventListener('keydown', this.keydownHandler, false);
       this.keydownHandler = null;
     }
   }

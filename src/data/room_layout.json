@@ -1,21 +1,278 @@
 {
   "prefabs": [],
-  "prop_envelope": {
-    "x": -0.843012669089221,
-    "y": 0.856,
-    "z": 0.14661078931890795,
-    "rx": 0,
-    "ry": 0.25,
-    "rz": 0,
-    "sx": 1,
-    "sy": 1,
-    "sz": 1
+  "overrides": {
+    "prop_desk": {
+      "x": 0,
+      "y": 0,
+      "z": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE DESK]",
+      "flavorText": [
+        "An institutional heavy metal desk. The drawers have been welded shut to prevent hoarding.",
+        "There are faint scratch marks near the welded seams. Someone desperately tried to get inside.",
+        "The metal is cold. Whatever was in those drawers is long gone."
+      ]
+    },
+    "prop_chair": {
+      "x": 0.035514674586528294,
+      "y": 0,
+      "z": 1.5748269027816828,
+      "rx": -3.141592653589793,
+      "ry": -0.021154731263610106,
+      "rz": -3.141592653589793,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE CHAIR]",
+      "flavorText": [
+        "A sterile medical-grade vinyl chair. The upholstery squeaks faintly against the ambient hum of the facility.",
+        "There are deep indentations in the cushion, suggesting someone sat here for days on end without moving.",
+        "A faint serial number is stamped on the back leg: DEPT-COG-ALGN-004."
+      ]
+    },
+    "prop_planter": {
+      "x": 2.2,
+      "y": 0,
+      "z": -0.2,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE PLANTER]",
+      "flavorText": [
+        "A brutalist concrete planter. The soil is completely dry and smells faintly of ozone.",
+        "Digging a finger into the dirt reveals a hard, metallic surface an inch below. Not a real planter.",
+        "The synthetic plant leaves are covered in a thin layer of grey dust."
+      ]
+    },
+    "prop_painting": {
+      "x": 6.67,
+      "y": 3.4,
+      "z": 3.2,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE BLUEPRINT]",
+      "flavorText": [
+        "A framed structural blueprint of the facility. The architecture seems mathematically impossible.",
+        "Tracing the lines reveals that the hallways fold back on themselves in an endless, recursive loop.",
+        "There are no exits marked anywhere on this document."
+      ]
+    },
+    "prop_bell_jar": {
+      "x": 0.9666258133657231,
+      "y": 0.97,
+      "z": -0.25,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE BELL JAR]",
+      "flavorText": [
+        "A thick glass isolation bell jar. Whatever was kept inside has already been removed.",
+        "The glass is lined with microscopic lead-lattice, used for containing highly volatile cognitive anomalies.",
+        "Looking closely at the base... the seal wasn't broken from the outside. Something pushed its way out."
+      ]
+    },
+    "prop_vault": {
+      "x": -0.011960528425780936,
+      "y": 0.8398375415443238,
+      "z": -0.03199644998047957,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "flavorText": [
+        "The central frequency distillation unit. It requires precise acoustic calibration.",
+        "Its casing is lined with barium shielding. The Department used these to extract memories via sound.",
+        "A faint vibration pulses through the metal. It is actively waiting for an input frequency."
+      ],
+      "interactionPrompt": "[EXAMINE HARMONIC APPARATUS]"
+    },
+    "prop_key": {
+      "x": 0.9666273177924557,
+      "y": 0.9756339056068634,
+      "z": -0.25,
+      "rx": 0,
+      "ry": 0,
+      "rz": 1.448245564624175,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE BRASS KEY]",
+      "flavorText": [
+        "A machined brass cipher key resting on the desk surface.",
+        "Its teeth are cut in an irregular harmonic pattern designed to match the observation corridor tumbler.",
+        "The brass is cool to the touch and stamped with 'DEPT-COG-ALGN'."
+      ]
+    },
+    "prop_envelope": {
+      "x": -0.9265752250477145,
+      "y": 0.856,
+      "z": 0.2672946630710298,
+      "rx": 0,
+      "ry": 0.25,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "flavorText": [
+        "A heavy crimson envelope. 'Department of Cognitive Alignment' is embossed on the front in gold foil.",
+        "The wax seal is stamped with an insignia of a tuning fork striking a human skull.",
+        "It feels unusually heavy, as if the paper inside is lined with lead."
+      ],
+      "interactionPrompt": "[EXAMINE DOSSIER]"
+    },
+    "prop_telephone": {
+      "x": 0.9601651393321209,
+      "y": 0.85,
+      "z": 0.3899241885634903,
+      "rx": 0,
+      "ry": -0.3,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "flavorText": [
+        "A heavy bakelite rotary telephone. The line is dead, but it still hums faintly.",
+        "The rotary dial is locked in place. You can only receive calls on this device, not make them.",
+        "Putting your ear to the receiver, you don't hear a dial tone. You hear rhythmic breathing."
+      ],
+      "interactionPrompt": "[EXAMINE TELEPHONE]"
+    },
+    "prop_brass_shunt": {
+      "x": 0.7106924900899643,
+      "y": 0.86,
+      "z": 0.4994743768023281,
+      "rx": -7.082284767293501e-17,
+      "ry": -0.6700302680505021,
+      "rz": 1.570796326794902,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE BRASS SHUNT]",
+      "flavorText": [
+        "A machined brass electrical shunt. It feels dense and cold to the touch.",
+        "There are deep scorch marks around the primary terminals. It must have bridged a massive electrical load.",
+        "Engraved along the side: 'CAUTION - COGNITIVE OVERLOAD PROTOCOL ONLY'."
+      ]
+    },
+    "prop_door": {
+      "x": -6.72,
+      "y": 1.48,
+      "z": -3,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE HEAVY DOOR]",
+      "flavorText": [
+        "A solid reinforced steel blast door. It seals the Sterile Chamber from the rest of the facility.",
+        "There are no handles or keyholes on this side. It is electronically magnetically locked.",
+        "The pneumatic seals are engaged. You are completely isolated."
+      ]
+    },
+    "shell_floor": {
+      "interactionPrompt": "[EXAMINE FLOOR]",
+      "flavorText": [
+        "Cold, seamless terrazzo flooring. It has been polished to a mirror finish.",
+        "There are faint circular scuff marks near the center of the room. Someone was pacing here for days.",
+        "The floor is completely impermeable. Even harsh chemicals can be hosed right off."
+      ]
+    },
+    "wall_green_tiles": {
+      "interactionPrompt": "[EXAMINE WALL TILES]",
+      "flavorText": [
+        "Standard-issue clinical green ceramic tiles. They cover the lower half of the walls.",
+        "The grout between the tiles is meticulously clean. Too clean.",
+        "Staring at the geometric grid of tiles for too long makes your eyes hurt."
+      ]
+    },
+    "wall_chalk_upper": {
+      "interactionPrompt": "[EXAMINE UPPER WALL]",
+      "flavorText": [
+        "A harsh, chalk-white plaster wall. It reflects the fluorescent light perfectly.",
+        "If you look closely at a grazing angle, there are faint, washed-out stains.",
+        "The walls are thick. You cannot hear a single sound from the outside world."
+      ]
+    },
+    "obs_glass": {
+      "interactionPrompt": "[EXAMINE OBSERVATION WINDOW]",
+      "flavorText": [
+        "A massive two-way observation mirror. The room next door is pitch black.",
+        "The glass is heavily reinforced bulletproof acrylic. They were afraid of what you might do.",
+        "You can't see them, but you can feel them watching you from the dark."
+      ]
+    },
+    "luminaire_diffuser": {
+      "interactionPrompt": "[EXAMINE LIGHTING]",
+      "flavorText": [
+        "A recessed fluorescent luminaire. It emits a harsh, shadowless white light.",
+        "The hum of the ballast matches the exact frequency of your developing headache.",
+        "It never turns off. There is no concept of day or night in the Sterile Chamber."
+      ]
+    },
+    "door_corridor": {
+      "interactionPrompt": "[EXAMINE CORRIDOR DOOR]",
+      "flavorText": [
+        "A heavy wood-veneer door leading back out to the main facility corridor.",
+        "It has been bolted shut from the outside. The deadbolts are engaged.",
+        "There is no way back. You are supposed to be here."
+      ]
+    },
+    "corridor_peephole": {
+      "interactionPrompt": "[EXAMINE PEEPHOLE]",
+      "flavorText": [
+        "A reverse-oriented peephole. It's designed so people outside can look in, not the other way around.",
+        "Looking through it backwards reveals a tiny, distorted fish-eye view of an empty hallway.",
+        "The hallway lights just flickered off. It is completely dark out there now."
+      ]
+    },
+    "prop_oscilloscope": {
+      "interactionPrompt": "[EXAMINE OSCILLOSCOPE]",
+      "flavorText": [
+        "An analog waveform monitor attached to the Harmonic Apparatus.",
+        "The green phosphor trace is flatlining. It needs an input signal.",
+        "A sticky note on the side reads: 'DO NOT EXCEED 400Hz UNDER ANY CIRCUMSTANCES'."
+      ]
+    },
+    "vault_crt_screen": {
+      "interactionPrompt": "[EXAMINE CRT TERMINAL]",
+      "flavorText": [
+        "A monochrome cathode-ray tube display built directly into the vault casing.",
+        "The screen is burned-in with the words: 'SYSTEM LOCK. AWAITING CRYSTAL NODE'.",
+        "Touching the glass gives you a sharp static shock that tastes like copper."
+      ]
+    },
+    "exit_lock_wheel": {
+      "interactionPrompt": "[EXAMINE LOCK WHEEL]",
+      "flavorText": [
+        "A massive industrial lock wheel securing the blast door.",
+        "It is governed by the room's main terminal. Manual rotation is impossible.",
+        "The steel is cold. It hasn't been turned in years."
+      ]
+    }
   },
-  "overrides": {},
   "environment": {
-    "fogColor": "#ffffff",
-    "fogDensity": 0.007,
+    "fogColor": "#000000",
+    "fogDensity": 0.02,
     "ambColor": "#ffffff",
-    "ambIntensity": 0.75
+    "ambIntensity": 0.5
   }
 }

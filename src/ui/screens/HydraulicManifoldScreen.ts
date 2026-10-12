@@ -228,7 +228,7 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
   }
 
   private handleUnsealDrainClick(): void {
-    if (!this.state.manifoldBalanced) return;
+    if (this.calculatePressure() !== 0.0) return;
     this.handleBalanceAchieved();
   }
 
