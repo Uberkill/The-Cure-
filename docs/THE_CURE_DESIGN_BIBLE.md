@@ -105,10 +105,12 @@ Transitioning from the pristine safety of Room 04 into the Sleep Ward introduces
      - Above Cot 104: *"PATIENT ZERO // COMPLIANCE IS INEVITABLE // WE ARE THE CURE"*
    - On the headboard of Cot 104, three luminescent chemical symbols glow brightly:
      `[ NITROUS ] - [ BROMIDE ] - [ VALERIAN ]`
-3. **The Mobile Dispensary Cart Console**:
+3. **The 2-Step Mobile Dispensary Cart Console**:
    - Clicking the stainless steel cart opens the bespoke **Dispensary Cart Screen**.
-   - **Track A (Peristaltic IV Drip Calibration)**: The cart's drawer is held by an electromagnetic pulse lock tied to the patient monitor. The player adjusts a knurled roller clamp on the IV sight-glass to match the resting cardiac pulse of 68 bpm recorded on Subject 101's chart. The drip sound rhythmically synchronizes with the heart monitor, unlatching the primary deadbolt.
-   - **Track B (Chemical Tumbler Alignment)**: The player rotates the three brass tumbler wheels to align the symbols discovered under UV light: `[Nitrous] - [Bromide] - [Valerian]`.
+   - **Step 1 (Mechanical Shutter Intake Lock)**: The outer security shutter is locked by a 3-digit tumbler lock. Clinical charts across the ward reveal Subject 104's registration ID: Chart 101 notes Subject 101's resting cardiac rate (68 BPM) alongside 104's intake; Chart 103 explains that medication shutters require the patient's 3-digit code; Chart 104 confirms the registration ID is `104`. Entering `[ 1 ] - [ 0 ] - [ 4 ]` unlatches the outer shutter with a mechanical click, sliding it open to reveal the internal infusion console.
+   - **Step 2 (Internal Sedative Infusion Console)**:
+     - *Peristaltic IV Drip Calibration*: Adjusting the knurled roller clamp on the IV sight-glass to 68 BPM synchronizes droplet audio with the heart monitor.
+     - *Chemical Tumbler Alignment*: Rotating the three brass wheels to `[Nitrous] - [Bromide] - [Valerian]` unlatches the secondary electromagnetic deadbolt.
 4. **The Reward**:
    - The heavy stainless drawer rolls open on oiled ball bearings, revealing **Memory Crystal 01 (Prismatic Quartz)** pulsing with faint bioluminescence.
    - Returning to Room 04 and inserting Crystal 01 plays **Cassette Tape 01**:

@@ -89,18 +89,30 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 
 ---
 
-### Act II: The Sleep Ward — The Sedative Dispensary & UV Diagnostic Matrix
+### Act II: The Sleep Ward — The 2-Step Dispensary Machine & UV Diagnostic Matrix
 * **The Diegetic Hardware Console**:
-  A stainless steel mobile dispensary cart front-panel featuring three heavy brass rotary tumblers engraved with alchemical/chemical glyphs, a fluid sight-glass, an IV peristaltic drip roller clamp, and a darkroom Ultraviolet (UV) lamp switch.
+  A stainless steel mobile dispensary cart front-panel designed as a two-stage sequential puzzle machine: an outer mechanical security shutter protecting an internal sedative infusion console, paired with an ultraviolet (UV) diagnostic light switch.
 * **The Interactive Mechanics**:
-  1. *Diagnostic UV Shift*: Flipping the UV toggle turns the viewport into high-contrast indigo blacklight. Under UV light, glowing chemical stamps and handprints become visible across Cot 104's linens and chart.
-  2. *Drip Calibration*: The player drags the IV roller clamp to adjust flow rate. A pulsing acoustic droplet sound plays; the sight-glass fills. Matching the drip rate to the patient's recorded resting heart rate (68 bpm) unlatches the cart's electromagnetic deadbolt.
-  3. *Chemical Tumbler Alignment*: The player rotates the three brass tumblers to match the three active sedatives deduced from the charts: `[Nitrous] - [Bromide] - [Valerian]`.
+  1. *Step 1: Mechanical Shutter Intake Lock*:
+     - The cart's outer stainless steel shutter is secured by a 3-digit rotary tumbler lock (`[ 0 ] - [ 0 ] - [ 0 ]`).
+     - Examining the patient charts across the dormitory reveals Subject 104's intake registration:
+       - Chart 101: Documents resting heart rate telemetry (68 BPM) and notes Subject 104's intake record.
+       - Chart 103: Notes that medication shutters are keyed to each patient's 3-digit intake identifier.
+       - Chart 104: Explicitly records Subject 104's registration ID: `104`.
+     - Aligning the tumbler dials to `[ 1 ] - [ 0 ] - [ 4 ]` unlatches the outer shutter, sliding it open with a heavy mechanical click and exposing the internal infusion console.
+  2. *Step 2: Internal Sedative Infusion Console*:
+     - The internal console remains disabled until Step 1 is unlocked.
+     - *Diagnostic UV Shift*: Toggling the darkroom UV blacklight switch floods the ward with deep ultraviolet light. Perimeter curtain drapes are retracted against the wall to ensure unoccluded visibility of all cots.
+     - *Cot 104 Examination Hotspot*: Moving camera to `[EXAMINE: VACANT COT 104]` reveals glowing luminescent chemical stamps on Cot 104's double-sided headboard: `[ NITROUS ] - [ BROMIDE ] - [ VALERIAN ]`.
+     - *Peristaltic IV Drip Calibration*: The player drags the IV roller clamp to 68 BPM matching the cardiac rest rate from Chart 101. Droplet audio synchronizes with the sight-glass pulse.
+     - *Chemical Tumbler Alignment*: Rotating the three chemical wheels to `[Nitrous] - [Bromide] - [Valerian]` unlatches the secondary deadbolt.
+  3. *Reward*:
+     - The motorized dispensary drawer rolls open, revealing **Memory Crystal 01 (Prismatic Quartz)**.
 * **Sensory Telegraphing**:
   - Drip sight-glass bubbles in real-time. Droplet audio tempo matches visual drip animation.
   - Tumbler wheels emit heavy spring-loaded ratchet clicks with tactile resistance.
-* **Accessibility / Keyboard Fallback**: Keys 1, 2, 3 select tumblers; Up/Down keys step through the 8 chemical glyphs.
-* **Fail-Safe**: Releasing the roller clamp flushes the sight-glass back into a gravity ballast reservoir.
+* **Accessibility / Keyboard Fallback**: Keys 1, 2, 3 select active tumblers; Up/Down keys step through tumbler values.
+* **Fail-Safe**: Closing the shutter or zeroing the IV clamp non-destructively returns the mechanism to baseline.
 
 ---
 

@@ -19,6 +19,7 @@ Phase 2 | Acts III & IV (Pair II)  | Hydraulics & Chladni | Verified (0 console 
 Phase 3 | Acts V & VI (Pair III)   | Microfiche & Wiretap | Verified (0 console errors)
 Phase 4 | Acts VII & VIII (Pair IV)| Power Grid & Mirror  | Verified (0 console errors)
 Phase 5 | Full System Polish       | Performance & VRAM   | Verified (0 memory leaks)
+Phase 6 | Hardening & Blueprint    | Save, Audio & Map    | Verified (44 Unit / 26 E2E)
 ====================================================================================
 ```
 
