@@ -191,6 +191,7 @@ export class RaycastManager {
       prop_pneumatic_terminal: '[INSPECT: PNEUMATIC DOSSIER DISPATCH]',
       prop_waiting_bench: '[EXAMINE: INSTITUTIONAL WAITING BENCH]',
       prop_wall_clock: '[CHECK: SYNCHRONOUS SLAVE CLOCK]',
+      prop_bus_schematic: '[INSPECT: HIGH-VOLTAGE POWER BUS SCHEMATIC]',
 
       // Sleep Ward
       prop_uv_toggle: '[TOGGLE: SURGICAL ULTRAVIOLET LAMP]',

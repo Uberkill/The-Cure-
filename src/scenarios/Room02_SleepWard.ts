@@ -5,6 +5,7 @@ import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
 import { DispensaryCartScreen } from '../ui/screens/DispensaryCartScreen';
 import { ClinicalClipboardScreen } from '../ui/screens/ClinicalClipboardScreen';
+import { ProceduralTextures } from '../entities/ProceduralTextures';
 
 export class Room02_SleepWard implements RoomScenario {
   public id = 'sleep_ward';
@@ -21,30 +22,30 @@ export class Room02_SleepWard implements RoomScenario {
       interactionPrompt: 'Ward Overview',
       cameraPreset: {
         name: 'overview',
-        position: new THREE.Vector3(3.8, 2.5, 4.8),
-        target: new THREE.Vector3(0, 0.9, 0)
+        position: new THREE.Vector3(2.2, 2.4, 6.2),
+        target: new THREE.Vector3(0, 1.0, 0)
       }
     },
     cots: {
       id: 'cots',
       name: 'II. Observation Cots',
-      position: new THREE.Vector3(-1.4, 1.0, 0),
+      position: new THREE.Vector3(-2.8, 1.0, 0),
       interactionPrompt: '[INSPECT PATIENT CLIPBOARDS]',
       cameraPreset: {
         name: 'cots',
-        position: new THREE.Vector3(-0.6, 1.6, 1.2),
-        target: new THREE.Vector3(-1.6, 0.8, -0.4)
+        position: new THREE.Vector3(-1.0, 1.7, 0.5),
+        target: new THREE.Vector3(-3.8, 0.9, 0)
       }
     },
     trolley: {
       id: 'trolley',
       name: 'III. Dispensary Cart',
-      position: new THREE.Vector3(1.8, 1.1, -1.2),
+      position: new THREE.Vector3(2.0, 1.1, -1.5),
       interactionPrompt: '[INSPECT DISPENSARY CART]',
       cameraPreset: {
         name: 'trolley',
-        position: new THREE.Vector3(1.5, 1.6, 0.2),
-        target: new THREE.Vector3(1.8, 0.95, -1.2)
+        position: new THREE.Vector3(0.6, 1.6, -1.5),
+        target: new THREE.Vector3(2.0, 0.95, -1.5)
       }
     },
     door: {
@@ -61,12 +62,12 @@ export class Room02_SleepWard implements RoomScenario {
     cot104: {
       id: 'cot104',
       name: 'V. Vacant Cot 104',
-      position: new THREE.Vector3(-2.8, 1.2, 4.5),
+      position: new THREE.Vector3(-3.5, 1.1, 4.2),
       interactionPrompt: '[EXAMINE: VACANT COT 104]',
       cameraPreset: {
         name: 'cot104',
-        position: new THREE.Vector3(-1.2, 1.6, 5.2),
-        target: new THREE.Vector3(-2.8, 1.1, 3.8)
+        position: new THREE.Vector3(-1.4, 1.6, 4.2),
+        target: new THREE.Vector3(-4.5, 1.0, 4.2)
       }
     },
     door_portal_hydrotherapy: {
@@ -94,6 +95,8 @@ export class Room02_SleepWard implements RoomScenario {
   private crystalLight: THREE.PointLight | null = null;
   private fluorescentLights: THREE.PointLight[] = [];
   private uvLights: THREE.PointLight[] = [];
+  private trofferMat: THREE.MeshStandardMaterial | null = null;
+  private uvTrofferMat: THREE.MeshStandardMaterial | null = null;
   private uvDecals: THREE.Mesh[] = [];
   private dispensaryScreen: DispensaryCartScreen;
   private clipboardScreen: ClinicalClipboardScreen;
@@ -181,18 +184,59 @@ export class Room02_SleepWard implements RoomScenario {
     });
     this.unsubscribers.push(unsubDigits);
 
-    // Architectural Shell: Long Clinical Ward
-    const matWall = new THREE.MeshStandardMaterial({ color: 0xedf0eb, roughness: 0.5 });
-    const matTiles = new THREE.MeshStandardMaterial({ color: 0x243d33, roughness: 0.25 });
+    // Architectural Shell: Long Clinical Ward Materials
+    const matWall = new THREE.MeshStandardMaterial({ color: 0xedf0eb, roughness: 0.55 });
+    const greenTileData = ProceduralTextures.createCeramicGreenTiles();
+    const matTiles = new THREE.MeshStandardMaterial({
+      color: 0xffffff,
+      map: greenTileData.map,
+      bumpMap: greenTileData.bumpMap,
+      bumpScale: 0.04,
+      roughness: 0.22,
+      metalness: 0.05
+    });
     const matMetal = new THREE.MeshStandardMaterial({ color: 0xd4d8db, metalness: 0.85, roughness: 0.2 });
     const matOlive = new THREE.MeshStandardMaterial({ color: 0x3d4a3b, roughness: 0.8 });
     const matBrass = new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 });
 
-    // Terrazzo Floor
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 16), new THREE.MeshStandardMaterial({ color: 0xd0d5cd, roughness: 0.3 }));
+    // Terrazzo Floor with authentic aggregate and brass joints
+    const floorTex = ProceduralTextures.createTerrazzoFloor();
+    floorTex.repeat.set(6, 8);
+    const floorMat = new THREE.MeshStandardMaterial({
+      map: floorTex,
+      roughness: 0.28,
+      metalness: 0.08
+    });
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 16), floorMat);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.group.add(floor);
+
+    // Floor Brass Expansion Joints Grid
+    const jointMat = new THREE.MeshStandardMaterial({ color: 0xb59b72, metalness: 0.85, roughness: 0.25 });
+    for (let jx = -4.0; jx <= 4.0; jx += 2.0) {
+      const jointX = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.005, 16.0), jointMat);
+      jointX.position.set(jx, 0.002, 0);
+      jointX.raycast = () => {};
+      this.group.add(jointX);
+    }
+    for (let jz = -6.0; jz <= 6.0; jz += 2.0) {
+      const jointZ = new THREE.Mesh(new THREE.BoxGeometry(12.0, 0.005, 0.02), jointMat);
+      jointZ.position.set(0, 0.002, jz);
+      jointZ.raycast = () => {};
+      this.group.add(jointZ);
+    }
+
+    // Sanitary Perimeter Cove Base
+    const coveMat = new THREE.MeshStandardMaterial({ color: 0x1e3328, roughness: 0.3 });
+    const coveL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 16), coveMat);
+    coveL.position.set(-5.96, 0.06, 0);
+    coveL.raycast = () => {};
+    this.group.add(coveL);
+    const coveR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 16), coveMat);
+    coveR.position.set(5.96, 0.06, 0);
+    coveR.raycast = () => {};
+    this.group.add(coveR);
 
     // Ceiling
     const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(12, 16), matWall);
@@ -248,10 +292,26 @@ export class Room02_SleepWard implements RoomScenario {
     wallRight.position.set(6, 2.1, 0);
     this.group.add(wallRight);
 
-    // Green Wainscot along walls
+    // Green Wainscot along walls with top brass trim
     const wainscotL = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.6, 16), matTiles);
     wainscotL.position.set(-5.9, 0.8, 0);
+    wainscotL.raycast = () => {};
     this.group.add(wainscotL);
+
+    const wainscotR = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.6, 16), matTiles);
+    wainscotR.position.set(5.9, 0.8, 0);
+    wainscotR.raycast = () => {};
+    this.group.add(wainscotR);
+
+    const wainscotTrimL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 16), matBrass);
+    wainscotTrimL.position.set(-5.9, 1.62, 0);
+    wainscotTrimL.raycast = () => {};
+    this.group.add(wainscotTrimL);
+
+    const wainscotTrimR = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 16), matBrass);
+    wainscotTrimR.position.set(5.9, 1.62, 0);
+    wainscotTrimR.raycast = () => {};
+    this.group.add(wainscotTrimR);
 
     // 4 Military Observation Cots
     const cotZPositions = [-4.5, -1.5, 1.5, 4.5];
