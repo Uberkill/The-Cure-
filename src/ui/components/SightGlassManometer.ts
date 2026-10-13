@@ -21,6 +21,7 @@ export class SightGlassManometer {
   private levelReadoutEl: HTMLElement;
   private statusBadgeEl: HTMLElement;
   private pulseIntervalId: number | null = null;
+  private pulseTimeoutId: number | null = null;
   private minVal: number;
   private maxVal: number;
   private currentVal: number;
@@ -124,13 +125,18 @@ export class SightGlassManometer {
       window.clearInterval(this.pulseIntervalId);
       this.pulseIntervalId = null;
     }
+    if (this.pulseTimeoutId !== null) {
+      window.clearTimeout(this.pulseTimeoutId);
+      this.pulseTimeoutId = null;
+    }
 
     const intervalMs = Math.max(300, (60 / Math.max(1, bpm)) * 1000);
     this.pulseIntervalId = window.setInterval(() => {
       const basePct = ((this.currentVal - this.minVal) / (this.maxVal - this.minVal)) * 100;
       this.fluidEl.style.height = `${Math.min(100, basePct + 5)}%`;
-      window.setTimeout(() => {
+      this.pulseTimeoutId = window.setTimeout(() => {
         this.fluidEl.style.height = `${basePct}%`;
+        this.pulseTimeoutId = null;
       }, intervalMs * 0.35);
     }, intervalMs);
   }
@@ -143,6 +149,10 @@ export class SightGlassManometer {
     if (this.pulseIntervalId !== null) {
       window.clearInterval(this.pulseIntervalId);
       this.pulseIntervalId = null;
+    }
+    if (this.pulseTimeoutId !== null) {
+      window.clearTimeout(this.pulseTimeoutId);
+      this.pulseTimeoutId = null;
     }
     this.container.remove();
   }

@@ -1,7 +1,8 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act02SleepWardState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
-import { CrystalId } from '../../types';
+import { MechanicalTumblerBank } from '../components/MechanicalTumblerBank';
+import { SightGlassManometer } from '../components/SightGlassManometer';
 
 const CHEMICAL_OPTIONS = ['CHLORAL', 'NITROUS', 'BROMIDE', 'VALERIAN', 'SCOPOLAMINE'];
 
@@ -19,6 +20,8 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
   };
 
   private audioEngine: AudioEngine;
+  private tumblerBank: MechanicalTumblerBank | null = null;
+  private manometer: SightGlassManometer | null = null;
   private shutterDialEls: HTMLButtonElement[] = [];
   private shutterStatusEl: HTMLElement | null = null;
   private infusionClusterEl: HTMLElement | null = null;
@@ -110,6 +113,39 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       el.querySelector('#tumbler-2') as HTMLElement
     ];
 
+    const sightGlassMount = el.querySelector('#cart-sight-glass') as HTMLElement;
+    if (sightGlassMount) {
+      this.manometer = new SightGlassManometer(sightGlassMount, {
+        minVal: 30,
+        maxVal: 120,
+        initialVal: this.state.ivDripBpm,
+        targetVal: 68,
+        label: 'PERISTALTIC INFUSION MANOMETER'
+      });
+    }
+
+    const shutterMount = el.querySelector('#shutter-dials') as HTMLElement;
+    if (shutterMount) {
+      this.tumblerBank = new MechanicalTumblerBank(shutterMount, {
+        wheels: [
+          { id: 'shutter_0', options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], initialIndex: this.state.shutterDigits[0], label: 'TUMBLER 1' },
+          { id: 'shutter_1', options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], initialIndex: this.state.shutterDigits[1], label: 'TUMBLER 2' },
+          { id: 'shutter_2', options: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], initialIndex: this.state.shutterDigits[2], label: 'TUMBLER 3' }
+        ],
+        targetCombination: ['1', '0', '4'],
+        onChange: (vals) => {
+          this.state.shutterDigits = vals.map(v => parseInt(v, 10)) as [number, number, number];
+          this.shutterDialEls.forEach((btn, idx) => {
+            if (btn) btn.textContent = vals[idx];
+          });
+          this.checkShutterCombination();
+          this.eventBus.emit('puzzle:shutter_digits_changed', {
+            digits: [...this.state.shutterDigits]
+          });
+        }
+      });
+    }
+
     this.bindControlEvents();
 
     return el;
@@ -162,6 +198,10 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
     this.checkShutterCombination();
   }
 
+  public isCartUnlocked(): boolean {
+    return this.state.cartUnlocked;
+  }
+
   private checkShutterCombination(): void {
     const isMatched =
       this.state.shutterDigits[0] === 1 &&
@@ -169,6 +209,10 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       this.state.shutterDigits[2] === 4;
 
     this.state.shutterUnlocked = isMatched;
+
+    if (this.tumblerBank) {
+      this.tumblerBank.setValues(this.state.shutterDigits);
+    }
 
     this.shutterDialEls.forEach((btn, idx) => {
       if (btn) {
@@ -247,6 +291,10 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       }
     }
 
+    if (this.manometer) {
+      this.manometer.setValue(bpm);
+    }
+
     this.startPulseAnimation(bpm);
     this.checkUnlockConditions();
   }
@@ -322,13 +370,10 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       if (el) el.style.pointerEvents = 'none';
     });
 
-    this.eventBus.emit('puzzle:crystal_collected', {
-      crystalId: 'crystal_01_quartz' as CrystalId,
-      label: 'Prismatic Quartz'
-    });
+    this.eventBus.emit('puzzle:trolley_unlocked', {});
 
     this.eventBus.emit('ui:subtitle_changed', {
-      text: 'The stainless dispensary drawer unlatches with an airlock hiss. Memory Crystal 01 (Prismatic Quartz) is secured.'
+      text: 'The stainless dispensary drawer unlatches with an airlock hiss, releasing the Prismatic Quartz. Retrieve the crystal from the dispensary trolley.'
     });
 
     this.solveTimeoutId = window.setTimeout(() => {
@@ -366,6 +411,8 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
         }
       }
     });
+
+    this.tumblerBank?.setValues(this.state.shutterDigits);
 
     if (this.shutterStatusEl) {
       if (this.state.shutterUnlocked) {
@@ -425,5 +472,25 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       this.state.ivDripBpm = Math.max(30, Math.min(120, this.state.ivDripBpm + delta));
       this.syncDom();
     }
+  }
+
+  public override teardown(): void {
+    if (this.manometer) {
+      this.manometer.destroy();
+      this.manometer = null;
+    }
+    if (this.tumblerBank) {
+      this.tumblerBank.destroy();
+      this.tumblerBank = null;
+    }
+    if (this.pulseIntervalId !== null) {
+      window.clearInterval(this.pulseIntervalId);
+      this.pulseIntervalId = null;
+    }
+    if (this.solveTimeoutId !== null) {
+      window.clearTimeout(this.solveTimeoutId);
+      this.solveTimeoutId = null;
+    }
+    super.teardown();
   }
 }

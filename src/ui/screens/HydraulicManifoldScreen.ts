@@ -1,7 +1,7 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act03HydrotherapyState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
-import { CrystalId } from '../../types';
+import { BourdonGauge } from '../components/BourdonGauge';
 
 export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03HydrotherapyState> {
   public readonly id: string = 'screen-hydraulic-manifold';
@@ -14,8 +14,8 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
 
   private audioEngine: AudioEngine;
   private solveTimeoutId: number | null = null;
+  private bourdonGauge: BourdonGauge | null = null;
 
-  private needleEl: HTMLElement | null = null;
   private labelPressureEl: HTMLElement | null = null;
   private waterLevelEls: HTMLElement[] = [];
   private levelReadoutEls: HTMLElement[] = [];
@@ -42,12 +42,7 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
         <div class="diegetic-body">
           <div class="manifold-top-readout">
             <div class="bourdon-gauge-panel">
-              <span class="gauge-title">DIFFERENTIAL PRESSURE (PSI)</span>
-              <div class="bourdon-dial" id="bourdon-dial">
-                <div class="gauge-tick-ring"></div>
-                <div class="gauge-needle" id="gauge-needle" style="transform: rotate(45deg);"></div>
-                <div class="gauge-center-cap"></div>
-              </div>
+              <div class="bourdon-dial" id="bourdon-dial"></div>
               <span class="gauge-readout-value" id="label-pressure-psi" data-testid="label-pressure-psi">45.0 PSI</span>
             </div>
 
@@ -108,8 +103,20 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
     const btnClose = el.querySelector('#btn-close-manifold');
     btnClose?.addEventListener('click', () => this.close());
 
-    this.needleEl = el.querySelector('#gauge-needle');
     this.labelPressureEl = el.querySelector('#label-pressure-psi');
+
+    const dialMount = el.querySelector('#bourdon-dial') as HTMLElement;
+    if (dialMount) {
+      this.bourdonGauge = new BourdonGauge(dialMount, {
+        minPressureKpa: 0,
+        maxPressureKpa: 60,
+        nominalPressureKpa: 45,
+        targetPressureKpa: 0,
+        unitLabel: 'PSI',
+        dialTitle: 'DIFFERENTIAL PRESSURE',
+        onValveRelease: () => this.handleEmergencyDump()
+      });
+    }
 
     this.waterLevelEls = [
       el.querySelector('#water-col-0') as HTMLElement,
@@ -205,6 +212,10 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
     });
   }
 
+  public isManifoldBalanced(): boolean {
+    return this.state.manifoldBalanced;
+  }
+
   private handleBalanceAchieved(): void {
     if (this.state.manifoldBalanced) return;
     this.state.manifoldBalanced = true;
@@ -212,13 +223,10 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
     this.audioEngine.playPneumaticHiss();
     this.syncDom();
 
-    this.eventBus.emit('puzzle:crystal_collected', {
-      crystalId: 'crystal_02_bronze' as CrystalId,
-      label: 'Drained Bronze'
-    });
+    this.eventBus.emit('puzzle:manifold_balanced', {});
 
     this.eventBus.emit('ui:subtitle_changed', {
-      text: 'Hydrostatic equilibrium confirmed [ 2 - 2 - 2 ]. Pressure stabilizes at 0.0 PSI. The floor drain hatch pops open, exposing the Oxidized Bronze crystal.'
+      text: 'Hydrostatic equilibrium confirmed [ 2 - 2 - 2 ]. Pressure stabilizes at 0.0 PSI. The floor drain hatch pops open. Retrieve the Oxidized Bronze crystal from the floor drain.'
     });
 
     this.solveTimeoutId = window.setTimeout(() => {
@@ -265,12 +273,9 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
       this.labelPressureEl.textContent = `${psi.toFixed(1)} PSI`;
     }
 
-    if (this.needleEl) {
-      // Map 0..60 PSI to -90deg..+90deg
-      const angleDeg = -90 + (Math.min(psi, 60) / 60) * 180;
-      this.needleEl.style.transform = `rotate(${angleDeg}deg)`;
+    if (this.bourdonGauge) {
+      this.bourdonGauge.setPressure(psi);
     }
-
     levels.forEach((lvl, idx) => {
       const colEl = this.waterLevelEls[idx];
       const readoutEl = this.levelReadoutEls[idx];
@@ -331,5 +336,13 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
     else if (controlId === 'valve_b') this.handleValveClick(1);
     else if (controlId === 'valve_c') this.handleValveClick(2);
     else if (controlId === 'emergency_dump') this.handleEmergencyDump();
+  }
+
+  public override teardown(): void {
+    if (this.bourdonGauge) {
+      this.bourdonGauge.destroy();
+      this.bourdonGauge = null;
+    }
+    super.teardown();
   }
 }

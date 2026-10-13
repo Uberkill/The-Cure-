@@ -4,6 +4,8 @@ import { CameraDirector } from '../rendering/CameraDirector';
 import { EditorServerSync } from '../editor/EditorServerSync';
 import { EditorPrefabs } from '../editor/EditorPrefabs';
 import { EventBus } from '../core/EventBus';
+import { EditorVisualizers } from '../editor/EditorVisualizers';
+import { Telemetry } from '../core/Telemetry';
 
 
 export class Dev3DEditorPanel {
@@ -23,6 +25,25 @@ export class Dev3DEditorPanel {
   private telemetryInterval: number | null = null;
   private fpsFrames: number = 0;
   private fpsLastTime: number = performance.now();
+  private lastFrameDeltaMs: number = 16.6;
+  private fpsLastFrameTime: number = performance.now();
+  private activeLogFilter: 'all' | 'error' | 'warn' | 'info' = 'all';
+
+  private readonly prefabCatalog = [
+    { id: 'BauhausDesk', name: 'Bauhaus Desk', dims: '2.5m x 0.8m x 1.3m' },
+    { id: 'OfficeChair', name: 'Office Chair', dims: '0.55m x 0.85m' },
+    { id: 'FilingCabinet', name: 'Filing Cabinet', dims: '0.6m x 1.4m' },
+    { id: 'RotaryPhone', name: 'Rotary Phone', dims: '0.2m x 0.1m' },
+    { id: 'SurgicalLight', name: 'Surgical Light', dims: '0.3m x 1.0m' },
+    { id: 'MedicalCart', name: 'Medical Cart', dims: '0.7m x 0.9m' },
+    { id: 'Typewriter', name: 'Typewriter', dims: '0.36m x 0.2m' },
+    { id: 'PointLight', name: 'Point Light', dims: 'Omni Source' },
+    { id: 'SpotLight', name: 'Spot Light', dims: 'Conical Directed' },
+    { id: 'Painting', name: 'Wall Painting', dims: '1.2m x 0.8m' },
+    { id: 'Plant', name: 'Potted Plant', dims: '0.4m x 1.0m' },
+    { id: 'Clock', name: 'Wall Clock', dims: '0.5m x 0.5m' },
+    { id: 'Rug', name: 'Crimson Rug', dims: '3.0m x 2.0m' },
+  ];
 
   constructor(scene: THREE.Scene, cameraDirector: CameraDirector, devGizmo: DevTransformGizmo, renderer: THREE.WebGLRenderer) {
     this.scene = scene;
@@ -48,16 +69,19 @@ export class Dev3DEditorPanel {
     const panel = document.createElement('div');
     panel.id = 'dev-3d-editor-panel';
     panel.style.cssText = `
-      position: fixed; top: 24px; right: 24px; width: 320px; max-height: 90vh; overflow-y: auto;
+      position: fixed; top: 80px; right: 80px; width: 460px; max-height: calc(100vh - 120px); overflow-y: auto;
       background: rgba(16, 22, 18, 0.94); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 6px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45); font-family: 'JetBrains Mono', monospace;
+      border-radius: 6px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55); font-family: 'JetBrains Mono', monospace;
       font-size: 11px; color: #e2e6e0; padding: 16px; z-index: 10000; display: none; box-sizing: border-box; user-select: none;
     `;
 
     panel.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px;">
-        <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">Room 04 • Developer Mode</span>
-        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer; font-family: monospace;">[X]</button>
+      <div id="dev-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; cursor: grab;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80;"></span>
+          <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">The Vault • Developer Telemetry</span>
+        </div>
+        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer; font-family: monospace; font-size: 11px;">[X]</button>
       </div>
       <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
         <input type="checkbox" id="dev-chk-visualizers" checked style="accent-color: var(--color-crt-phosphor, #4ade80); cursor: pointer;">
@@ -195,29 +219,50 @@ export class Dev3DEditorPanel {
 
       <!-- TAB CONTENT: SPAWNER -->
       <div id="tab-spawner" class="editor-tab-content" style="display: none;">
-        <label style="display: block; margin-bottom: 6px; color: #88928b;">Spawn Prefab</label>
-        <select id="dev-prefab-select" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; margin-bottom: 12px; border-radius: 3px;">
-            <optgroup label="Main Props">
-              <option value="BauhausDesk">Bauhaus Desk</option>
-              <option value="OfficeChair">Office Chair</option>
-              <option value="FilingCabinet">Filing Cabinet</option>
-              <option value="RotaryPhone">Rotary Phone</option>
-              <option value="SurgicalLight">Surgical Light</option>
-              <option value="MedicalCart">Medical Cart</option>
-              <option value="Typewriter">Typewriter</option>
-            </optgroup>
-            <optgroup label="Lighting">
-              <option value="PointLight">Point Light</option>
-              <option value="SpotLight">Spot Light</option>
-            </optgroup>
-            <optgroup label="General Prefabs">
-              <option value="Painting">Painting</option>
-              <option value="Plant">Potted Plant</option>
-              <option value="Clock">Wall Clock</option>
-              <option value="Rug">Crimson Rug</option>
-            </optgroup>
-          </select>
-        <button id="dev-btn-spawn" style="width: 100%; padding: 8px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 4px; cursor: pointer;">Spawn Prefab</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="color: #88928b; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Prefab Component Library</label>
+          <span style="color: #64748b; font-size: 9px;">13 System Components</span>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;">
+          ${this.prefabCatalog.map(p => `
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="font-weight: 600; color: #bad2c8; font-size: 11px;">${p.name}</div>
+                <div style="color: #64748b; font-size: 9px; margin-top: 2px;">${p.dims}</div>
+              </div>
+              <button class="dev-btn-spawn-card" data-prefab="${p.id}" style="margin-top: 6px; padding: 4px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; font-size: 10px; cursor: pointer; width: 100%;">+ SPAWN</button>
+            </div>
+          `).join('')}
+        </div>
+
+        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; margin-top: 8px;">
+          <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Standard Spawner Dropdown</label>
+          <div style="display: flex; gap: 6px;">
+            <select id="dev-prefab-select" style="flex: 1; padding: 6px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 3px;">
+              <optgroup label="Main Props">
+                <option value="BauhausDesk">Bauhaus Desk</option>
+                <option value="OfficeChair">Office Chair</option>
+                <option value="FilingCabinet">Filing Cabinet</option>
+                <option value="RotaryPhone">Rotary Phone</option>
+                <option value="SurgicalLight">Surgical Light</option>
+                <option value="MedicalCart">Medical Cart</option>
+                <option value="Typewriter">Typewriter</option>
+              </optgroup>
+              <optgroup label="Lighting">
+                <option value="PointLight">Point Light</option>
+                <option value="SpotLight">Spot Light</option>
+              </optgroup>
+              <optgroup label="General Prefabs">
+                <option value="Painting">Painting</option>
+                <option value="Plant">Potted Plant</option>
+                <option value="Clock">Wall Clock</option>
+                <option value="Rug">Crimson Rug</option>
+              </optgroup>
+            </select>
+            <button id="dev-btn-spawn" style="padding: 6px 12px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 3px; cursor: pointer;">Spawn</button>
+          </div>
+        </div>
       </div>
 
       <!-- TAB CONTENT: LORE -->
@@ -237,36 +282,36 @@ export class Dev3DEditorPanel {
       </div>
 
       <!-- TAB CONTENT: ENVIRONMENT -->
-        <div id="tab-env" class="editor-tab-content" style="display: none;">
-          <div style="margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 8px; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px;">
-            <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Atmosphere (Fog)</label>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span>Color</span>
-              <input type="color" id="dev-env-fog-color" value="#000000" style="background:none; border:none; width: 40px; height: 24px; cursor: pointer;">
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span>Density</span>
-              <input type="range" id="dev-env-fog-density" min="0" max="0.1" step="0.001" value="0.02" style="flex:1; margin-left:8px; accent-color: #00ff88;">
-            </div>
+      <div id="tab-env" class="editor-tab-content" style="display: none;">
+        <div style="margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 8px; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px;">
+          <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Atmosphere (Fog)</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span>Color</span>
+            <input type="color" id="dev-env-fog-color" value="#000000" style="background:none; border:none; width: 40px; height: 24px; cursor: pointer;">
           </div>
-          
-          <div style="margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 8px; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px;">
-            <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Ambient Light</label>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <span>Color</span>
-              <input type="color" id="dev-env-amb-color" value="#ffffff" style="background:none; border:none; width: 40px; height: 24px; cursor: pointer;">
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span>Intensity</span>
-              <input type="range" id="dev-env-amb-intensity" min="0" max="2" step="0.05" value="0.5" style="flex:1; margin-left:8px; accent-color: #00ff88;">
-            </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Density</span>
+            <input type="range" id="dev-env-fog-density" min="0" max="0.1" step="0.001" value="0.02" style="flex:1; margin-left:8px; accent-color: #00ff88;">
           </div>
-          <button id="dev-btn-env-save" style="width: 100%; padding: 6px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; cursor: pointer;">Apply & Save Environment</button>
         </div>
+        
+        <div style="margin-bottom: 12px; background: rgba(0,0,0,0.3); padding: 8px; border: 1px solid rgba(255,255,255,0.06); border-radius: 3px;">
+          <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Ambient Light</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span>Color</span>
+            <input type="color" id="dev-env-amb-color" value="#ffffff" style="background:none; border:none; width: 40px; height: 24px; cursor: pointer;">
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span>Intensity</span>
+            <input type="range" id="dev-env-amb-intensity" min="0" max="2" step="0.5" value="0.5" style="flex:1; margin-left:8px; accent-color: #00ff88;">
+          </div>
+        </div>
+        <button id="dev-btn-env-save" style="width: 100%; padding: 6px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; cursor: pointer;">Apply & Save Environment</button>
+      </div>
 
-        <!-- TAB CONTENT: SCENARIOS -->
+      <!-- TAB CONTENT: SCENARIOS -->
       <div id="tab-scenarios" class="editor-tab-content" style="display: none;">
-        <label style="display: block; margin-bottom: 8px; color: #88928b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Narrative Acts (1 – 8)</label>
+        <label style="display: block; margin-bottom: 8px; color: #88928b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px;">Narrative Acts (1 - 8)</label>
         <button class="dev-btn-scenario" data-room="room_04" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act I] Room 01: The Sterile Chamber</button>
         <button class="dev-btn-scenario" data-room="sleep_ward" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act II] Room 02: The Sleep Ward</button>
         <button class="dev-btn-scenario" data-room="hydrotherapy" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); color: #bad2c8; border: 1px solid rgba(255,255,255,0.1); border-radius: 3px; margin-bottom: 4px; text-align: left; cursor: pointer;">[Act III] Room 03: The Hydrotherapy Room</button>
@@ -284,14 +329,102 @@ export class Dev3DEditorPanel {
 
       <!-- TAB CONTENT: TELEMETRY -->
       <div id="tab-telemetry" class="editor-tab-content" style="display: none; font-family: monospace; font-size: 11px;">
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-bottom: 8px;">
-          <div style="background: rgba(0,0,0,0.3); padding: 4px; border: 1px solid rgba(255,255,255,0.1);">FPS <div id="dev-telem-fps" style="color: #4ade80; font-size: 14px;">0</div></div>
-          <div style="background: rgba(0,0,0,0.3); padding: 4px; border: 1px solid rgba(255,255,255,0.1);">Draws <div id="dev-telem-draws" style="color: #60a5fa; font-size: 14px;">0</div></div>
-          <div style="background: rgba(0,0,0,0.3); padding: 4px; border: 1px solid rgba(255,255,255,0.1);">Tris <div id="dev-telem-tris" style="color: #fbbf24; font-size: 14px;">0</div></div>
-          <div style="background: rgba(0,0,0,0.3); padding: 4px; border: 1px solid rgba(255,255,255,0.1);">Geom <div id="dev-telem-geom" style="color: #a78bfa; font-size: 14px;">0</div></div>
+        <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Engine Telemetry & GPU Budgets</label>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px;">
+          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
+            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Framerate</div>
+            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
+              <span id="dev-telem-fps" style="color: #4ade80; font-size: 16px; font-weight: bold;">0</span>
+              <span style="color: #64748b; font-size: 9px;">FPS</span>
+            </div>
+            <div id="dev-telem-fps-badge" style="font-size: 9px; color: #4ade80; margin-top: 2px;">TARGET: 60 FPS</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
+            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Frame Delta</div>
+            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
+              <span id="dev-telem-delta" style="color: #60a5fa; font-size: 16px; font-weight: bold;">0.0</span>
+              <span style="color: #64748b; font-size: 9px;">ms</span>
+            </div>
+            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">BUDGET: 16.6ms</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
+            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Draw Calls</div>
+            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
+              <span id="dev-telem-draws" style="color: #fbbf24; font-size: 16px; font-weight: bold;">0</span>
+              <span style="color: #64748b; font-size: 9px;">/ 60</span>
+            </div>
+            <div id="dev-telem-draws-status" style="font-size: 9px; color: #4ade80; margin-top: 2px;">BUDGET OK</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
+            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Triangles</div>
+            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
+              <span id="dev-telem-tris" style="color: #a78bfa; font-size: 15px; font-weight: bold;">0</span>
+            </div>
+            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">BUDGET: 120k</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
+            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Geometries</div>
+            <div id="dev-telem-geom" style="color: #38bdf8; font-size: 15px; font-weight: bold; margin-top: 2px;">0</div>
+            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">ACTIVE BUFFERS</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
+            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Textures / Shd</div>
+            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
+              <span id="dev-telem-tex" style="color: #f472b6; font-size: 15px; font-weight: bold;">0</span>
+              <span style="color: #64748b; font-size: 9px;">/</span>
+              <span id="dev-telem-prog" style="color: #e2e6e0; font-size: 13px;">0</span>
+            </div>
+            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">GPU ALLOCATED</div>
+          </div>
         </div>
-        <label style="display: block; margin-bottom: 4px; color: #88928b;">Recent Error Logs</label>
-        <textarea id="dev-telem-logs" readonly style="width: 100%; height: 120px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #ef4444; font-size: 10px; resize: none;"></textarea>
+
+        <!-- SELECTED OBJECT SPATIAL TELEMETRY -->
+        <div id="dev-telem-spatial-card" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 8px; margin-bottom: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
+            <span style="font-weight: 600; color: #bad2c8; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">Active Spatial Matrix</span>
+            <span id="dev-spatial-name" style="color: #4ade80; font-size: 10px;">[No Selection]</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px;">
+            <div>
+              <div style="color: #88928b;">BOUNDS (WxHxD)</div>
+              <div id="dev-spatial-bounds" style="color: #fbbf24; margin-top: 2px;">--</div>
+            </div>
+            <div>
+              <div style="color: #88928b;">WORLD POS</div>
+              <div id="dev-spatial-pos" style="color: #60a5fa; margin-top: 2px;">--</div>
+            </div>
+            <div>
+              <div style="color: #88928b;">PIVOT OFFSET</div>
+              <div id="dev-spatial-pivot" style="color: #a78bfa; margin-top: 2px;">--</div>
+            </div>
+            <div>
+              <div style="color: #88928b;">GROUND STATUS</div>
+              <div id="dev-spatial-ground" style="color: #e2e6e0; margin-top: 2px;">--</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 4px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+            <button id="dev-btn-snap-floor" style="flex: 1; padding: 4px; background: rgba(74, 222, 128, 0.15); border: 1px solid #4ade80; color: #4ade80; border-radius: 3px; font-size: 10px; cursor: pointer;">SNAP FLOOR (Y=0)</button>
+            <button id="dev-btn-reset-rot" style="flex: 1; padding: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bad2c8; border-radius: 3px; font-size: 10px; cursor: pointer;">RESET ROTATION</button>
+            <button id="dev-btn-duplicate" style="flex: 1; padding: 4px; background: rgba(96, 165, 250, 0.15); border: 1px solid #60a5fa; color: #93c5fd; border-radius: 3px; font-size: 10px; cursor: pointer;">DUPLICATE</button>
+          </div>
+        </div>
+
+        <!-- RECENT LOGS / OPERATIONAL CONSOLE -->
+        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <div style="display: flex; gap: 3px;">
+              <button class="dev-log-filter active" data-filter="all" style="padding: 2px 6px; background: #3b4c42; border: 1px solid #5a7566; color: #fff; border-radius: 2px; font-size: 9px; cursor: pointer;">ALL</button>
+              <button class="dev-log-filter" data-filter="error" style="padding: 2px 6px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #ef4444; border-radius: 2px; font-size: 9px; cursor: pointer;">ERR</button>
+              <button class="dev-log-filter" data-filter="warn" style="padding: 2px 6px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fbbf24; border-radius: 2px; font-size: 9px; cursor: pointer;">WRN</button>
+              <button class="dev-log-filter" data-filter="info" style="padding: 2px 6px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #38bdf8; border-radius: 2px; font-size: 9px; cursor: pointer;">INF</button>
+            </div>
+            <div style="display: flex; gap: 4px;">
+              <button id="dev-btn-log-copy" style="padding: 2px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bad2c8; border-radius: 2px; font-size: 9px; cursor: pointer;">COPY</button>
+              <button id="dev-btn-log-clear" style="padding: 2px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #88928b; border-radius: 2px; font-size: 9px; cursor: pointer;">CLEAR</button>
+            </div>
+          </div>
+          <div id="dev-telem-logs" style="width: 100%; height: 130px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 2px; padding: 6px; font-size: 10px; font-family: monospace; overflow-y: auto; white-space: pre-wrap; word-break: break-all; box-sizing: border-box; line-height: 1.4;"></div>
+        </div>
       </div>
     `;
 
@@ -603,22 +736,21 @@ export class Dev3DEditorPanel {
       if (success) alert('Saved to room_layout.json');
     });
 
-    // Spawn Prefab
+    // Spawn Prefab (Cards & Dropdown)
+    document.querySelectorAll('.dev-btn-spawn-card').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const type = (e.currentTarget as HTMLElement).dataset.prefab;
+        if (type) {
+          this.spawnPrefab(type);
+        }
+      });
+    });
+
     document.getElementById('dev-btn-spawn')?.addEventListener('click', () => {
       const select = document.getElementById('dev-prefab-select') as HTMLSelectElement;
-      const type = select.value;
-      const prefab = EditorPrefabs.spawn(type);
-      
-      // Place in front of camera
-      const dir = new THREE.Vector3();
-      this.cameraDirector.camera.getWorldDirection(dir);
-      const pos = this.cameraDirector.camera.position.clone().add(dir.multiplyScalar(2));
-      prefab.position.copy(pos);
-      
-      this.scene.add(prefab);
-      this.devGizmo.attachMultiple([prefab]);
-      
-      EventBus.getInstance().emit('editor:rebuild_visualizers', {});
+      if (select) {
+        this.spawnPrefab(select.value);
+      }
     });
 
     // Delete Selected
@@ -730,6 +862,112 @@ export class Dev3DEditorPanel {
       document.getElementById('dev-chk-snap')?.addEventListener('change', (e) => {
         const checked = (e.target as HTMLInputElement).checked;
         this.devGizmo.setSnapping(checked);
+      });
+
+      // Header Draggable Handle
+      const header = document.getElementById('dev-panel-header');
+      if (header && this.panelContainer) {
+        let isDragging = false;
+        let startX = 0;
+        let startY = 0;
+        let initialLeft = 0;
+        let initialTop = 0;
+        const panelEl = this.panelContainer;
+
+        header.addEventListener('pointerdown', (e: PointerEvent) => {
+          if ((e.target as HTMLElement).id === 'dev-btn-close') return;
+          isDragging = true;
+          header.style.cursor = 'grabbing';
+          const rect = panelEl.getBoundingClientRect();
+          startX = e.clientX;
+          startY = e.clientY;
+          initialLeft = rect.left;
+          initialTop = rect.top;
+          panelEl.style.right = 'auto';
+          panelEl.style.left = `${initialLeft}px`;
+          panelEl.style.top = `${initialTop}px`;
+          header.setPointerCapture(e.pointerId);
+        });
+
+        header.addEventListener('pointermove', (e: PointerEvent) => {
+          if (!isDragging) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          const newLeft = Math.max(10, Math.min(window.innerWidth - 480, initialLeft + dx));
+          const newTop = Math.max(10, Math.min(window.innerHeight - 100, initialTop + dy));
+          panelEl.style.left = `${newLeft}px`;
+          panelEl.style.top = `${newTop}px`;
+        });
+
+        const stopDrag = (e: PointerEvent) => {
+          if (isDragging) {
+            isDragging = false;
+            header.style.cursor = 'grab';
+            try {
+              header.releasePointerCapture(e.pointerId);
+            } catch (_) {}
+          }
+        };
+        header.addEventListener('pointerup', stopDrag);
+        header.addEventListener('pointercancel', stopDrag);
+      }
+
+      // Spatial Actions
+      document.getElementById('dev-btn-snap-floor')?.addEventListener('click', () => {
+        const objs = this.devGizmo.getSelectedObjects();
+        if (objs.length === 0) {
+          this.showToast('No object selected to snap', 'error');
+          return;
+        }
+        for (const obj of objs) {
+          this.snapObjectToFloor(obj);
+        }
+        this.showToast('Snapped selection to floor (Y=0)', 'success');
+      });
+
+      document.getElementById('dev-btn-reset-rot')?.addEventListener('click', () => {
+        this.resetSelectedRotation();
+      });
+
+      document.getElementById('dev-btn-duplicate')?.addEventListener('click', () => {
+        this.duplicateSelected();
+      });
+
+      // Telemetry Log Controls
+      document.querySelectorAll('.dev-log-filter').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          document.querySelectorAll('.dev-log-filter').forEach(b => {
+            (b as HTMLElement).style.background = 'transparent';
+            (b as HTMLElement).style.borderColor = 'rgba(255,255,255,0.1)';
+          });
+          const target = e.currentTarget as HTMLElement;
+          target.style.background = '#3b4c42';
+          target.style.borderColor = '#5a7566';
+          this.activeLogFilter = (target.dataset.filter as any) || 'all';
+          this.refreshTelemetryLogs();
+        });
+      });
+
+      document.getElementById('dev-btn-log-copy')?.addEventListener('click', () => {
+        const history = Telemetry.getInstance().getHistory();
+        const filtered = history.filter(record => {
+          if (this.activeLogFilter === 'all') return true;
+          return record.level === this.activeLogFilter;
+        });
+        const text = filtered
+          .map(r => `[${new Date(r.timestamp).toLocaleTimeString()}] ${r.level.toUpperCase()}: ${r.message}${r.context ? ` (${r.context})` : ''}`)
+          .join('\n');
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text)
+            .then(() => this.showToast('Logs copied to clipboard', 'success'))
+            .catch(() => this.showToast('Failed to copy logs', 'error'));
+        }
+      });
+
+      document.getElementById('dev-btn-log-clear')?.addEventListener('click', () => {
+        const logsEl = document.getElementById('dev-telem-logs');
+        if (logsEl) logsEl.innerHTML = '<div style="color: #64748b; font-style: italic;">Log view cleared.</div>';
+        this.showToast('Log view cleared', 'info');
       });
   }
 
@@ -938,6 +1176,7 @@ export class Dev3DEditorPanel {
           }
         }
       }
+      this.updateSpatialTelemetry(objects.length === 1 ? objects[0] : null);
       this.isUpdatingFromUI = false;
     };
 
@@ -973,6 +1212,7 @@ export class Dev3DEditorPanel {
           document.getElementById('dev-rot-y-val')!.innerText = `${rotYInput.value}°`;
           document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
         }
+        this.updateSpatialTelemetry(obj);
         this.isUpdatingFromUI = false;
       }
     };
@@ -1001,7 +1241,11 @@ export class Dev3DEditorPanel {
   public update(): void {
     if (this.isVisible) {
       this.fpsFrames++;
-      // Note: Telemetry DOM update is handled by the 5Hz setInterval to avoid re-render lag
+      const now = performance.now();
+      if (this.fpsLastFrameTime) {
+        this.lastFrameDeltaMs = now - this.fpsLastFrameTime;
+      }
+      this.fpsLastFrameTime = now;
     }
   }
 
@@ -1014,7 +1258,7 @@ export class Dev3DEditorPanel {
       // 1. Calculate FPS
       const now = performance.now();
       const delta = (now - this.fpsLastTime) / 1000;
-      const fps = Math.round(this.fpsFrames / delta);
+      const fps = delta > 0 ? Math.round(this.fpsFrames / delta) : 0;
       this.fpsFrames = 0;
       this.fpsLastTime = now;
 
@@ -1022,33 +1266,191 @@ export class Dev3DEditorPanel {
       const draws = this.renderer.info.render.calls;
       const tris = this.renderer.info.render.triangles;
       const geom = this.renderer.info.memory.geometries;
+      const tex = this.renderer.info.memory.textures;
+      const prog = (this.renderer.info as any).programs?.length ?? 0;
 
-      // 3. Update DOM
+      // 3. Update DOM Metrics
       const fpsEl = document.getElementById('dev-telem-fps');
-      if (fpsEl) fpsEl.textContent = fps.toString();
-      
+      if (fpsEl) {
+        fpsEl.textContent = fps.toString();
+        fpsEl.style.color = fps >= 55 ? '#4ade80' : fps >= 30 ? '#fbbf24' : '#ef4444';
+      }
+      const fpsBadge = document.getElementById('dev-telem-fps-badge');
+      if (fpsBadge) {
+        fpsBadge.textContent = fps >= 55 ? 'TARGET: 60 FPS' : fps >= 30 ? 'DEGRADED: 30-54 FPS' : 'CRITICAL: <30 FPS';
+        fpsBadge.style.color = fps >= 55 ? '#4ade80' : fps >= 30 ? '#fbbf24' : '#ef4444';
+      }
+
+      const deltaEl = document.getElementById('dev-telem-delta');
+      if (deltaEl) deltaEl.textContent = this.lastFrameDeltaMs.toFixed(1);
+
       const drawsEl = document.getElementById('dev-telem-draws');
-      if (drawsEl) drawsEl.textContent = draws.toString();
-      
+      if (drawsEl) {
+        drawsEl.textContent = draws.toString();
+        drawsEl.style.color = draws <= 60 ? '#fbbf24' : '#ef4444';
+      }
+      const drawsStatus = document.getElementById('dev-telem-draws-status');
+      if (drawsStatus) {
+        drawsStatus.textContent = draws <= 60 ? 'BUDGET OK' : 'OVER BUDGET';
+        drawsStatus.style.color = draws <= 60 ? '#4ade80' : '#ef4444';
+      }
+
       const trisEl = document.getElementById('dev-telem-tris');
-      if (trisEl) trisEl.textContent = tris.toString();
-      
+      if (trisEl) {
+        trisEl.textContent = `${(tris / 1000).toFixed(1)}k`;
+        trisEl.style.color = tris <= 120000 ? '#a78bfa' : '#ef4444';
+      }
+
       const geomEl = document.getElementById('dev-telem-geom');
       if (geomEl) geomEl.textContent = geom.toString();
 
-      // 4. Update Error Logs (Copyable)
-      // We read from the Telemetry singleton's buffer
-      const logsEl = document.getElementById('dev-telem-logs') as HTMLTextAreaElement;
-      if (logsEl) {
-        // @ts-ignore - reaching into Telemetry singleton safely
-        const buffer = window.__telemetryHistory || [];
-        logsEl.value = buffer
-          .filter((l: any) => l.level === 'error' || l.level === 'warn')
-          .slice(-10)
-          .map((l: any) => `[${new Date(l.timestamp).toLocaleTimeString()}] ${l.level.toUpperCase()}: ${l.message}`)
-          .join('\n');
-      }
+      const texEl = document.getElementById('dev-telem-tex');
+      if (texEl) texEl.textContent = tex.toString();
+
+      const progEl = document.getElementById('dev-telem-prog');
+      if (progEl) progEl.textContent = prog.toString();
+
+      // 4. Update Error / Diagnostic Logs
+      this.refreshTelemetryLogs();
     }, 200); // 5Hz
+  }
+
+  public refreshTelemetryLogs(): void {
+    const logsEl = document.getElementById('dev-telem-logs');
+    if (!logsEl) return;
+    const history = Telemetry.getInstance().getHistory();
+    const filtered = history.filter(record => {
+      if (this.activeLogFilter === 'all') return true;
+      return record.level === this.activeLogFilter;
+    });
+    const recent = filtered.slice(-15);
+    if (recent.length === 0) {
+      logsEl.innerHTML = '<div style="color: #64748b; font-style: italic;">No log records matching filter.</div>';
+    } else {
+      logsEl.innerHTML = recent.map(r => {
+        const color = r.level === 'error' ? '#f87171' : r.level === 'warn' ? '#fbbf24' : '#38bdf8';
+        const time = new Date(r.timestamp).toLocaleTimeString();
+        const tag = r.level.toUpperCase();
+        return `<div style="color: ${color}; margin-bottom: 2px;">[${time}] ${tag}: ${r.message}${r.context ? ` (${r.context})` : ''}</div>`;
+      }).join('');
+    }
+  }
+
+  public spawnPrefab(type: string): THREE.Group {
+    const prefab = EditorPrefabs.spawn(type);
+    const dir = new THREE.Vector3();
+    this.cameraDirector.camera.getWorldDirection(dir);
+    dir.y = 0;
+    if (dir.lengthSq() < 0.001) dir.set(0, 0, -1);
+    dir.normalize();
+
+    const pos = this.cameraDirector.camera.position.clone().add(dir.multiplyScalar(2.2));
+    prefab.position.copy(pos);
+    this.scene.add(prefab);
+
+    this.snapObjectToFloor(prefab);
+    this.devGizmo.attachMultiple([prefab]);
+    EventBus.getInstance().emit('editor:rebuild_visualizers', {});
+    this.showToast(`Spawned: ${type}`, 'success');
+    return prefab;
+  }
+
+  public snapObjectToFloor(obj: THREE.Object3D): void {
+    obj.updateWorldMatrix(true, true);
+    const box = new THREE.Box3().setFromObject(obj);
+    if (!box.isEmpty()) {
+      const deltaY = -box.min.y;
+      obj.position.y += deltaY;
+      obj.updateWorldMatrix(true, true);
+      this.devGizmo.syncTransform();
+      this.updateSpatialTelemetry(obj);
+      EventBus.getInstance().emit('editor:rebuild_visualizers', {});
+    }
+  }
+
+  public resetSelectedRotation(): void {
+    const objs = this.devGizmo.getSelectedObjects();
+    if (objs.length === 0) {
+      this.showToast('No object selected to reset rotation', 'error');
+      return;
+    }
+    for (const obj of objs) {
+      obj.rotation.set(0, 0, 0);
+    }
+    this.devGizmo.syncTransform();
+    this.updateSpatialTelemetry(objs.length === 1 ? objs[0] : null);
+    this.showToast('Rotation reset to (0, 0, 0)', 'info');
+  }
+
+  public duplicateSelected(): void {
+    const objs = this.devGizmo.getSelectedObjects();
+    if (objs.length === 0) {
+      this.showToast('No object selected to duplicate', 'error');
+      return;
+    }
+    const clones: THREE.Object3D[] = [];
+    for (const obj of objs) {
+      const clone = obj.clone(true);
+      clone.name = `${obj.name}_copy`;
+      clone.position.x += 0.3;
+      clone.position.z += 0.3;
+      if (obj.parent) {
+        obj.parent.add(clone);
+      } else {
+        this.scene.add(clone);
+      }
+      clones.push(clone);
+    }
+    this.devGizmo.attachMultiple(clones);
+    EventBus.getInstance().emit('editor:rebuild_visualizers', {});
+    this.showToast(`Duplicated ${clones.length} object(s)`, 'success');
+  }
+
+  private updateSpatialTelemetry(obj: THREE.Object3D | null): void {
+    const nameEl = document.getElementById('dev-spatial-name');
+    const boundsEl = document.getElementById('dev-spatial-bounds');
+    const posEl = document.getElementById('dev-spatial-pos');
+    const pivotEl = document.getElementById('dev-spatial-pivot');
+    const groundEl = document.getElementById('dev-spatial-ground');
+
+    if (!obj) {
+      if (nameEl) nameEl.textContent = '[No Selection]';
+      if (boundsEl) boundsEl.textContent = '--';
+      if (posEl) posEl.textContent = '--';
+      if (pivotEl) pivotEl.textContent = '--';
+      if (groundEl) groundEl.textContent = '--';
+      return;
+    }
+
+    if (nameEl) nameEl.textContent = obj.name || 'Object';
+    if (posEl) posEl.textContent = `${obj.position.x.toFixed(2)}, ${obj.position.y.toFixed(2)}, ${obj.position.z.toFixed(2)}`;
+
+    const localBox = EditorVisualizers.computeObjectLocalBox(obj);
+    if (!localBox.isEmpty()) {
+      const size = new THREE.Vector3();
+      localBox.getSize(size);
+      const center = new THREE.Vector3();
+      localBox.getCenter(center);
+
+      if (boundsEl) boundsEl.textContent = `${size.x.toFixed(2)} x ${size.y.toFixed(2)} x ${size.z.toFixed(2)}m`;
+      if (pivotEl) pivotEl.textContent = `dX:${center.x.toFixed(2)} dY:${center.y.toFixed(2)} dZ:${center.z.toFixed(2)}`;
+
+      const worldBox = new THREE.Box3().setFromObject(obj);
+      if (groundEl) {
+        const minY = worldBox.min.y;
+        if (Math.abs(minY) < 0.02) {
+          groundEl.innerHTML = `<span style="color: #4ade80;">ON FLOOR (0.00m)</span>`;
+        } else if (minY < 0) {
+          groundEl.innerHTML = `<span style="color: #f87171;">BELOW FLOOR (${minY.toFixed(2)}m)</span>`;
+        } else {
+          groundEl.innerHTML = `<span style="color: #fbbf24;">ABOVE FLOOR (+${minY.toFixed(2)}m)</span>`;
+        }
+      }
+    } else {
+      if (boundsEl) boundsEl.textContent = 'Empty / Assembly';
+      if (pivotEl) pivotEl.textContent = '0.00, 0.00, 0.00';
+      if (groundEl) groundEl.textContent = '--';
+    }
   }
 
   private stopTelemetryLoop(): void {

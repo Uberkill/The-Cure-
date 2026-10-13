@@ -219,6 +219,14 @@ export class ReelTapeTransport {
     }
   }
 
+  public setSpeedMultiplier(multiplier: number): void {
+    this.speedMultiplier = multiplier;
+    const halfBtn = this.container.querySelectorAll('.tape-btn')[3];
+    if (halfBtn) {
+      halfBtn.classList.toggle('active', this.speedMultiplier === 0.5);
+    }
+  }
+
   private wakeAnimation(): void {
     if (document.hidden) return;
     this.isSleeping = false;

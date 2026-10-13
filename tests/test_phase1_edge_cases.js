@@ -202,8 +202,8 @@ export async function runSuite(page, baseUrl) {
     await page.waitForSelector('#screen-dispensary-cart', { state: 'hidden', timeout: 3000 });
     console.log('PASSED: Screen closed cleanly under ESC spam without phantom timer errors.');
 
-    console.log('--- Test 2.2: 3D Scene Reflection & Duplicate Prevention ---');
-    const sleepWardState = await page.evaluate(() => {
+    console.log('--- Test 2.2: 3D Scene Reflection & Physical Crystal Pickup ---');
+    const prePickupState = await page.evaluate(() => {
       const scenario = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
       const gs = window.__VAULT_APP__.gameState;
       return {
@@ -216,17 +216,41 @@ export async function runSuite(page, baseUrl) {
       };
     });
 
-    if (!sleepWardState.hasCrystal) {
-      throw new Error('GameState does not have crystal_01_quartz');
+    if (!prePickupState.trolleyUnlocked) {
+      throw new Error('Sleep Ward 3D trolley was not marked unlocked after drawer release');
     }
-    if (!sleepWardState.trolleyUnlocked) {
-      throw new Error('Sleep Ward 3D trolley was not marked unlocked');
+    if (prePickupState.crystalMeshVisible !== true) {
+      throw new Error('Sleep Ward 3D crystal mesh was not visible after drawer release');
     }
-    if (sleepWardState.crystalMeshVisible !== false) {
+    if (prePickupState.hasCrystal) {
+      throw new Error('GameState prematurely awarded crystal_01_quartz before physical pickup');
+    }
+    if (prePickupState.digits[0] !== 1 || prePickupState.digits[1] !== 0 || prePickupState.digits[2] !== 4) {
+      throw new Error(`Sleep Ward 3D digits do not reflect [1, 0, 4]: ${JSON.stringify(prePickupState.digits)}`);
+    }
+
+    // Physically pick up the crystal from the 3D trolley
+    await page.evaluate(() => {
+      const app = window.__VAULT_APP__;
+      app.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_01_quartz');
+    });
+
+    const postPickupState = await page.evaluate(() => {
+      const scenario = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      const gs = window.__VAULT_APP__.gameState;
+      return {
+        crystalCollected: scenario.crystalCollected,
+        crystalMeshVisible: scenario.crystalMesh ? scenario.crystalMesh.visible : null,
+        hasCrystal: gs.hasCrystal('crystal_01_quartz'),
+        stage: gs.getStage()
+      };
+    });
+
+    if (!postPickupState.hasCrystal) {
+      throw new Error('GameState does not have crystal_01_quartz after physical pickup');
+    }
+    if (postPickupState.crystalMeshVisible !== false) {
       throw new Error('Sleep Ward 3D crystal mesh was not hidden after collection');
-    }
-    if (sleepWardState.digits[0] !== 1 || sleepWardState.digits[1] !== 0 || sleepWardState.digits[2] !== 4) {
-      throw new Error(`Sleep Ward 3D digits do not reflect [1, 0, 4]: ${JSON.stringify(sleepWardState.digits)}`);
     }
 
     // Click 3D trolley again to verify duplicate rejection

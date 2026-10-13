@@ -10,7 +10,10 @@ export interface BourdonGaugeOptions {
   nominalPressureKpa?: number;
   targetPressureKpa?: number;
   diameterPx?: number;
+  unitLabel?: string;
+  dialTitle?: string;
   onPressureChange?: (kpa: number) => void;
+  onValveRelease?: () => void;
 }
 
 export class BourdonGauge {
@@ -25,6 +28,8 @@ export class BourdonGauge {
   private currentKpa: number;
   private targetKpa: number;
   private redLimitKpa: number;
+  private unitLabel: string;
+  private dialTitle: string;
 
   private currentAngle: number = 0;
   private targetAngle: number = 0;
@@ -41,6 +46,7 @@ export class BourdonGauge {
   private dragStartY: number = 0;
   private dragStartKpa: number = 0;
   private onPressureChange?: (kpa: number) => void;
+  private onValveRelease?: () => void;
 
   constructor(mountPoint: HTMLElement, options: BourdonGaugeOptions = {}) {
     this.minKpa = options.minPressureKpa ?? 0;
@@ -48,7 +54,10 @@ export class BourdonGauge {
     this.currentKpa = options.nominalPressureKpa ?? 101.3;
     this.targetKpa = this.currentKpa;
     this.redLimitKpa = options.targetPressureKpa ?? 100.0;
+    this.unitLabel = options.unitLabel ?? 'kPa';
+    this.dialTitle = options.dialTitle ?? 'HYDROSTATIC DAMPING';
     this.onPressureChange = options.onPressureChange;
+    this.onValveRelease = options.onValveRelease;
 
     this.container = document.createElement('div');
     this.container.className = 'bourdon-gauge-widget';
@@ -196,7 +205,11 @@ export class BourdonGauge {
   }
 
   public ventPressure(amountKpa: number = 25): void {
-    this.setPressure(this.targetKpa - amountKpa);
+    if (this.onValveRelease) {
+      this.onValveRelease();
+    } else {
+      this.setPressure(this.targetKpa - amountKpa);
+    }
   }
 
   private calculateTargetAngle(): void {
@@ -252,7 +265,7 @@ export class BourdonGauge {
   }
 
   private updateReadout(): void {
-    this.readoutEl.textContent = `${this.currentKpa.toFixed(1)} kPa`;
+    this.readoutEl.textContent = `${this.currentKpa.toFixed(1)} ${this.unitLabel}`;
   }
 
   private render(): void {
@@ -315,8 +328,10 @@ export class BourdonGauge {
     this.ctx.fillStyle = '#718096';
     this.ctx.font = '8px "JetBrains Mono", monospace';
     this.ctx.textAlign = 'center';
-    this.ctx.fillText('HYDROSTATIC DAMPING', cx, cy - 22);
-    this.ctx.fillText('KILOPASCALS (kPa)', cx, cy - 12);
+    const labelY = cy - radius * 0.40;
+    const unitY  = cy - radius * 0.24;
+    this.ctx.fillText(this.dialTitle, cx, labelY);
+    this.ctx.fillText(this.unitLabel === 'PSI' ? 'POUNDS / SQ INCH' : 'KILOPASCALS', cx, unitY);
 
     // Target Limit Needle (Red Static Needle)
     const limitFraction = (this.redLimitKpa - this.minKpa) / (this.maxKpa - this.minKpa);
@@ -325,7 +340,8 @@ export class BourdonGauge {
     this.ctx.lineWidth = 1.5;
     this.ctx.beginPath();
     this.ctx.moveTo(cx, cy);
-    this.ctx.lineTo(cx + Math.cos(limitAngle) * (radius - 14), cy + Math.sin(limitAngle) * (radius - 14));
+    const tipGap = Math.max(8, radius * 0.08);
+    this.ctx.lineTo(cx + Math.cos(limitAngle) * (radius - tipGap), cy + Math.sin(limitAngle) * (radius - tipGap));
     this.ctx.stroke();
 
     // Active Measurement Needle (Black Dynamic Needle with Counter-Balance)
@@ -334,7 +350,7 @@ export class BourdonGauge {
     this.ctx.beginPath();
     // Counter-balance tail
     this.ctx.moveTo(cx - Math.cos(this.currentAngle) * 12, cy - Math.sin(this.currentAngle) * 12);
-    this.ctx.lineTo(cx + Math.cos(this.currentAngle) * (radius - 10), cy + Math.sin(this.currentAngle) * (radius - 10));
+    this.ctx.lineTo(cx + Math.cos(this.currentAngle) * (radius - tipGap), cy + Math.sin(this.currentAngle) * (radius - tipGap));
     this.ctx.stroke();
 
     // Center pivot cap (Brass and Steel)

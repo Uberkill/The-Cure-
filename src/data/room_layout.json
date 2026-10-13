@@ -267,6 +267,84 @@
         "It is governed by the room's main terminal. Manual rotation is impossible.",
         "The steel is cold. It hasn't been turned in years."
       ]
+    },
+    "prop_lounge_bar": {
+      "x": -1.7537299069827408,
+      "y": 0,
+      "z": -0.2672932002225248,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_whiskey_glass": {
+      "x": 0.4,
+      "y": 1.14,
+      "z": 0.1,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_bar_mirror_glass": {
+      "x": -1.4,
+      "y": 2.1,
+      "z": -5.63,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_bar_mirror_silhouette": {
+      "x": -1.4,
+      "y": 1.8,
+      "z": -5.55,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_crystal_decanter": {
+      "x": 0,
+      "y": 0.9,
+      "z": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE: CUT-CRYSTAL DECANTER]"
+    },
+    "prop_switchboard": {
+      "x": 5.667663314662219,
+      "y": 1.8,
+      "z": 0,
+      "rx": 0,
+      "ry": -1.5707963267948966,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_lounge_payphone": {
+      "x": -0.24,
+      "y": 0.02,
+      "z": 0.12,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
     }
   },
   "environment": {

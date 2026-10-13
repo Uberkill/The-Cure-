@@ -16,6 +16,7 @@ export interface Room04MaterialPalette {
   crtScreen: THREE.MeshBasicMaterial;
   luminaireHousing: THREE.MeshStandardMaterial;
   luminaireDiffuser: THREE.MeshBasicMaterial;
+  wayfindingFloor: THREE.MeshStandardMaterial;
 }
 
 export interface Room04MaterialResult {
@@ -26,6 +27,7 @@ export interface Room04MaterialResult {
 export function createRoom04Materials(): Room04MaterialResult {
   const { map: tileMap, bumpMap: tileBump } = ProceduralTextures.createCeramicGreenTiles();
   const terrazzoMap = ProceduralTextures.createTerrazzoFloor();
+  const wayfindingMap = ProceduralTextures.createWayfindingFloorTexture();
   const { texture: crtTexture, update: updateOscilloscope } = ProceduralTextures.createOscilloscopeTexture();
 
   const materials: Room04MaterialPalette = {
@@ -45,6 +47,16 @@ export function createRoom04Materials(): Room04MaterialResult {
       roughness: 0.20,
       metalness: 0.05,
       map: terrazzoMap
+    }),
+    wayfindingFloor: new THREE.MeshStandardMaterial({
+      map: wayfindingMap,
+      transparent: true,
+      roughness: 0.25,
+      metalness: 0.15,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1
     }),
     brassGold: new THREE.MeshStandardMaterial({
       color: 0xc28833,

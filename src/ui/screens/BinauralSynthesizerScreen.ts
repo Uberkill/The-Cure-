@@ -1,7 +1,6 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act04AudiologyState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
-import { CrystalId } from '../../types';
 import { BINAURAL_HTML_TEMPLATE } from './binaural/BinauralTemplate';
 import { BinauralAudio } from './binaural/BinauralAudio';
 import { ChladniRenderer } from './binaural/ChladniRenderer';
@@ -113,6 +112,10 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     }
   }
 
+  public isAcousticNullAchieved(): boolean {
+    return this.state.acousticNullAchieved;
+  }
+
   private handleSolveTrigger(): void {
     if (this.state.acousticNullAchieved) return;
     this.state.acousticNullAchieved = true;
@@ -120,13 +123,10 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     this.audioEngine.playTumblerClick();
     this.syncDom();
 
-    this.eventBus.emit('puzzle:crystal_collected', {
-      crystalId: 'crystal_03_amethyst' as CrystalId,
-      label: 'Amethyst Core'
-    });
+    this.eventBus.emit('puzzle:acoustic_null_achieved', {});
 
     this.eventBus.emit('ui:subtitle_changed', {
-      text: 'Destructive acoustic cancellation confirmed [ 45° | 135° | 180° | 741 Hz ]. Absolute room silence achieved. Amethyst Core crystal unlatched.'
+      text: 'Destructive acoustic cancellation confirmed [ 45° | 135° | 180° | 741 Hz ]. Absolute room silence achieved. The speaker cone vibrates violently and unlatches the Amethyst Core crystal.'
     });
 
     this.solveTimeoutId = window.setTimeout(() => {

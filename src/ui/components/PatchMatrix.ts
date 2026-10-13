@@ -8,12 +8,16 @@ export interface PatchSocket {
   id: string;
   label: string;
   roomCode: string;
+  dataAttrs?: Record<string, string>;
 }
 
 export interface PatchMatrixOptions {
+  title?: string;
   sockets?: PatchSocket[];
+  gridColumns?: number;
   onConnect?: (fromId: string, toId: string) => void;
   onDisconnect?: (fromId: string, toId: string) => void;
+  onSocketClick?: (socketId: string) => void;
 }
 
 export class PatchMatrix {
@@ -29,6 +33,7 @@ export class PatchMatrix {
   private resizeObserver!: ResizeObserver;
   private onConnect?: (fromId: string, toId: string) => void;
   private onDisconnect?: (fromId: string, toId: string) => void;
+  private onSocketClick?: (socketId: string) => void;
 
   constructor(mountPoint: HTMLElement, options: PatchMatrixOptions = {}) {
     this.sockets = options.sockets ?? [
@@ -41,6 +46,7 @@ export class PatchMatrix {
     ];
     this.onConnect = options.onConnect;
     this.onDisconnect = options.onDisconnect;
+    this.onSocketClick = options.onSocketClick;
 
     this.container = document.createElement('div');
     this.container.className = 'patch-matrix-widget';
@@ -52,7 +58,7 @@ export class PatchMatrix {
     header.className = 'patch-header';
     const title = document.createElement('span');
     title.className = 'patch-title';
-    title.textContent = 'TELEPHONE SWITCHBOARD // JACK MATRIX';
+    title.textContent = options.title ?? 'TELEPHONE SWITCHBOARD // JACK MATRIX';
 
     this.statusEl = document.createElement('span');
     this.statusEl.className = 'patch-status';
@@ -68,20 +74,32 @@ export class PatchMatrix {
     // SVG layer for patch cables
     this.svgEl = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     this.svgEl.setAttribute('class', 'patch-svg-layer');
+    this.svgEl.style.pointerEvents = 'none';
     boardArea.appendChild(this.svgEl);
 
     // Sockets grid
     this.socketWrapEl = document.createElement('div');
     this.socketWrapEl.className = 'patch-sockets-grid';
+    if (options.gridColumns) {
+      this.socketWrapEl.style.gridTemplateColumns = `repeat(${options.gridColumns}, 1fr)`;
+    }
 
     this.sockets.forEach((s) => {
-      const socketBox = document.createElement('div');
-      socketBox.className = 'patch-socket-box';
+      const socketBox = document.createElement('button');
+      socketBox.type = 'button';
+      socketBox.id = s.id;
+      socketBox.className = 'patch-jack-btn patch-socket-box';
       socketBox.setAttribute('data-socket-id', s.id);
+      socketBox.setAttribute('data-testid', s.id);
       socketBox.setAttribute('role', 'button');
-      socketBox.setAttribute('tabindex', '0');
       socketBox.setAttribute('aria-label', `Patch Socket ${s.label}`);
       socketBox.setAttribute('aria-pressed', 'false');
+
+      if (s.dataAttrs) {
+        Object.entries(s.dataAttrs).forEach(([k, v]) => {
+          socketBox.setAttribute(k, v);
+        });
+      }
 
       const led = document.createElement('div');
       led.className = 'patch-led';
@@ -137,6 +155,11 @@ export class PatchMatrix {
   }
 
   private handleSocketClick(socketId: string): void {
+    if (this.onSocketClick) {
+      this.onSocketClick(socketId);
+      return;
+    }
+
     if (this.selectedSocketId === null) {
       // First socket selected
       this.selectedSocketId = socketId;
@@ -170,6 +193,24 @@ export class PatchMatrix {
     }
   }
 
+  public setConnection(fromId: string, toId: string): void {
+    this.connections = [[fromId, toId]];
+    this.selectedSocketId = null;
+    this.updateSocketVisuals();
+    this.renderCables();
+    this.statusEl.textContent = `PATCH CORDS: ${this.connections.length} ACTIVE`;
+  }
+
+  public setSelectedSocket(socketId: string | null): void {
+    this.selectedSocketId = socketId;
+    this.updateSocketVisuals();
+    if (socketId) {
+      this.statusEl.textContent = `ROUTE: ${socketId} -> SELECT TARGET`;
+    } else {
+      this.statusEl.textContent = `PATCH CORDS: ${this.connections.length} ACTIVE`;
+    }
+  }
+
   public clearConnections(): void {
     this.connections = [];
     this.selectedSocketId = null;
@@ -187,6 +228,7 @@ export class PatchMatrix {
 
       box.classList.toggle('selected', isSelected);
       box.classList.toggle('connected', isConnected);
+      box.classList.toggle('active', isSelected || isConnected);
       box.setAttribute('aria-pressed', isConnected || isSelected ? 'true' : 'false');
 
       const led = box.querySelector('.patch-led') as HTMLElement;

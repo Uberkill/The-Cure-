@@ -1,7 +1,6 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act05ArchiveState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
-import { CrystalId } from '../../types';
 
 export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState> {
   public readonly id: string = 'screen-microfiche-viewer';
@@ -234,7 +233,7 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
     }
   }
 
-  private handleSolveTrigger(): void {
+  public handleSolveTrigger(): void {
     if (this.state.canisterDelivered) return;
     this.state.canisterDelivered = true;
 
@@ -242,13 +241,10 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
     this.audioEngine.playTumblerClick();
     this.syncDom();
 
-    this.eventBus.emit('puzzle:crystal_collected', {
-      crystalId: 'crystal_04_obsidian' as CrystalId,
-      label: 'Pitch-Black Obsidian'
-    });
+    this.eventBus.emit('puzzle:canister_delivered', {});
 
     this.eventBus.emit('ui:subtitle_changed', {
-      text: 'Pneumatic vacuum engaged. Canister arrives with a metallic clang from Sector GAMMA-07, releasing the Pitch-Black Obsidian crystal.'
+      text: 'Pneumatic vacuum engaged. Canister arrives with a metallic clang from Sector GAMMA-07, unlatching Filing Drawer 104. Retrieve the Pitch-Black Obsidian crystal from the drawer.'
     });
 
     this.solveTimeoutId = window.setTimeout(() => {
@@ -383,6 +379,10 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
       if (parts[1]) this.selectedStation = parts[1];
     }
     this.syncDom();
+  }
+
+  public isCanisterDelivered(): boolean {
+    return this.state.canisterDelivered;
   }
 
   public reset(): void {

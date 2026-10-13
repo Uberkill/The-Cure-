@@ -38,18 +38,30 @@ export class Room06_DirectorsOffice implements RoomScenario {
     door: {
       id: 'door',
       name: 'III. Hub Corridor',
-      position: new THREE.Vector3(0, 1.8, 5.0),
+      position: new THREE.Vector3(0, 1.8, 6.8),
       interactionPrompt: '[RETURN: CENTRAL HUB]',
       cameraPreset: {
         name: 'door',
-        position: new THREE.Vector3(0, 1.8, 3.5),
-        target: new THREE.Vector3(0, 1.8, 5.2)
+        position: new THREE.Vector3(0, 1.8, 5.2),
+        target: new THREE.Vector3(0, 1.8, 7.5)
+      }
+    },
+    bookshelf: {
+      id: 'bookshelf',
+      name: 'IV. Executive Bookcase',
+      position: new THREE.Vector3(-4.5, 1.8, 0),
+      interactionPrompt: '[INSPECT DIRECTOR\'S LOG]',
+      cameraPreset: {
+        name: 'bookshelf',
+        position: new THREE.Vector3(-3.2, 1.8, 1.2),
+        target: new THREE.Vector3(-5.0, 1.8, 0)
       }
     }
   };
 
   private group: THREE.Group | null = null;
   private crystalMesh: THREE.Mesh | null = null;
+  private crystalLight: THREE.PointLight | null = null;
   private secretDrawerMesh: THREE.Mesh | null = null;
   private crystalCollected: boolean = false;
   private drawerUnlocked: boolean = false;
@@ -59,11 +71,30 @@ export class Room06_DirectorsOffice implements RoomScenario {
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
 
-    // Rehydrate state from GameState
-    this.drawerUnlocked = GameState.getInstance().hasCrystal('crystal_05_celadon');
-    this.crystalCollected = this.drawerUnlocked;
+    // Rehydrate state from GameState or Wiretap screen
+    const hasCrystal = GameState.getInstance().hasCrystal('crystal_05_celadon');
+    if (hasCrystal || this.wiretapScreen.isSafeUnlatched()) {
+      this.drawerUnlocked = true;
+      this.crystalCollected = hasCrystal;
+    } else {
+      this.drawerUnlocked = false;
+      this.crystalCollected = false;
+    }
 
     const bus = EventBus.getInstance();
+    this.unsubscribers.push(
+      bus.on('puzzle:safe_unlatched', () => {
+        this.drawerUnlocked = true;
+        if (this.secretDrawerMesh) {
+          this.secretDrawerMesh.position.z = 0.55;
+        }
+        if (this.crystalMesh && !this.crystalCollected) {
+          this.crystalMesh.position.z = 0.55;
+          this.crystalMesh.visible = true;
+          if (this.crystalLight) this.crystalLight.visible = true;
+        }
+      })
+    );
     this.unsubscribers.push(
       bus.on('puzzle:crystal_collected', (payload) => {
         const data = payload as { crystalId?: string };
@@ -71,18 +102,20 @@ export class Room06_DirectorsOffice implements RoomScenario {
           this.drawerUnlocked = true;
           this.crystalCollected = true;
           if (this.secretDrawerMesh) {
-            this.secretDrawerMesh.position.z += 0.45;
+            this.secretDrawerMesh.position.z = 0.55;
           }
           if (this.crystalMesh) {
             this.crystalMesh.visible = false;
+          }
+          if (this.crystalLight) {
+            this.crystalLight.visible = false;
           }
         }
       })
     );
 
     // Materials
-    const matVoid = new THREE.MeshBasicMaterial({ color: 0x000000 });
-    const matMahogany = new THREE.MeshStandardMaterial({ color: 0x1c120c, roughness: 0.32 });
+    const matMahogany = new THREE.MeshStandardMaterial({ color: 0x3d2314, roughness: 0.38 });
     const matPhone = new THREE.MeshStandardMaterial({ color: 0xe5e1d8, roughness: 0.38 });
     const matBrass = new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.85, roughness: 0.22 });
     const matAluminum = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.82, roughness: 0.28 });
@@ -97,20 +130,90 @@ export class Room06_DirectorsOffice implements RoomScenario {
     const matAmberGlow = new THREE.MeshBasicMaterial({ color: 0xf59e0b });
     const matCastIron = new THREE.MeshStandardMaterial({ color: 0x121513, metalness: 0.7, roughness: 0.65 });
 
-    // Infinite Dark Floor
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), matVoid);
+    // Architectural Finishes
+    const matWoodFloor = new THREE.MeshStandardMaterial({ color: 0x2b1c12, roughness: 0.45 });
+    const matTeakWall = new THREE.MeshStandardMaterial({ color: 0x362114, roughness: 0.55, metalness: 0.1 });
+    const matCeiling = new THREE.MeshStandardMaterial({ color: 0x1a211c, roughness: 0.75 });
+
+    // Smoked Teak Parquet Floor (Brutalist Executive Suite)
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 16), matWoodFloor);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.group.add(floor);
 
-    // Return Door (A solitary floating portal frame in the black void)
+    // Coffered Ceiling
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(14, 16), matCeiling);
+    ceiling.position.y = 4.8;
+    ceiling.rotation.x = Math.PI / 2;
+    this.group.add(ceiling);
+
+    const wallBack = new THREE.Mesh(new THREE.BoxGeometry(14, 5.0, 0.2), matTeakWall);
+    wallBack.position.set(0, 2.4, -8);
+    this.group.add(wallBack);
+
+    const wallFront = new THREE.Mesh(new THREE.BoxGeometry(14, 5.0, 0.2), matTeakWall);
+    wallFront.position.set(0, 2.4, 8);
+    this.group.add(wallFront);
+
+    const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 5.0, 16), matTeakWall);
+    wallLeft.position.set(-7, 2.4, 0);
+    this.group.add(wallLeft);
+
+    const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.2, 5.0, 16), matTeakWall);
+    wallRight.position.set(7, 2.4, 0);
+    this.group.add(wallRight);
+
+    // Return Door Frame
     const doorFrame = new THREE.Mesh(
-      new THREE.BoxGeometry(1.6, 3.0, 0.12),
-      new THREE.MeshStandardMaterial({ color: 0x242424, emissive: 0x111111 })
+      new THREE.BoxGeometry(1.6, 3.0, 0.16),
+      new THREE.MeshStandardMaterial({ color: 0x242424, metalness: 0.4, roughness: 0.5 })
     );
-    doorFrame.position.set(0, 1.5, 4.9);
+    doorFrame.position.set(0, 1.5, 7.85);
     doorFrame.name = 'door_return_hub';
     this.group.add(doorFrame);
+
+    // Floor-to-Ceiling Mahogany Bookcase
+    const bookshelfGroup = new THREE.Group();
+    bookshelfGroup.position.set(-6.5, 0, 0);
+    bookshelfGroup.name = 'prop_director_bookshelf';
+    bookshelfGroup.userData.interactionPrompt = '[INSPECT: DIRECTOR\'S LOGBOOK]';
+
+    const shelfFrame = new THREE.Mesh(new THREE.BoxGeometry(0.7, 4.4, 4.8), matMahogany);
+    shelfFrame.position.y = 2.2;
+    shelfFrame.castShadow = true;
+    shelfFrame.receiveShadow = true;
+    bookshelfGroup.add(shelfFrame);
+
+    const matBookLeather = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.7 });
+    for (let s = 0; s < 5; s++) {
+      const shelfY = 0.6 + s * 0.8;
+      const shelfPlank = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.04, 4.6), matMahogany);
+      shelfPlank.position.y = shelfY;
+      shelfPlank.raycast = () => {};
+      bookshelfGroup.add(shelfPlank);
+
+      for (let b = -2.0; b <= 2.0; b += 0.4) {
+        const bookH = 0.3 + ((Math.abs(b * 3)) % 0.25);
+        const book = new THREE.Mesh(
+          new THREE.BoxGeometry(0.35, bookH, 0.22),
+          Math.sin(b * 5) > 0 ? matBookLeather : matLeather
+        );
+        book.position.set(0.05, shelfY + bookH / 2, b);
+        book.raycast = () => {};
+        bookshelfGroup.add(book);
+      }
+    }
+    this.group.add(bookshelfGroup);
+
+    // Executive Teak Credenza against back wall
+    const credenza = new THREE.Mesh(
+      new THREE.BoxGeometry(4.2, 0.95, 0.75),
+      matMahogany
+    );
+    credenza.position.set(0, 0.475, -7.4);
+    credenza.name = 'prop_director_credenza';
+    credenza.castShadow = true;
+    this.group.add(credenza);
 
     // Executive Desk Suite Group
     const deskGroup = new THREE.Group();
@@ -199,7 +302,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
     phoneCord.raycast = () => {};
     phoneGroup.add(phoneCord);
 
-    deskGroup.add(phoneGroup);
+    this.group.add(phoneGroup);
 
     // Articulated Nagra SN Reel-to-Reel Tape Deck (flush on desk surface y=1.02)
     const tapeDeckGroup = new THREE.Group();
@@ -245,7 +348,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
       tapeDeckGroup.add(btn);
     });
 
-    deskGroup.add(tapeDeckGroup);
+    this.group.add(tapeDeckGroup);
 
     // Brass Desk Carriage Clock (11:03 Escapement Interlock, resting flush on desk surface y=1.02)
     const clockGroup = new THREE.Group();
@@ -302,13 +405,14 @@ export class Room06_DirectorsOffice implements RoomScenario {
     clockGroup.add(handle);
 
     clockGroup.userData.interactionPrompt = '[INSPECT BRASS CARRIAGE CLOCK (11:03)]';
-    deskGroup.add(clockGroup);
+    this.group.add(clockGroup);
 
     // Secret Mahogany Drawer
     const drawerMat = new THREE.MeshStandardMaterial({ color: 0x140c08, roughness: 0.4 });
     this.secretDrawerMesh = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.12, 0.6), drawerMat);
     this.secretDrawerMesh.position.set(0.6, 0.88, 0.1);
     this.secretDrawerMesh.name = 'prop_director_drawer';
+    this.secretDrawerMesh.userData.isSubPart = true;
     deskGroup.add(this.secretDrawerMesh);
 
     // Memory Crystal 05 (The Glowing Celadon Core)
@@ -326,6 +430,12 @@ export class Room06_DirectorsOffice implements RoomScenario {
     this.crystalMesh.name = 'crystal_05_celadon';
     this.crystalMesh.castShadow = true;
     this.crystalMesh.visible = false;
+
+    this.crystalLight = new THREE.PointLight(0x34d399, 1.5, 3);
+    this.crystalLight.position.set(0, 0, 0);
+    this.crystalLight.visible = false;
+    this.crystalMesh.add(this.crystalLight);
+
     deskGroup.add(this.crystalMesh);
 
     this.group.add(deskGroup);
@@ -333,29 +443,26 @@ export class Room06_DirectorsOffice implements RoomScenario {
     // High-Backed Tufted Leather Executive Chair Behind Desk
     const chairGroup = new THREE.Group();
     chairGroup.position.set(0, 0, -1.05);
-    chairGroup.name = 'mesh_executive_chair';
+    chairGroup.name = 'prop_executive_chair';
+    chairGroup.userData.flavorText = 'A high-backed executive chair upholstered in tufted black leather. It is cold to the touch.';
 
     const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 0.05, 16), matCastIron);
     chairBase.position.y = 0.025;
-    chairBase.raycast = () => {};
     chairGroup.add(chairBase);
 
     const chairStem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 12), matCastIron);
     chairStem.position.y = 0.25;
-    chairStem.raycast = () => {};
     chairGroup.add(chairStem);
 
     const chairSeat = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.12, 0.68), matLeather);
     chairSeat.position.y = 0.54;
     chairSeat.castShadow = true;
-    chairSeat.raycast = () => {};
     chairGroup.add(chairSeat);
 
     const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.82, 0.12), matLeather);
     chairBack.position.set(0, 0.98, -0.30);
     chairBack.rotation.x = -0.08;
     chairBack.castShadow = true;
-    chairBack.raycast = () => {};
     chairGroup.add(chairBack);
 
     this.group.add(chairGroup);
@@ -381,14 +488,26 @@ export class Room06_DirectorsOffice implements RoomScenario {
     spot.castShadow = true;
     this.group.add(spot);
 
+    // Warm executive office fill illumination
+    const officeCeilingLight = new THREE.PointLight(0xfffaed, 1.2, 16);
+    officeCeilingLight.position.set(0, 4.2, 0);
+    this.group.add(officeCeilingLight);
+
+    const bookcaseLight = new THREE.PointLight(0xffeed1, 1.0, 10);
+    bookcaseLight.position.set(-3.5, 2.5, 0);
+    this.group.add(bookcaseLight);
+
     // Re-entry state restoration
     if (this.drawerUnlocked) {
       if (this.secretDrawerMesh) {
-        this.secretDrawerMesh.position.z += 0.45;
+        this.secretDrawerMesh.position.z = 0.55;
       }
-      if (this.crystalMesh && !this.crystalCollected) {
-        this.crystalMesh.position.z += 0.45;
-        this.crystalMesh.visible = true;
+      if (this.crystalMesh) {
+        this.crystalMesh.position.z = 0.55;
+        if (!this.crystalCollected) {
+          this.crystalMesh.visible = true;
+          if (this.crystalLight) this.crystalLight.visible = true;
+        }
       }
     }
 
@@ -399,6 +518,10 @@ export class Room06_DirectorsOffice implements RoomScenario {
     this.unsubscribers.forEach((u) => u());
     this.unsubscribers = [];
     this.wiretapScreen.teardown();
+    if (this.crystalLight) {
+      this.crystalLight.dispose();
+      this.crystalLight = null;
+    }
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -412,7 +535,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
-      bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_directors_office' });
       return true;
     }
 
@@ -444,10 +567,35 @@ export class Room06_DirectorsOffice implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'prop_director_bookshelf') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'bookshelf' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'DIRECTOR\'S LOGBOOK // CONFIDENTIAL: "The wiretap carriage escapement must be synchronized at eleven-zero-three (11:03). Reduce playback speed to half-speed (0.5x) to reveal the voice beneath the tape hiss, then dial 1-1-0-3 on the rotary telephone exchange."'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_director_credenza') {
+      audio.playTumblerClick();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Executive Credenza: Stamped clinical memoranda detailing Subject 104\'s scheduled extraction and memory calibration.'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_executive_chair') {
+      audio.playTumblerClick();
+      bus.emit('ui:subtitle_changed', {
+        text: 'A high-backed executive chair upholstered in tufted black leather. It is cold to the touch.'
+      });
+      return true;
+    }
+
     if (objectId === 'prop_void_phone') {
       audio.playHandsetClick();
       if (!this.drawerUnlocked) {
-        if (!this.wiretapScreen.getState().safeUnlatched) {
+        if (!this.wiretapScreen.isSafeUnlatched()) {
           bus.emit('ui:subtitle_changed', {
             text: 'You lift the heavy receiver. Faint, wet breathing echoes... A voice whispers: "Align the carriage escapement at eleven-zero-three."'
           });
@@ -456,14 +604,15 @@ export class Room06_DirectorsOffice implements RoomScenario {
         this.drawerUnlocked = true;
         audio.playPneumaticHiss();
         if (this.secretDrawerMesh) {
-          this.secretDrawerMesh.position.z += 0.45;
+          this.secretDrawerMesh.position.z = 0.55;
         }
-        if (this.crystalMesh) {
-          this.crystalMesh.position.z += 0.45;
+        if (this.crystalMesh && !this.crystalCollected) {
+          this.crystalMesh.position.z = 0.55;
           this.crystalMesh.visible = true;
+          if (this.crystalLight) this.crystalLight.visible = true;
         }
         bus.emit('ui:subtitle_changed', {
-          text: 'You lift the heavy receiver. Faint, wet breathing echoes. A magnetic relay clicks open a secret mahogany drawer, revealing the Celadon Core!'
+          text: 'You lift the heavy receiver. Faint, wet breathing echoes. A magnetic relay clicks open a secret mahogany drawer, revealing the Celadon Core! Click the crystal to retrieve it.'
         });
       } else {
         bus.emit('ui:subtitle_changed', {
@@ -474,9 +623,17 @@ export class Room06_DirectorsOffice implements RoomScenario {
     }
 
     if (objectId === 'crystal_05_celadon') {
+      if (!this.drawerUnlocked) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Glowing Celadon Core is locked inside the secret executive desk drawer.'
+        });
+        return true;
+      }
+
       if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_05_celadon')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
+        if (this.crystalLight) this.crystalLight.visible = false;
         audio.playTumblerClick();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_05_celadon' as CrystalId,
@@ -495,6 +652,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
   public update(_delta: number): void {
     if (this.crystalMesh && this.crystalMesh.visible) {
       this.crystalMesh.rotation.y += 0.02;
+      this.crystalMesh.position.y = 1.02 + Math.sin(performance.now() * 0.003) * 0.03;
     }
   }
 }

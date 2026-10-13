@@ -1136,6 +1136,50 @@ When any diegetic screen opens:
    - Implement `GalvanometerGridScreen` and `SwitchboardMirrorScreen`.
    - Finalize the Lynchian psychological descent and telephone climax.
 
+---
+
+## 7. Environmental Investigation, Rummaging Architecture & Room Scale Differentiation
+
+### 7.1 Architectural Scale & Chamber Dimensional Hierarchy
+To prevent repetitive square-room fatigue, every chamber in Sub-Level 04 features unique volumetric proportions, ceiling heights, and acoustic-spatial identities:
+
+1. **Room 04: The Central Hub / Sterile Reception** (10.0m x 10.0m x 3.6m ceiling)
+   - Symmetrical octagonal reception hall lined with sterile alabaster acoustic tiles.
+   - Central pedestal holding the cathode apparatus, with radial corridors leading to clinical wings.
+2. **Room 02: The Sleep Ward** (8.0m x 18.0m x 3.8m ceiling)
+   - Elongated clinical dormitory with tubular Marcel Breuer cots, continuous fluorescent ceiling battens, and mobile dispensary cart.
+3. **Room 03: The Hydrotherapy Room** (12.0m x 12.0m x 4.0m ceiling)
+   - Subterranean tiled wet room with sunken Roman bathtubs, exposed copper plumbing manifolds, and central hydrostatic drainage grates.
+4. **Room 04: The Audiology Vault** (10.0m x 16.0m x 4.6m ceiling)
+   - Elongated acoustic testing bunker with asymmetric baffle wedges, angled sound traps, raised technician monitoring alcove, and central Chladni resonance table.
+5. **Room 05: The Archive** (12.0m x 20.0m x 6.0m ceiling)
+   - Towering double-height records repository with floor-to-ceiling steel shelving bays, overhead industrial gantry beam, and oak card catalog annex.
+6. **Room 06: The Director's Office** (14.0m x 16.0m x 4.8m ceiling)
+   - Mid-century brutalist executive sanctum with smoked teak paneling, coffered ceiling, floor-to-ceiling recessed mahogany bookcases, executive credenza, and solitary void portal.
+7. **Room 07: The Synthesis Chamber** (10.0m x 10.0m x 3.6m ceiling)
+   - Corrupted Hub overlay in total blackout; fallen concrete tiles, sagging copper busbars, overloaded specimen cathode aura, and wall-mounted high-voltage power bus.
+8. **Room 08: The Velvet Lounge** (16.0m x 18.0m x 4.2m ceiling)
+   - Expansive Lynchian subterranean lounge with tufted red velvet drapery, curved mahogany bar with brass foot rail, round marble cocktail table, gilded mirror reflection paradox, and PBX switchboard desk.
+
+### 7.2 Multi-Sensory Environmental Clue Triangulation
+Puzzles are designed so that players do not need to guess arbitrary numbers or rely on single isolated notes. Instead, solutions are diegetically distributed across physical props in the environment:
+
+- **Audiology Vault (Act IV)**:
+  - Open Laboratory Logbook (`prop_audiology_journal`) on technician desk documents the 180-degree phase inversion theory and opposing horn angles (Left: 45 degrees, Right: 135 degrees).
+  - Graphic Acoustic Score on back wall documents the 741 Hz Solfeggio frequency required to shatter the physical diaphragm latch.
+- **The Archive (Act V)**:
+  - Oak Card Catalog Bank (`prop_card_catalog`) contains Subject 104's cross-reference index card specifying Pneumatic Dispatch Sector GAMMA-07 and optical microfiche condenser focus 0.85.
+  - Cabinet 099 points directly to Cabinet 7 (Drawer 104), guiding the player through the filing labyrinth.
+- **The Director's Office (Act VI)**:
+  - Floor-to-Ceiling Mahogany Bookshelf (`prop_director_bookshelf`) contains the Director's confidential log detailing the 11:03 chronometer setting, half-speed (0.5x) playback, and rotary telephone exchange dialing.
+  - Breathing Phone (`prop_void_phone`) whispers corroborating temporal clues before unlatching the secret mahogany drawer.
+- **The Synthesis Chamber (Act VII)**:
+  - Wall-Mounted High-Voltage Bus Schematic (`prop_bus_schematic`) specifies nominal 100 Ohm shunt balance per channel and the 200 Ohm total differential trip threshold.
+- **The Velvet Lounge (Act VIII)**:
+  - Operator PBX Routing Directory (`prop_switchboard_directory`) on the switchboard desk specifies patching Trunk 104 to Line 4 for outside exchange.
+  - Gilded Mirror (`prop_bar_mirror_glass`) reflection reveals the decanter placement paradox required to restore equilibrium.
+
+
 
 ---
 
@@ -1380,6 +1424,31 @@ The recovered crystals are not inanimate gemstones; they are crystallized neurol
 | **Crystal 05** | Glowing Celadon Core | The Director | The Eradication of Conscience | Tape 05: The Final Inoculation |
 
 With every crystal recovered and slotted into the central CRT console, the pristine alabaster walls of the Hub bruise and discolor. The visual corruption is the side-effect of Subject 104 successfully digesting the trauma of others and erasing it from their own mind.
+
+---
+
+## 4. Architectural Chamber Dimensions & Environmental Clue Architecture
+
+### Architectural Scale Hierarchy
+The eight chambers progress from sterile, ordered institutional geometry to distorted, spacious, and uncannily domestic spaces:
+
+* **Room 04 (Sterile Reception / The Hub)**: Symmetrical octagonal rotunda (10.0m x 10.0m x 3.6m ceiling). Pristine white alabaster acoustic tiles that slowly corrupt and bruise with each crystal digested.
+* **Room 02 (The Sleep Ward)**: Elongated, narrow infirmary dormitory (8.0m x 18.0m x 3.8m ceiling) with tubular Breuer cots, somniferous intravenous stands, and mobile dispensary cart.
+* **Room 03 (The Hydrotherapy Room)**: Tiled subterranean wet chamber (12.0m x 12.0m x 4.0m ceiling) with sunken bathtubs, copper plumbing manifolds, and central floor drainage grates.
+* **Room 04 (The Audiology Vault)**: Elongated acoustic testing bunker (10.0m x 16.0m x 4.6m ceiling) featuring sound-absorbent foam baffles, angled sound traps, raised technician monitoring alcove, and open lab journals.
+* **Room 05 (The Archive)**: Cathedral-like records repository (12.0m x 20.0m x 6.0m ceiling) with double-height steel shelving aisles, overhead gantry structure, coiling floor cables, and oak card catalog bank.
+* **Room 06 (The Director's Office)**: Mid-century brutalist executive sanctum (14.0m x 16.0m x 4.8m ceiling) with coffered ceiling, smoked teak paneling, wall-to-wall recessed mahogany bookcases, executive credenza, and solitary void threshold.
+* **Room 07 (The Synthesis Chamber)**: Shattered Hub in complete blackout (10.0m x 10.0m x 3.6m ceiling) with fallen concrete debris, live sparking conduits, overloading cathode aura, and wall-mounted high-voltage galvanometer power bus.
+* **Room 08 (The Velvet Lounge)**: Curvilinear subterranean lounge (16.0m x 18.0m x 4.2m ceiling) with deep burgundy velvet drapes, curved mahogany bar, brass foot rail, round marble cocktail table, gilded mirror, and operator PBX switchboard.
+
+### Natural Environmental Clue Triangulation
+Puzzles are embedded into institutional routines and physical artifacts rather than isolated abstract codes:
+1. **Audiology Vault**: Technician Workstation Lab Journal (`prop_audiology_journal`) explains destructive wave interference (opposing angles 45 degrees / 135 degrees and 180-degree phase shift). Graphic wall score reveals the 741 Hz Solfeggio frequency required to shatter the physical diaphragm clamp.
+2. **The Archive**: Oak Card Catalog (`prop_card_catalog`) provides Subject 104's pneumatic cross-reference index card (Sector GAMMA-07, optical focus 0.85). Cabinet 099 guides the player to Cabinet 7 (Drawer 104).
+3. **The Director's Office**: Mahogany Bookcase (`prop_director_bookshelf`) contains the Director's confidential appointment ledger (11:03 clock setting, 0.5x half-speed reel playback, 1-1-0-3 phone dialing). The receiver whispers corroborating temporal clues.
+4. **The Synthesis Chamber**: Wall-mounted High-Voltage Bus Schematic (`prop_bus_schematic`) provides the nominal 100 Ohm per-channel shunt balance and 200 Ohm total differential trip threshold.
+5. **The Velvet Lounge**: PBX Switchboard Routing Directory Card (`prop_switchboard_directory`) details patching Trunk 104 to Line 4. The gilded mirror reflection reveals the decanter placement paradox required to restore equilibrium.
+
 
 
 ---

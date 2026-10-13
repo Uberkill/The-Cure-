@@ -110,6 +110,11 @@ export interface EventPayloadMap {
   'puzzle:key_inserted': Record<string, never>;
   'puzzle:shutter_unlocked': Record<string, never>;
   'puzzle:shutter_digits_changed': { digits: number[] };
+  'puzzle:trolley_unlocked': Record<string, never>;
+  'puzzle:manifold_balanced': Record<string, never>;
+  'puzzle:acoustic_null_achieved': Record<string, never>;
+  'puzzle:canister_delivered': Record<string, never>;
+  'puzzle:safe_unlatched': Record<string, never>;
   'puzzle:frequency_changed': { frequency: number; isResonating: boolean };
   'puzzle:switch_thrown': Record<string, never>;
   'puzzle:synthesis_complete': Record<string, never>;
@@ -134,6 +139,7 @@ export interface EventPayloadMap {
   'telemetry:log': TelemetryRecord;
   'editor:rebuild_visualizers': Record<string, never>;
   'editor:toggle_visualizers': { visible: boolean };
+  'editor:selection_changed': { selected: THREE.Object3D[] };
 }
 
 export type EventKey = keyof EventPayloadMap;

@@ -6,6 +6,8 @@ export class EditorVisualizers {
   private isEnabled: boolean = false;
   private isVisible: boolean = true;
 
+  private selectedVisualizerNode: THREE.Group | null = null;
+
   constructor(scene: THREE.Scene) {
     this.scene = scene;
   }
@@ -25,6 +27,105 @@ export class EditorVisualizers {
     for (const vizNode of this.visualizerNodes) {
       vizNode.visible = visible;
     }
+    if (this.selectedVisualizerNode) {
+      this.selectedVisualizerNode.visible = visible;
+    }
+  }
+
+  public static computeObjectLocalBox(root: THREE.Object3D): THREE.Box3 {
+    const box = new THREE.Box3();
+    root.updateWorldMatrix(true, true);
+    const invRootMatrix = root.matrixWorld.clone().invert();
+
+    let hasGeometry = false;
+    root.traverse((node) => {
+      if (node.name === 'dev_visualizers_node' || node.name === 'dev_selected_visualizer_node' || node.userData?.isHelper) return;
+      if (node instanceof THREE.Mesh && node.geometry) {
+        if (!node.geometry.boundingBox) {
+          node.geometry.computeBoundingBox();
+        }
+        if (node.geometry.boundingBox) {
+          const nodeToRootMatrix = invRootMatrix.clone().multiply(node.matrixWorld);
+          const meshBox = node.geometry.boundingBox.clone().applyMatrix4(nodeToRootMatrix);
+          box.union(meshBox);
+          hasGeometry = true;
+        }
+      }
+    });
+
+    if (!hasGeometry) {
+      box.makeEmpty();
+    }
+    return box;
+  }
+
+  public static isTrackedProp(obj: THREE.Object3D | null): boolean {
+    if (!obj || !obj.name) return false;
+    if (obj.userData?.isHelper || obj.name === 'dev_visualizers_node' || obj.name === 'dev_selected_visualizer_node') return false;
+    return (
+      !!obj.userData?.isPrefab ||
+      !!obj.userData?.isInteractiveProp ||
+      obj.name.startsWith('prop_') ||
+      obj.name.startsWith('door_') ||
+      obj.name.startsWith('crystal_') ||
+      obj.name.startsWith('prefab_') ||
+      obj.name === 'mesh_anechoic_baffles' ||
+      obj.name === 'mesh_audio_cables' ||
+      obj.name === 'mesh_back_bar_shelves'
+    );
+  }
+
+  public setSelectedObject(obj: THREE.Object3D | null): void {
+    this.clearSelectedVisualizer();
+    if (!this.isEnabled || !obj) return;
+
+    const localBox = EditorVisualizers.computeObjectLocalBox(obj);
+    if (localBox.isEmpty()) return;
+
+    const size = new THREE.Vector3();
+    localBox.getSize(size);
+    const center = new THREE.Vector3();
+    localBox.getCenter(center);
+
+    const vizNode = new THREE.Group();
+    vizNode.name = 'dev_selected_visualizer_node';
+    vizNode.userData.isHelper = true;
+    vizNode.visible = this.isVisible;
+
+    const boxGeo = new THREE.BoxGeometry(size.x, size.y, size.z);
+    const edges = new THREE.EdgesGeometry(boxGeo);
+    const wireframeMat = new THREE.LineBasicMaterial({
+      color: 0xfbbf24,
+      depthTest: false,
+      transparent: true,
+      opacity: 0.95
+    });
+    const line = new THREE.LineSegments(edges, wireframeMat);
+    line.position.copy(center);
+    line.renderOrder = 1001;
+    vizNode.add(line);
+
+    obj.add(vizNode);
+    this.selectedVisualizerNode = vizNode;
+  }
+
+  private clearSelectedVisualizer(): void {
+    if (this.selectedVisualizerNode) {
+      if (this.selectedVisualizerNode.parent) {
+        this.selectedVisualizerNode.parent.remove(this.selectedVisualizerNode);
+      }
+      this.selectedVisualizerNode.traverse((child) => {
+        if (child instanceof THREE.LineSegments) {
+          child.geometry.dispose();
+          if (Array.isArray(child.material)) {
+            child.material.forEach(m => m.dispose());
+          } else {
+            child.material.dispose();
+          }
+        }
+      });
+      this.selectedVisualizerNode = null;
+    }
   }
 
   public rebuild(): void {
@@ -39,29 +140,25 @@ export class EditorVisualizers {
     });
 
     this.scene.traverse((child) => {
-      // Don't recurse into our own visualizers
-      if (child.name === 'dev_visualizers_node') return;
+      if (child.name === 'dev_visualizers_node' || child.name === 'dev_selected_visualizer_node') return;
+      if (child.userData?.isSubPart) return;
 
-      if (child.name && (child.name.startsWith('prop_') || child.name.startsWith('door_') || child.name.startsWith('crystal_') || child.name.startsWith('prefab_'))) {
-        
-        // Temporarily reset transform to get pristine local bounding box
-        const oldPos = child.position.clone();
-        const oldRot = child.rotation.clone();
-        const oldScale = child.scale.clone();
-        
-        child.position.set(0, 0, 0);
-        child.rotation.set(0, 0, 0);
-        child.scale.set(1, 1, 1);
-        child.updateMatrixWorld(true);
-        
-        const localBox = new THREE.Box3().setFromObject(child);
-        
-        // Restore transform
-        child.position.copy(oldPos);
-        child.rotation.copy(oldRot);
-        child.scale.copy(oldScale);
-        child.updateMatrixWorld(true);
+      if (EditorVisualizers.isTrackedProp(child)) {
+        let parent = child.parent;
+        let hasAssemblyAncestor = false;
+        while (parent && parent !== this.scene) {
+          if (EditorVisualizers.isTrackedProp(parent) && !parent.userData?.isSubPart) {
+            hasAssemblyAncestor = true;
+            break;
+          }
+          parent = parent.parent;
+        }
 
+        if (hasAssemblyAncestor && !child.userData?.allowIndependentVisualizer) {
+          return;
+        }
+
+        const localBox = EditorVisualizers.computeObjectLocalBox(child);
         if (localBox.isEmpty()) return;
 
         const size = new THREE.Vector3();
@@ -98,10 +195,10 @@ export class EditorVisualizers {
           
           sprite.position.copy(center);
           
-          // Inverse scale to maintain text readability when object is scaled
-          const scaleAvg = (oldScale.x + oldScale.y + oldScale.z) / 3;
-          sprite.position.y += (size.y / 2) + (0.1 / scaleAvg);
-          sprite.scale.set(0.5 / oldScale.x, 0.125 / oldScale.y, 1 / oldScale.z);
+          const scale = child.scale;
+          const scaleAvg = (scale.x + scale.y + scale.z) / 3;
+          sprite.position.y += (size.y / 2) + (0.1 / Math.max(0.001, scaleAvg));
+          sprite.scale.set(0.5 / Math.max(0.001, scale.x), 0.125 / Math.max(0.001, scale.y), 1 / Math.max(0.001, scale.z));
           sprite.renderOrder = 1000;
           vizNode.add(sprite);
         }
@@ -113,6 +210,7 @@ export class EditorVisualizers {
   }
 
   private clear(): void {
+    this.clearSelectedVisualizer();
     for (const vizNode of this.visualizerNodes) {
       if (vizNode.parent) {
         vizNode.parent.remove(vizNode);
@@ -121,6 +219,11 @@ export class EditorVisualizers {
       vizNode.traverse((child) => {
         if (child instanceof THREE.LineSegments) {
           child.geometry.dispose();
+          if (Array.isArray(child.material)) {
+            child.material.forEach(m => m.dispose());
+          } else {
+            child.material.dispose();
+          }
         } else if (child instanceof THREE.Sprite) {
           child.material.map?.dispose();
           child.material.dispose();

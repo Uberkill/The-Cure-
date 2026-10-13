@@ -82,12 +82,36 @@ export async function runSuite(page, baseUrl) {
     // Wait for auto-close after 0.0 PSI resolution
     await page.waitForSelector('#screen-hydraulic-manifold', { state: 'hidden', timeout: 4000 });
 
+    const hydroBeforePickup = await page.evaluate(() => {
+      const gs = window.__VAULT_APP__.gameState;
+      const scenario = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      return {
+        hasCrystal: gs.hasCrystal('crystal_02_bronze'),
+        manifoldBalanced: scenario.manifoldBalanced,
+        crystalMeshVisible: scenario.crystalMesh ? scenario.crystalMesh.visible : false
+      };
+    });
+    if (hydroBeforePickup.hasCrystal) {
+      throw new Error('GameState should not have crystal_02_bronze before 3D pickup');
+    }
+    if (!hydroBeforePickup.manifoldBalanced) {
+      throw new Error('3D Hydrotherapy scenario was not marked balanced');
+    }
+    if (!hydroBeforePickup.crystalMeshVisible) {
+      throw new Error('3D bronze crystal mesh was not visible after manifold solve');
+    }
+
+    // Physically click 3D crystal to pick it up
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_02_bronze');
+    });
+
     const hasBronzeCrystal = await page.evaluate(() => {
       const gs = window.__VAULT_APP__.gameState;
       return gs.hasCrystal('crystal_02_bronze');
     });
     if (!hasBronzeCrystal) {
-      throw new Error('GameState does not have crystal_02_bronze after manifold solve');
+      throw new Error('GameState does not have crystal_02_bronze after 3D crystal pickup');
     }
 
     const hydroState = await page.evaluate(() => {
@@ -98,9 +122,6 @@ export async function runSuite(page, baseUrl) {
         crystalMeshVisible: scenario.crystalMesh ? scenario.crystalMesh.visible : null
       };
     });
-    if (!hydroState.manifoldBalanced) {
-      throw new Error('3D Hydrotherapy scenario was not marked balanced');
-    }
     if (hydroState.crystalMeshVisible !== false) {
       throw new Error('3D bronze crystal mesh was not hidden after collection');
     }
@@ -168,12 +189,36 @@ export async function runSuite(page, baseUrl) {
     // Wait for auto-close upon acoustic null lock
     await page.waitForSelector('#screen-binaural-synthesizer', { state: 'hidden', timeout: 4000 });
 
+    const audiologyBeforePickup = await page.evaluate(() => {
+      const gs = window.__VAULT_APP__.gameState;
+      const scenario = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      return {
+        hasCrystal: gs.hasCrystal('crystal_03_amethyst'),
+        ampTuned: scenario.ampTuned,
+        crystalMeshVisible: scenario.crystalMesh ? scenario.crystalMesh.visible : false
+      };
+    });
+    if (audiologyBeforePickup.hasCrystal) {
+      throw new Error('GameState should not have crystal_03_amethyst before 3D pickup');
+    }
+    if (!audiologyBeforePickup.ampTuned) {
+      throw new Error('3D Audiology scenario ampTuned flag not set');
+    }
+    if (!audiologyBeforePickup.crystalMeshVisible) {
+      throw new Error('3D amethyst crystal mesh was not visible after binaural solve');
+    }
+
+    // Physically click 3D crystal to pick it up
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_03_amethyst');
+    });
+
     const hasAmethystCrystal = await page.evaluate(() => {
       const gs = window.__VAULT_APP__.gameState;
       return gs.hasCrystal('crystal_03_amethyst');
     });
     if (!hasAmethystCrystal) {
-      throw new Error('GameState does not have crystal_03_amethyst after binaural solve');
+      throw new Error('GameState does not have crystal_03_amethyst after 3D crystal pickup');
     }
 
     const audiologyState = await page.evaluate(() => {
@@ -184,9 +229,6 @@ export async function runSuite(page, baseUrl) {
         crystalMeshVisible: scenario.crystalMesh ? scenario.crystalMesh.visible : null
       };
     });
-    if (!audiologyState.ampTuned) {
-      throw new Error('3D Audiology scenario ampTuned flag not set');
-    }
     if (audiologyState.crystalMeshVisible !== false) {
       throw new Error('3D amethyst crystal mesh was not hidden after collection');
     }

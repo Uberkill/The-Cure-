@@ -18,6 +18,10 @@ export interface Room04Entities {
   crimsonEnvelope: THREE.Mesh;
   telephone: THREE.Group;
   brassShunt: THREE.Mesh;
+  facilityDirectory: THREE.Group;
+  pneumaticTerminal: THREE.Group;
+  waitingBench: THREE.Group;
+  wallClock: THREE.Group;
   desk: THREE.Group;
   chair: THREE.Group;
   planter: THREE.Group;
@@ -25,6 +29,8 @@ export interface Room04Entities {
   exitDoorPanel: THREE.Mesh;
   corridorDoor: THREE.Mesh;
   corridorLed: THREE.Mesh;
+  portalLeds: Record<string, THREE.Mesh>;
+  spokeDoors: Record<string, THREE.Mesh>;
   updateOscilloscope: (freq: number, isResonating: boolean, time: number) => void;
 }
 
@@ -57,6 +63,10 @@ export class ProceduralRoom04 {
     rootGroup.add(props.crimsonEnvelope);
     rootGroup.add(props.telephone);
     rootGroup.add(props.brassShunt);
+    rootGroup.add(props.facilityDirectory);
+    rootGroup.add(props.pneumaticTerminal);
+    rootGroup.add(props.waitingBench);
+    rootGroup.add(props.wallClock);
 
     return {
       group: rootGroup,
@@ -71,6 +81,10 @@ export class ProceduralRoom04 {
       crimsonEnvelope: props.crimsonEnvelope,
       telephone: props.telephone,
       brassShunt: props.brassShunt,
+      facilityDirectory: props.facilityDirectory,
+      pneumaticTerminal: props.pneumaticTerminal,
+      waitingBench: props.waitingBench,
+      wallClock: props.wallClock,
       desk: furniture.deskGroup,
       chair: furniture.chairGroup,
       planter: furniture.planterGroup,
@@ -78,6 +92,8 @@ export class ProceduralRoom04 {
       exitDoorPanel: shell.exitDoorPanel,
       corridorDoor: shell.corridorDoor,
       corridorLed: shell.corridorLed,
+      portalLeds: shell.portalLeds,
+      spokeDoors: shell.spokeDoors,
       updateOscilloscope
     };
   }

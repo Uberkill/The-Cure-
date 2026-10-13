@@ -56,15 +56,30 @@ export const PATIENT_RECORDS: Record<string, PatientRecord> = {
   }
 };
 
+export interface ClinicalClipboardOptions {
+  initialSubject?: string;
+  onSelectSubject?: (id: string) => void;
+  records?: Record<string, PatientRecord>;
+  formHeader?: string;
+  institutionHeader?: string;
+  embossTitle?: string;
+}
+
 export class ClinicalClipboard {
   private container: HTMLElement;
   private currentSubjectId: string = '101';
   private tabButtons: Map<string, HTMLButtonElement> = new Map();
   private bodyEl: HTMLElement;
   private onSelectSubject?: (subjectId: string) => void;
+  private records: Record<string, PatientRecord>;
+  private formHeader: string;
+  private institutionHeader: string;
 
-  constructor(mountPoint: HTMLElement, options: { initialSubject?: string; onSelectSubject?: (id: string) => void } = {}) {
-    this.currentSubjectId = options.initialSubject || '101';
+  constructor(mountPoint: HTMLElement, options: ClinicalClipboardOptions = {}) {
+    this.records = options.records || PATIENT_RECORDS;
+    this.formHeader = options.formHeader || 'FORM 104-MED // WARD 02 SOMNIFEROUS LEDGER';
+    this.institutionHeader = options.institutionHeader || 'ST. DYMPNA CLINICAL RESEARCH FACILITY';
+    this.currentSubjectId = options.initialSubject || Object.keys(this.records)[0] || '101';
     this.onSelectSubject = options.onSelectSubject;
 
     this.container = document.createElement('div');
@@ -75,10 +90,11 @@ export class ClinicalClipboard {
     // Heavy brass spring clip at top
     const clipEl = document.createElement('div');
     clipEl.className = 'clipboard-brass-clip';
+    const emboss = options.embossTitle || 'SANITARIUM RECORD DEPT';
     clipEl.innerHTML = `
       <div class="clip-bracket">
         <div class="clip-rivet"></div>
-        <span class="clip-emboss">SANITARIUM RECORD DEPT</span>
+        <span class="clip-emboss">${emboss}</span>
         <div class="clip-rivet"></div>
       </div>
       <div class="clip-spring-arm"></div>
@@ -88,13 +104,14 @@ export class ClinicalClipboard {
     // Clipboard tabs bar
     const tabsBar = document.createElement('div');
     tabsBar.className = 'clipboard-tabs-bar';
-    ['101', '102', '103', '104'].forEach(id => {
+    Object.keys(this.records).forEach(id => {
+      const rec = this.records[id];
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `clipboard-tab-btn ${id === this.currentSubjectId ? 'active' : ''}`;
       btn.id = `tab-patient-${id}`;
       btn.setAttribute('data-testid', `tab-patient-${id}`);
-      btn.textContent = id === '104' ? 'COT 104 [VACANT]' : `SUBJECT ${id}`;
+      btn.textContent = rec.cot || (id === '104' ? 'COT 104 [VACANT]' : `SUBJECT ${id}`);
       btn.addEventListener('click', () => this.selectSubject(id));
       this.tabButtons.set(id, btn);
       tabsBar.appendChild(btn);
@@ -111,7 +128,7 @@ export class ClinicalClipboard {
   }
 
   public selectSubject(subjectId: string): void {
-    if (!PATIENT_RECORDS[subjectId]) return;
+    if (!this.records[subjectId]) return;
     this.currentSubjectId = subjectId;
 
     this.tabButtons.forEach((btn, id) => {
@@ -129,14 +146,14 @@ export class ClinicalClipboard {
   }
 
   private renderRecord(subjectId: string): void {
-    const record = PATIENT_RECORDS[subjectId];
+    const record = this.records[subjectId];
     if (!record) return;
 
     this.bodyEl.innerHTML = `
       <div class="paper-header">
         <div class="paper-title-block">
-          <span class="paper-institution">ST. DYMPNA CLINICAL RESEARCH FACILITY</span>
-          <span class="paper-form-id">FORM 104-MED // WARD 02 SOMNIFEROUS LEDGER</span>
+          <span class="paper-institution">${this.institutionHeader}</span>
+          <span class="paper-form-id">${this.formHeader}</span>
         </div>
         <div class="paper-meta-badge ${record.isVacant ? 'badge-vacant' : ''}">
           ${record.cot}

@@ -203,6 +203,28 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       busbar.raycast = () => {};
       this.entities.group.add(busbar);
 
+      // Wall-Mounted High-Voltage Power Bus Blueprint Schematic
+      const schematicGroup = new THREE.Group();
+      schematicGroup.position.set(-3.2, 1.8, -1.6);
+      schematicGroup.rotation.y = Math.PI / 2;
+      schematicGroup.name = 'prop_bus_schematic';
+      schematicGroup.userData.interactionPrompt = '[INSPECT: BUS SCHEMATIC]';
+
+      const schematicFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(0.95, 0.7, 0.03),
+        new THREE.MeshStandardMaterial({ color: 0x1e2924, metalness: 0.8, roughness: 0.3 })
+      );
+      schematicGroup.add(schematicFrame);
+
+      const schematicPaper = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.88, 0.62),
+        new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.9 })
+      );
+      schematicPaper.position.z = 0.018;
+      schematicGroup.add(schematicPaper);
+
+      this.entities.group.add(schematicGroup);
+
       // Floor Debris (scattered fallen tiles; decorative)
       for (let d = 0; d < 8; d++) {
         const debrisTile = new THREE.Mesh(
@@ -244,6 +266,15 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
           text: 'The heavy blastdoor is electromagnetically locked. The galvanometer circuit bus remains unbalanced.'
         });
       }
+      return true;
+    }
+
+    if (objectId === 'prop_bus_schematic') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'grid' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'POWER BUS SCHEMATIC // SUB-LEVEL 04: "Nominal operating load: 100 OHMS per channel across all 5 shunt channels. Breaker trip calibrated at 200 OHMS total differential imbalance. Balance all channels to 100 OHMS to unseal emergency egress."'
+      });
       return true;
     }
 

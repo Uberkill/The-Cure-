@@ -195,6 +195,13 @@ export async function runSuite(page, baseUrl) {
   console.log('--- Step 14: Act II - Release Drawer & Collect Crystal 01 ---');
   await page.click('#btn-unlock-drawer');
 
+  await page.waitForSelector('#screen-dispensary-cart', { state: 'hidden', timeout: 4000 });
+
+  // Pick up the physical crystal released on the trolley in 3D
+  await page.evaluate(() => {
+    window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_01_quartz');
+  });
+
   await page.waitForFunction(() => {
     const gs = window.__VAULT_APP__.gameState;
     return gs.getStage() === 'ACT_2_CRYSTAL_1_RECOVERED';

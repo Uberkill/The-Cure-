@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
 import { Room04MaterialPalette } from './Room04Materials';
 
 export interface Room04ShellEntities {
@@ -12,58 +13,161 @@ export interface Room04ShellEntities {
   corridorLed: THREE.Mesh;
   doorLed: THREE.Mesh;
   exitDoorPanel: THREE.Mesh;
+  portalLeds: Record<string, THREE.Mesh>;
+  spokeDoors: Record<string, THREE.Mesh>;
+}
+
+function createSpokePortal(
+  id: string,
+  sectorCode: string,
+  sectorName: string,
+  pos: [number, number, number],
+  rotY: number,
+  mat: Room04MaterialPalette,
+  isHeavyBlastdoor: boolean = false
+): { group: THREE.Group; doorMesh: THREE.Mesh; ledMesh: THREE.Mesh } {
+  const group = new THREE.Group();
+  group.name = `group_${id}`;
+  group.position.set(pos[0], pos[1], pos[2]);
+  group.rotation.y = rotY;
+  group.userData = { sectorCode, sectorName };
+
+  const width = isHeavyBlastdoor ? 1.5 : 1.34;
+  const height = 2.92;
+  const jambThickness = 0.16;
+
+  // Merged chalk frame (jamb left, jamb right, lintel in 1 draw call)
+  const jambLeftGeo = new THREE.BoxGeometry(jambThickness, height, 0.24);
+  jambLeftGeo.translate(-width / 2 - jambThickness / 2, height / 2, 0);
+
+  const jambRightGeo = new THREE.BoxGeometry(jambThickness, height, 0.24);
+  jambRightGeo.translate(width / 2 + jambThickness / 2, height / 2, 0);
+
+  const lintelGeo = new THREE.BoxGeometry(width + jambThickness * 2, 0.18, 0.24);
+  lintelGeo.translate(0, height + 0.09, 0);
+
+  const mergedFrameGeo = mergeGeometries([jambLeftGeo, jambRightGeo, lintelGeo]);
+  const frameMesh = new THREE.Mesh(mergedFrameGeo, mat.chalkUpperWall);
+  frameMesh.name = id;
+  frameMesh.userData.isSubPart = true;
+  group.add(frameMesh);
+
+  // Merged brass details (reveals + handle/wheel + plaque in 1 draw call)
+  const revealLGeo = new THREE.BoxGeometry(0.025, height, 0.20);
+  revealLGeo.translate(-width / 2, height / 2, 0.01);
+
+  const revealRGeo = new THREE.BoxGeometry(0.025, height, 0.20);
+  revealRGeo.translate(width / 2, height / 2, 0.01);
+
+  const revealTopGeo = new THREE.BoxGeometry(width, 0.025, 0.20);
+  revealTopGeo.translate(0, height, 0.01);
+
+  const plaqueGeo = new THREE.BoxGeometry(0.88, 0.14, 0.03);
+  plaqueGeo.translate(0, height + 0.40, 0.05);
+
+  const brassGeos: THREE.BufferGeometry[] = [revealLGeo, revealRGeo, revealTopGeo, plaqueGeo];
+  if (isHeavyBlastdoor) {
+    const wheelGeo = new THREE.TorusGeometry(0.14, 0.02, 12, 24);
+    wheelGeo.translate(0, height / 2, 0.05);
+    brassGeos.push(wheelGeo);
+  } else {
+    const handleGeo = new THREE.BoxGeometry(0.04, 0.28, 0.06);
+    handleGeo.translate(width * 0.35, height / 2, 0.05);
+    brassGeos.push(handleGeo);
+  }
+
+  const mergedBrassGeo = mergeGeometries(brassGeos);
+  const brassMesh = new THREE.Mesh(mergedBrassGeo, mat.brassGold);
+  brassMesh.name = id;
+  brassMesh.userData.isSubPart = true;
+  group.add(brassMesh);
+
+  // Interactive Door Slab
+  const doorMat = isHeavyBlastdoor ? mat.titaniumChassis : new THREE.MeshStandardMaterial({
+    color: 0x18241e,
+    roughness: 0.45,
+    metalness: 0.35
+  });
+  const doorMesh = new THREE.Mesh(new THREE.BoxGeometry(width - 0.04, height - 0.04, 0.08), doorMat);
+  doorMesh.position.set(0, height / 2, 0.05);
+  doorMesh.name = id;
+  doorMesh.receiveShadow = false;
+  group.add(doorMesh);
+
+  // Status Indicator LED
+  const ledMat = new THREE.MeshBasicMaterial({ color: 0x8b1e23 });
+  const ledMesh = new THREE.Mesh(new THREE.SphereGeometry(0.028, 12, 12), ledMat);
+  ledMesh.position.set(0, height + 0.24, 0.08);
+  ledMesh.name = id;
+  group.add(ledMesh);
+
+  return { group, doorMesh, ledMesh };
 }
 
 export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntities {
+  const portalLeds: Record<string, THREE.Mesh> = {};
+  const spokeDoors: Record<string, THREE.Mesh> = {};
   // 1. Floor
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), mat.terrazzoFloor);
   floor.rotation.x = -Math.PI / 2;
   floor.receiveShadow = true;
   floor.name = 'shell_floor';
 
+  const wayfindingDecal = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), mat.wayfindingFloor);
+  wayfindingDecal.position.set(0, 0, 0.002);
+  wayfindingDecal.name = 'floor_wayfinding_inlay';
+  wayfindingDecal.receiveShadow = false;
+  wayfindingDecal.castShadow = false;
+  wayfindingDecal.userData.isSubPart = true;
+  floor.add(wayfindingDecal);
+
   // 2. Back Wall with Split Wainscot and Architectural Forward Corridor Portal
   const backWallGroup = new THREE.Group();
   backWallGroup.name = 'group_wall_back';
 
-  const backTileLeft = new THREE.Mesh(new THREE.BoxGeometry(6.0, 2.2, 0.22), mat.ceramicGreenTiles);
-  backTileLeft.position.set(-4.0, 1.1, -6.78);
-  backTileLeft.receiveShadow = false;
-  backTileLeft.name = 'wall_green_tiles';
-  backWallGroup.add(backTileLeft);
+  // Architectural Concourse Wing Header Plaques (North, East, South)
+  const plaqueNorthGeo = new THREE.BoxGeometry(2.4, 0.16, 0.04);
+  plaqueNorthGeo.translate(0, 3.42, -6.74);
+  const plaqueEastGeo = new THREE.BoxGeometry(0.04, 0.16, 2.4);
+  plaqueEastGeo.translate(6.74, 3.42, 0);
+  const plaqueSouthGeo = new THREE.BoxGeometry(2.4, 0.16, 0.04);
+  plaqueSouthGeo.translate(0, 3.42, 6.74);
+  const mergedHeaderPlaques = mergeGeometries([plaqueNorthGeo, plaqueEastGeo, plaqueSouthGeo]);
+  const headerPlaquesMesh = new THREE.Mesh(mergedHeaderPlaques, mat.brassGold);
+  headerPlaquesMesh.name = 'concourse_header_plaques';
+  headerPlaquesMesh.userData.isSubPart = true;
+  headerPlaquesMesh.castShadow = false;
+  backWallGroup.add(headerPlaquesMesh);
 
-  const backTileRight = new THREE.Mesh(new THREE.BoxGeometry(6.0, 2.2, 0.22), mat.ceramicGreenTiles);
-  backTileRight.position.set(4.0, 1.1, -6.78);
-  backTileRight.receiveShadow = false;
-  backTileRight.name = 'wall_green_tiles';
-  backWallGroup.add(backTileRight);
+  const backTileLeftGeo = new THREE.BoxGeometry(6.0, 2.2, 0.22);
+  backTileLeftGeo.translate(-4.0, 1.1, -6.78);
+  const backTileRightGeo = new THREE.BoxGeometry(6.0, 2.2, 0.22);
+  backTileRightGeo.translate(4.0, 1.1, -6.78);
+  const mergedBackTilesGeo = mergeGeometries([backTileLeftGeo, backTileRightGeo]);
+  const backTilesMesh = new THREE.Mesh(mergedBackTilesGeo, mat.ceramicGreenTiles);
+  backTilesMesh.receiveShadow = false;
+  backTilesMesh.name = 'wall_green_tiles';
+  backWallGroup.add(backTilesMesh);
 
-  // Back wall dado left: side wall dado ends at X=-6.64. So start at -6.64 to -1.0 (length 5.64)
-  const dadoLeft = new THREE.Mesh(new THREE.BoxGeometry(5.64, 0.05, 0.26), mat.brassGold);
-  dadoLeft.position.set(-3.82, 2.22, -6.77);
-  backWallGroup.add(dadoLeft);
+  const dadoLeftGeo = new THREE.BoxGeometry(5.64, 0.05, 0.26);
+  dadoLeftGeo.translate(-3.82, 2.22, -6.77);
+  const dadoRightGeo = new THREE.BoxGeometry(5.64, 0.05, 0.26);
+  dadoRightGeo.translate(3.82, 2.22, -6.77);
+  const mergedDadoGeo = mergeGeometries([dadoLeftGeo, dadoRightGeo]);
+  const dadoMesh = new THREE.Mesh(mergedDadoGeo, mat.brassGold);
+  backWallGroup.add(dadoMesh);
 
-  // Back wall dado right: side wall dado ends at X=6.64. So start at 6.64 to 1.0 (length 5.64)
-  const dadoRight = new THREE.Mesh(new THREE.BoxGeometry(5.64, 0.05, 0.26), mat.brassGold);
-  dadoRight.position.set(3.82, 2.22, -6.77);
-  backWallGroup.add(dadoRight);
-
-  const upperLintel = new THREE.Mesh(new THREE.BoxGeometry(14, 2.3, 0.2), mat.chalkUpperWall);
-  upperLintel.position.set(0, 4.35, -6.8);
-  upperLintel.receiveShadow = false;
-  upperLintel.name = 'wall_chalk_upper';
-  backWallGroup.add(upperLintel);
-
-  const upperLeft = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.98, 0.2), mat.chalkUpperWall);
-  upperLeft.position.set(-4.0, 2.71, -6.8);
-  upperLeft.receiveShadow = false;
-  upperLeft.name = 'wall_chalk_upper';
-  backWallGroup.add(upperLeft);
-
-  const upperRight = new THREE.Mesh(new THREE.BoxGeometry(6.0, 0.98, 0.2), mat.chalkUpperWall);
-  upperRight.position.set(4.0, 2.71, -6.8);
-  upperRight.receiveShadow = false;
-  upperRight.name = 'wall_chalk_upper';
-  backWallGroup.add(upperRight);
+  const upperLintelGeo = new THREE.BoxGeometry(14, 2.3, 0.2);
+  upperLintelGeo.translate(0, 4.35, -6.8);
+  const upperLeftGeo = new THREE.BoxGeometry(6.0, 0.98, 0.2);
+  upperLeftGeo.translate(-4.0, 2.71, -6.8);
+  const upperRightGeo = new THREE.BoxGeometry(6.0, 0.98, 0.2);
+  upperRightGeo.translate(4.0, 2.71, -6.8);
+  const mergedBackUpperGeo = mergeGeometries([upperLintelGeo, upperLeftGeo, upperRightGeo]);
+  const backUpperMesh = new THREE.Mesh(mergedBackUpperGeo, mat.chalkUpperWall);
+  backUpperMesh.receiveShadow = false;
+  backUpperMesh.name = 'wall_chalk_upper';
+  backWallGroup.add(backUpperMesh);
 
   // Forward Corridor Portal Jambs & Recessed Passage (No solid blocking slab)
   const corridorJambLeft = new THREE.Mesh(new THREE.BoxGeometry(0.18, 3.20, 0.28), mat.chalkUpperWall);
@@ -162,46 +266,56 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   brassArchLintel.name = 'corridor_arch_lintel';
   backWallGroup.add(brassArchLintel);
 
+  const hydroPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.14, 0.03), mat.brassGold);
+  hydroPlaque.position.set(0, 3.42, -6.74);
+  hydroPlaque.name = 'plaque_door_portal_hydrotherapy';
+  hydroPlaque.userData.isSubPart = true;
+  backWallGroup.add(hydroPlaque);
+  portalLeds['door_portal_hydrotherapy'] = corridorLed;
+  spokeDoors['door_portal_hydrotherapy'] = corridorDoor;
+
+  const sleepPortal = createSpokePortal('door_portal_sleep_ward', 'SL4-02-SLP', 'SLEEP WARD', [-4.2, 0, -6.62], 0, mat);
+  backWallGroup.add(sleepPortal.group);
+  portalLeds['door_portal_sleep_ward'] = sleepPortal.ledMesh;
+  spokeDoors['door_portal_sleep_ward'] = sleepPortal.doorMesh;
+
+  const audiologyPortal = createSpokePortal('door_portal_audiology', 'SL4-04B-AUD', 'AUDIOLOGY VAULT', [4.2, 0, -6.62], 0, mat);
+  backWallGroup.add(audiologyPortal.group);
+  portalLeds['door_portal_audiology'] = audiologyPortal.ledMesh;
+  spokeDoors['door_portal_audiology'] = audiologyPortal.doorMesh;
+
   // 3. Left Wall with Split Tile Wainscot & Exit Blastdoor Architectural Portal
   const leftWallGroup = new THREE.Group();
 
-  const leftTileBack = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.2, 3.2), mat.ceramicGreenTiles);
-  leftTileBack.position.set(-6.78, 1.1, -5.4);
-  leftTileBack.receiveShadow = false;
-  leftTileBack.name = 'wall_green_tiles';
-  leftWallGroup.add(leftTileBack);
+  const leftTileBackGeo = new THREE.BoxGeometry(0.22, 2.2, 3.2);
+  leftTileBackGeo.translate(-6.78, 1.1, -5.4);
+  const leftTileFrontGeo = new THREE.BoxGeometry(0.22, 2.2, 9.2);
+  leftTileFrontGeo.translate(-6.78, 1.1, 2.4);
+  const mergedLeftTilesGeo = mergeGeometries([leftTileBackGeo, leftTileFrontGeo]);
+  const leftTilesMesh = new THREE.Mesh(mergedLeftTilesGeo, mat.ceramicGreenTiles);
+  leftTilesMesh.receiveShadow = false;
+  leftTilesMesh.name = 'wall_green_tiles';
+  leftWallGroup.add(leftTilesMesh);
 
-  const leftTileFront = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.2, 9.2), mat.ceramicGreenTiles);
-  leftTileFront.position.set(-6.78, 1.1, 2.4);
-  leftTileFront.receiveShadow = false;
-  leftTileFront.name = 'wall_green_tiles';
-  leftWallGroup.add(leftTileFront);
+  const leftDadoBackGeo = new THREE.BoxGeometry(0.26, 0.05, 3.2);
+  leftDadoBackGeo.translate(-6.77, 2.22, -5.4);
+  const leftDadoFrontGeo = new THREE.BoxGeometry(0.26, 0.05, 9.2);
+  leftDadoFrontGeo.translate(-6.77, 2.22, 2.4);
+  const mergedLeftDadoGeo = mergeGeometries([leftDadoBackGeo, leftDadoFrontGeo]);
+  const leftDadoMesh = new THREE.Mesh(mergedLeftDadoGeo, mat.brassGold);
+  leftWallGroup.add(leftDadoMesh);
 
-  const leftDadoBack = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.05, 3.2), mat.brassGold);
-  leftDadoBack.position.set(-6.77, 2.22, -5.4);
-  leftWallGroup.add(leftDadoBack);
-
-  const leftDadoFront = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.05, 9.2), mat.brassGold);
-  leftDadoFront.position.set(-6.77, 2.22, 2.4);
-  leftWallGroup.add(leftDadoFront);
-
-  const leftUpperLintel = new THREE.Mesh(new THREE.BoxGeometry(0.2, 2.3, 14), mat.chalkUpperWall);
-  leftUpperLintel.position.set(-6.8, 4.35, 0);
-  leftUpperLintel.receiveShadow = false;
-  leftUpperLintel.name = 'wall_chalk_upper';
-  leftWallGroup.add(leftUpperLintel);
-
-  const leftUpperBack = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.98, 3.2), mat.chalkUpperWall);
-  leftUpperBack.position.set(-6.8, 2.71, -5.4);
-  leftUpperBack.receiveShadow = false;
-  leftUpperBack.name = 'wall_chalk_upper';
-  leftWallGroup.add(leftUpperBack);
-
-  const leftUpperFront = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.98, 9.2), mat.chalkUpperWall);
-  leftUpperFront.position.set(-6.8, 2.71, 2.4);
-  leftUpperFront.receiveShadow = false;
-  leftUpperFront.name = 'wall_chalk_upper';
-  leftWallGroup.add(leftUpperFront);
+  const leftUpperLintelGeo = new THREE.BoxGeometry(0.2, 2.3, 14);
+  leftUpperLintelGeo.translate(-6.8, 4.35, 0);
+  const leftUpperBackGeo = new THREE.BoxGeometry(0.2, 0.98, 3.2);
+  leftUpperBackGeo.translate(-6.8, 2.71, -5.4);
+  const leftUpperFrontGeo = new THREE.BoxGeometry(0.2, 0.98, 9.2);
+  leftUpperFrontGeo.translate(-6.8, 2.71, 2.4);
+  const mergedLeftUpperGeo = mergeGeometries([leftUpperLintelGeo, leftUpperBackGeo, leftUpperFrontGeo]);
+  const leftUpperMesh = new THREE.Mesh(mergedLeftUpperGeo, mat.chalkUpperWall);
+  leftUpperMesh.receiveShadow = false;
+  leftUpperMesh.name = 'wall_chalk_upper';
+  leftWallGroup.add(leftUpperMesh);
 
   // Left Exit Portal Jambs & Recessed Airlock Passage (No solid blocking slab)
   const exitJambBack = new THREE.Mesh(new THREE.BoxGeometry(0.28, 3.20, 0.18), mat.chalkUpperWall);
@@ -300,6 +414,18 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   doorLed.name = 'door_led';
   leftWallGroup.add(doorLed);
 
+  const velvetPortal = createSpokePortal('door_portal_velvet_lounge', 'SL4-08-VEL', 'VELVET LOUNGE', [-6.62, 0, 2.8], Math.PI / 2, mat);
+  leftWallGroup.add(velvetPortal.group);
+  portalLeds['door_portal_velvet_lounge'] = velvetPortal.ledMesh;
+  spokeDoors['door_portal_velvet_lounge'] = velvetPortal.doorMesh;
+
+  const exitPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.14, 0.03), mat.brassGold);
+  exitPlaque.position.set(-6.73, 3.42, -3.0);
+  exitPlaque.rotation.y = Math.PI / 2;
+  exitPlaque.name = 'plaque_exit_blastdoor';
+  exitPlaque.userData.isSubPart = true;
+  leftWallGroup.add(exitPlaque);
+
   // 4. Right Wall with Tile Wainscot & Ventilation Acoustic Panel
   const rightWallGroup = new THREE.Group();
   rightWallGroup.name = 'group_wall_right';
@@ -319,20 +445,25 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   rightDado.position.set(6.77, 2.22, 0);
   rightWallGroup.add(rightDado);
 
-  const ventFrame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.4, 2.4), mat.smokedTeak);
-  ventFrame.position.set(6.68, 3.2, 0);
+  const ventFrame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 2.0), mat.smokedTeak);
+  ventFrame.position.set(6.68, 3.85, 0);
   rightWallGroup.add(ventFrame);
 
-  for (let s = -0.5; s <= 0.5; s += 0.25) {
-    const slat = new THREE.Mesh(new THREE.BoxGeometry(0.10, 0.03, 2.2), mat.brassGold);
-    slat.position.set(6.67, 3.2 + s, 0);
-    rightWallGroup.add(slat);
+  const slatGeos: THREE.BufferGeometry[] = [];
+  for (let s = -0.4; s <= 0.4; s += 0.2) {
+    const geo = new THREE.BoxGeometry(0.10, 0.03, 1.8);
+    geo.translate(6.67, 3.85 + s, 0);
+    slatGeos.push(geo);
   }
+  const mergedSlatsGeo = mergeGeometries(slatGeos);
+  const slatsMesh = new THREE.Mesh(mergedSlatsGeo, mat.brassGold);
+  slatsMesh.userData.isSubPart = true;
+  rightWallGroup.add(slatsMesh);
 
-  // Clinical Blueprint / Gallery Painting on Right Wall
+  // Clinical Blueprint / Gallery Painting on Right Wall (Centered between sector portals)
   const paintingGroup = new THREE.Group();
   paintingGroup.name = 'prop_painting';
-  paintingGroup.position.set(6.67, 3.4, 3.2);
+  paintingGroup.position.set(6.67, 2.3, 0);
 
   const paintingFrame = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.4, 1.8), mat.smokedTeak);
   paintingFrame.castShadow = true;
@@ -344,6 +475,16 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   paintingGroup.add(paintingCanvas);
 
   rightWallGroup.add(paintingGroup);
+
+  const archivePortal = createSpokePortal('door_portal_archive', 'SL4-05-ARC', 'ARCHIVE & RECORDS', [6.62, 0, -3.2], -Math.PI / 2, mat);
+  rightWallGroup.add(archivePortal.group);
+  portalLeds['door_portal_archive'] = archivePortal.ledMesh;
+  spokeDoors['door_portal_archive'] = archivePortal.doorMesh;
+
+  const dirPortal = createSpokePortal('door_portal_directors_office', 'SL4-06-DIR', "DIRECTOR'S OFFICE", [6.62, 0, 3.6], -Math.PI / 2, mat);
+  rightWallGroup.add(dirPortal.group);
+  portalLeds['door_portal_directors_office'] = dirPortal.ledMesh;
+  spokeDoors['door_portal_directors_office'] = dirPortal.doorMesh;
 
   // 5. Front Wall with Tile Wainscot & Intake Observation Window
   const frontWallGroup = new THREE.Group();
@@ -373,6 +514,11 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   obsGlass.position.set(0, 3.2, 6.67);
   obsGlass.name = 'obs_glass';
   frontWallGroup.add(obsGlass);
+
+  const synthPortal = createSpokePortal('door_portal_synthesis', 'SL4-07-SYN', 'SYNTHESIS CORE', [3.8, 0, 6.62], Math.PI, mat, true);
+  frontWallGroup.add(synthPortal.group);
+  portalLeds['door_portal_synthesis'] = synthPortal.ledMesh;
+  spokeDoors['door_portal_synthesis'] = synthPortal.doorMesh;
 
   // 6. Architectural Ceiling & Cove Frame (y = 5.5)
   const ceilingGroup = new THREE.Group();
@@ -413,6 +559,8 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
     corridorDoor,
     corridorLed,
     doorLed,
-    exitDoorPanel
+    exitDoorPanel,
+    portalLeds,
+    spokeDoors
   };
 }

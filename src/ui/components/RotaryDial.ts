@@ -26,6 +26,7 @@ export class RotaryDial {
   private isReturning: boolean = false;
   private activeDigit: number | null = null;
   private animId: number | null = null;
+  private dialTimeoutId: number | null = null;
   private onDigitDialed?: (digit: number) => void;
 
   constructor(mountPoint: HTMLElement, options: RotaryDialOptions = {}) {
@@ -169,28 +170,15 @@ export class RotaryDial {
         window.removeEventListener('pointerup', onPointerUp);
         window.removeEventListener('pointercancel', onPointerUp);
 
-        if (!hasDragged) {
-          // Synthetic click or tap: animate smoothly to stop
-          this.dialFaceEl.style.transition = 'transform 0.28s cubic-bezier(0.2, 0.8, 0.4, 1)';
-          this.dialFaceEl.style.transform = `rotate(${targetTravelDeg}deg)`;
-          this.currentRotationDeg = targetTravelDeg;
-
-          setTimeout(() => {
-            this.dialFaceEl.style.transition = '';
-            if (this.onDigitDialed && this.activeDigit !== null) {
-              this.onDigitDialed(this.activeDigit);
-            }
-            this.isDialing = false;
-            this.springReturn();
-          }, 300);
-        } else {
-          // Dragged: if past 70% of target travel, accept dial
+        if (hasDragged) {
           const reachedTarget = this.currentRotationDeg >= targetTravelDeg * 0.7;
           if (reachedTarget && this.onDigitDialed && this.activeDigit !== null) {
             this.onDigitDialed(this.activeDigit);
           }
           this.isDialing = false;
           this.springReturn();
+        } else {
+          this.isDialing = false;
         }
       };
 
@@ -202,9 +190,11 @@ export class RotaryDial {
     hole.addEventListener('pointerdown', onPointerDown);
 
     hole.addEventListener('click', (e: MouseEvent) => {
-      // Direct click handler for testing environments without pointer events
-      if (this.isDialing || this.isReturning) return;
       e.stopPropagation();
+      if (hasDragged) {
+        hasDragged = false;
+        return;
+      }
       this.simulateDialDigit(digit);
     });
 
@@ -217,9 +207,22 @@ export class RotaryDial {
   }
 
   public simulateDialDigit(digit: number): void {
-    if (this.isDialing || this.isReturning) return;
+    if (this.animId !== null) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+    if (this.dialTimeoutId !== null) {
+      clearTimeout(this.dialTimeoutId);
+      this.dialTimeoutId = null;
+    }
+
     this.isDialing = true;
+    this.isReturning = false;
     this.activeDigit = digit;
+
+    if (this.onDigitDialed) {
+      this.onDigitDialed(digit);
+    }
 
     const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
     const idx = digits.indexOf(digit);
@@ -230,9 +233,9 @@ export class RotaryDial {
     this.dialFaceEl.style.transform = `rotate(${targetTravelDeg}deg)`;
     this.currentRotationDeg = targetTravelDeg;
 
-    setTimeout(() => {
+    this.dialTimeoutId = window.setTimeout(() => {
       this.dialFaceEl.style.transition = '';
-      if (this.onDigitDialed) this.onDigitDialed(digit);
+      this.dialTimeoutId = null;
       this.isDialing = false;
       this.springReturn();
     }, 300);
@@ -274,6 +277,7 @@ export class RotaryDial {
 
   public destroy(): void {
     if (this.animId !== null) cancelAnimationFrame(this.animId);
+    if (this.dialTimeoutId !== null) clearTimeout(this.dialTimeoutId);
     this.container.remove();
   }
 }

@@ -80,6 +80,7 @@ export class Room02_SleepWard implements RoomScenario {
   private digitMeshes: THREE.Mesh[] = [];
 
   private uvActive: boolean = false;
+  private crystalLight: THREE.PointLight | null = null;
   private fluorescentLights: THREE.PointLight[] = [];
   private uvLights: THREE.PointLight[] = [];
   private uvDecals: THREE.Mesh[] = [];
@@ -101,6 +102,15 @@ export class Room02_SleepWard implements RoomScenario {
       this.trolleyUnlocked = true;
       this.crystalCollected = true;
       this.digits = [1, 0, 4];
+    } else if (this.trolleyUnlocked || this.dispensaryScreen.isCartUnlocked()) {
+      this.shutterUnlocked = true;
+      this.trolleyUnlocked = true;
+      this.crystalCollected = false;
+      this.digits = [1, 0, 4];
+    } else if (this.shutterUnlocked) {
+      this.trolleyUnlocked = false;
+      this.crystalCollected = false;
+      this.digits = [1, 0, 4];
     } else {
       this.shutterUnlocked = false;
       this.trolleyUnlocked = false;
@@ -116,6 +126,9 @@ export class Room02_SleepWard implements RoomScenario {
         if (this.crystalMesh) {
           this.crystalMesh.visible = false;
         }
+        if (this.crystalLight) {
+          this.crystalLight.visible = false;
+        }
         this.digits = [1, 0, 4];
         this.digitMeshes.forEach((mesh, idx) => {
           mesh.rotation.z = (Math.PI * 2 * this.digits[idx]) / 10;
@@ -123,6 +136,22 @@ export class Room02_SleepWard implements RoomScenario {
       }
     });
     this.unsubscribers.push(unsub);
+
+    const unsubTrolley = EventBus.getInstance().on('puzzle:trolley_unlocked', () => {
+      this.shutterUnlocked = true;
+      this.trolleyUnlocked = true;
+      this.digits = [1, 0, 4];
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.visible = true;
+      }
+      if (this.crystalLight && !this.crystalCollected) {
+        this.crystalLight.visible = true;
+      }
+      this.digitMeshes.forEach((mesh, idx) => {
+        mesh.rotation.z = (Math.PI * 2 * this.digits[idx]) / 10;
+      });
+    });
+    this.unsubscribers.push(unsubTrolley);
 
     const unsubShutter = EventBus.getInstance().on('puzzle:shutter_unlocked', () => {
       this.shutterUnlocked = true;
@@ -210,6 +239,7 @@ export class Room02_SleepWard implements RoomScenario {
       const headboard = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.65, 0.06), matMetal);
       headboard.position.set(0, 0.55, -1.05);
       headboard.name = idx === 3 ? 'prop_headboard_104' : `prop_headboard_${101 + idx}`;
+      headboard.userData.isSubPart = true;
       headboard.castShadow = true;
       cotGroup.add(headboard);
 
@@ -226,6 +256,7 @@ export class Room02_SleepWard implements RoomScenario {
       const clipboardGroup = new THREE.Group();
       clipboardGroup.position.set(0, 0.66, 0.95);
       clipboardGroup.name = `prop_clipboard_${101 + idx}`;
+      clipboardGroup.userData.isSubPart = true;
 
       const clipboardBoard = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.03, 0.46), matBrass);
       clipboardBoard.castShadow = true;
@@ -375,6 +406,7 @@ export class Room02_SleepWard implements RoomScenario {
     );
     trolleyCart.position.set(0, 0.74, 0.36);
     trolleyCart.name = 'prop_trolley_lock';
+    trolleyCart.userData.isSubPart = true;
     trolleyCart.castShadow = true;
     trolleyGroup.add(trolleyCart);
 
@@ -385,6 +417,7 @@ export class Room02_SleepWard implements RoomScenario {
       dial.rotation.z = (Math.PI * 2 * this.digits[i]) / 10;
       dial.position.set(-0.2 + i * 0.2, 0.74, 0.45);
       dial.name = `prop_dial_${i}`;
+      dial.userData.isSubPart = true;
       trolleyGroup.add(dial);
       this.digitMeshes.push(dial);
     }
@@ -434,14 +467,19 @@ export class Room02_SleepWard implements RoomScenario {
       transparent: true,
       roughness: 0.05,
       ior: 1.54,
-      emissive: 0xdfe8e2,
-      emissiveIntensity: 0.2
+      emissive: 0x99ddff,
+      emissiveIntensity: 0.35
     });
     this.crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
     this.crystalMesh.position.set(0, 1.08, 0);
     this.crystalMesh.name = 'crystal_01_quartz';
     this.crystalMesh.visible = this.trolleyUnlocked && !this.crystalCollected;
     trolleyGroup.add(this.crystalMesh);
+
+    this.crystalLight = new THREE.PointLight(0xa5f3fc, 1.5, 3.0);
+    this.crystalLight.position.set(0, 1.08, 0);
+    this.crystalLight.visible = this.trolleyUnlocked && !this.crystalCollected;
+    trolleyGroup.add(this.crystalLight);
 
     this.group.add(trolleyGroup);
 
@@ -551,6 +589,10 @@ export class Room02_SleepWard implements RoomScenario {
     this.unsubscribers = [];
     this.dispensaryScreen.teardown();
     this.clipboardScreen.teardown();
+    if (this.crystalLight) {
+      this.crystalLight.dispose();
+      this.crystalLight = null;
+    }
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -567,7 +609,7 @@ export class Room02_SleepWard implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
-      bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_sleep_ward' });
       return true;
     }
 
@@ -581,6 +623,13 @@ export class Room02_SleepWard implements RoomScenario {
         bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
         bus.emit('ui:subtitle_changed', {
           text: 'Dispensary Cart is unlocked [ 1 - 0 - 4 ]. The stainless tray is unsealed and empty. Memory Crystal 01 has been secured.'
+        });
+        return true;
+      }
+      if (this.trolleyUnlocked) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The dispensary drawer is open, exposing the floating Prismatic Quartz crystal. Click the crystal to retrieve it.'
         });
         return true;
       }
@@ -680,8 +729,18 @@ export class Room02_SleepWard implements RoomScenario {
 
     if (objectId === 'crystal_01_quartz') {
       if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_01_quartz')) {
+        if (!this.trolleyUnlocked && this.digits[0] === 1 && this.digits[1] === 0 && this.digits[2] === 4) {
+          this.trolleyUnlocked = true;
+        }
+        if (!this.trolleyUnlocked) {
+          bus.emit('ui:subtitle_changed', {
+            text: 'The Prismatic Quartz is sealed inside the locked dispensary drawer.'
+          });
+          return true;
+        }
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
+        if (this.crystalLight) this.crystalLight.visible = false;
         audio.playTumblerClick();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_01_quartz' as CrystalId,
@@ -700,6 +759,11 @@ export class Room02_SleepWard implements RoomScenario {
   public update(_delta: number): void {
     if (this.crystalMesh && this.crystalMesh.visible) {
       this.crystalMesh.rotation.y += 0.02;
+      this.crystalMesh.position.y = 1.08 + Math.sin(performance.now() * 0.003) * 0.03;
+      if (this.crystalLight) {
+        this.crystalLight.position.y = this.crystalMesh.position.y;
+        this.crystalLight.intensity = 1.2 + Math.sin(performance.now() * 0.005) * 0.3;
+      }
     }
   }
 }

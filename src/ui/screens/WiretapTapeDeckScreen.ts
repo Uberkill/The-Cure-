@@ -1,7 +1,8 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act06DirectorState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
-import { CrystalId } from '../../types';
+import { RotaryDial } from '../components/RotaryDial';
+import { ReelTapeTransport, TransportState } from '../components/ReelTapeTransport';
 
 export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState> {
   public readonly id: string = 'screen-wiretap-tapedeck';
@@ -16,6 +17,8 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
   private audioEngine: AudioEngine;
   private solveTimeoutId: number | null = null;
   private isPlaying: boolean = false;
+  private rotaryDial: RotaryDial | null = null;
+  private tapeTransport: ReelTapeTransport | null = null;
 
   private clockHours: number = 12;
   private clockMinutes: number = 0;
@@ -46,7 +49,8 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
         <div class="diegetic-body">
           <div class="wiretap-console-layout">
             <div class="tape-deck-panel">
-              <div class="deck-top-spools">
+              <div id="tape-transport-mount"></div>
+              <div class="deck-top-spools" style="display: none;">
                 <div class="spool-housing">
                   <div class="spool-hub left-spool" id="spool-left" data-testid="spool-left">
                     <div class="spool-spoke"></div>
@@ -125,11 +129,7 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
                   <span class="dialed-buffer" id="label-dialed-number" data-testid="label-dialed-number">----</span>
                   <button class="btn-clear-dial" id="btn-dial-clear" data-testid="btn-dial-clear">RESET</button>
                 </div>
-                <div class="rotary-dial-grid">
-                  ${[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map(digit => `
-                    <button class="btn-rotary-digit" data-digit="${digit}" id="btn-dial-${digit}" data-testid="btn-dial-${digit}">${digit}</button>
-                  `).join('')}
-                </div>
+                <div id="rotary-dial-mount"></div>
               </div>
 
               <div class="safe-unlatch-lane">
@@ -152,6 +152,33 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     this.labelClockEl = el.querySelector('#label-clock-time');
     this.labelDialedEl = el.querySelector('#label-dialed-number');
     this.btnUnlatchEl = el.querySelector('#btn-unlatch-safe');
+
+    // Mount ReelTapeTransport
+    const tapeMount = el.querySelector('#tape-transport-mount') as HTMLElement | null;
+    if (tapeMount) {
+      this.tapeTransport = new ReelTapeTransport(tapeMount, {
+        label: 'NAGRA SN // WIRETAP SURVEILLANCE RECORDER',
+        onStateChange: (state: TransportState) => {
+          if (state === 'play') {
+            this.handlePlayTape();
+          } else if (state === 'stop') {
+            this.handleStopTape();
+          } else if (state === 'rewind') {
+            this.handleRewindTape();
+          }
+        }
+      });
+    }
+
+    // Mount RotaryDial
+    const rotaryMount = el.querySelector('#rotary-dial-mount') as HTMLElement | null;
+    if (rotaryMount) {
+      this.rotaryDial = new RotaryDial(rotaryMount, {
+        onDigitDialed: (digit: number) => {
+          this.handleDialDigit(digit.toString());
+        }
+      });
+    }
 
     // Transport buttons
     const btnPlay = el.querySelector('#btn-tape-play');
@@ -183,10 +210,12 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     const btnMinMinus = el.querySelector('#btn-min-minus');
     btnMinMinus?.addEventListener('click', () => this.adjustMinute(-1));
 
-    // Rotary buttons
-    for (let d = 0; d <= 9; d++) {
-      const btnDigit = el.querySelector(`#btn-dial-${d}`);
-      btnDigit?.addEventListener('click', () => this.handleDialDigit(d.toString()));
+    // Fallback rotary buttons if RotaryDial was not mounted
+    if (!this.rotaryDial) {
+      for (let d = 0; d <= 9; d++) {
+        const btnDigit = el.querySelector(`#btn-dial-${d}`);
+        btnDigit?.addEventListener('click', () => this.handleDialDigit(d.toString()));
+      }
     }
 
     const btnClear = el.querySelector('#btn-dial-clear');
@@ -274,7 +303,7 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     return clockOk || dialedOk;
   }
 
-  private handleSolveTrigger(): void {
+  public handleSolveTrigger(): void {
     if (this.state.safeUnlatched) return;
     this.state.safeUnlatched = true;
 
@@ -282,13 +311,10 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     this.audioEngine.playTumblerClick();
     this.syncDom();
 
-    this.eventBus.emit('puzzle:crystal_collected', {
-      crystalId: 'crystal_05_celadon' as CrystalId,
-      label: 'Glowing Celadon Core'
-    });
+    this.eventBus.emit('puzzle:safe_unlatched', {});
 
     this.eventBus.emit('ui:subtitle_changed', {
-      text: 'Executive escapement aligns at 11:03. Magnetic relay disengaged. Secret mahogany drawer opens, revealing the Glowing Celadon Core crystal.'
+      text: 'Executive escapement aligns at 11:03. Magnetic relay disengaged. Secret mahogany drawer unlatches. Retrieve the Glowing Celadon Core crystal from the drawer.'
     });
 
     this.solveTimeoutId = window.setTimeout(() => {
@@ -319,7 +345,7 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     // 2. Transcript
     if (this.transcriptEl) {
       if (!this.isPlaying) {
-        this.transcriptEl.textContent = '[STANDBY // TAPE TRANSPORT HALTED &bull; SELECT PLAY]';
+        this.transcriptEl.textContent = '[STANDBY // TAPE TRANSPORT HALTED • SELECT PLAY]';
         this.transcriptEl.style.color = '#94a3b8';
       } else if (this.state.wiretapTapeSpeed === 'rewind') {
         this.transcriptEl.textContent = '[HIGH-SPEED REWIND // SPOOLING BACKWARD]';
@@ -365,8 +391,18 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
         this.btnUnlatchEl.textContent = 'RELAY DISENGAGED // UNLATCH SECRET DRAWER';
         this.btnUnlatchEl.classList.add('ready');
       } else {
-        this.btnUnlatchEl.textContent = 'MAGNETIC RELAY ENGAGED &bull; 11:03 REQUIRED';
+        this.btnUnlatchEl.textContent = 'MAGNETIC RELAY ENGAGED • 11:03 REQUIRED';
         this.btnUnlatchEl.classList.remove('ready', 'unlocked');
+      }
+    }
+
+    // 7. Sync tape transport widget
+    if (this.tapeTransport) {
+      this.tapeTransport.setSpeedMultiplier(this.state.wiretapTapeSpeed === 'half' ? 0.5 : 1.0);
+      if (this.isPlaying) {
+        this.tapeTransport.setState(this.state.wiretapTapeSpeed === 'rewind' ? 'rewind' : 'play');
+      } else {
+        this.tapeTransport.setState('stop');
       }
     }
   }
@@ -377,6 +413,7 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
 
   protected onClosed(): void {
     this.isPlaying = false;
+    this.tapeTransport?.setState('stop');
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;
@@ -416,6 +453,10 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     this.syncDom();
   }
 
+  public isSafeUnlatched(): boolean {
+    return this.state.safeUnlatched;
+  }
+
   public reset(): void {
     this.state = {
       wiretapTapeSpeed: 'normal',
@@ -435,5 +476,17 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     } else if (controlId === 'hour') {
       this.adjustHour(delta);
     }
+  }
+
+  public override teardown(): void {
+    if (this.tapeTransport) {
+      this.tapeTransport.destroy();
+      this.tapeTransport = null;
+    }
+    if (this.rotaryDial) {
+      this.rotaryDial.destroy();
+      this.rotaryDial = null;
+    }
+    super.teardown();
   }
 }

@@ -81,7 +81,7 @@ export class RaycastManager {
     });
 
     this.eventBus.on('inspect:open', () => {
-      this.isEnabled = false;
+      this.setEnabled(false);
       this.domElement.style.cursor = 'default';
       if (this.hoveredObject) {
         this.hoveredObject = null;
@@ -90,11 +90,11 @@ export class RaycastManager {
     });
 
     this.eventBus.on('inspect:close', () => {
-      this.isEnabled = true;
+      this.setEnabled(true);
     });
 
     this.eventBus.on('ui:modal_opened', () => {
-      this.isEnabled = false;
+      this.setEnabled(false);
       this.domElement.style.cursor = 'default';
       if (this.hoveredObject) {
         this.hoveredObject = null;
@@ -103,7 +103,7 @@ export class RaycastManager {
     });
 
     this.eventBus.on('ui:modal_closed', () => {
-      this.isEnabled = true;
+      this.setEnabled(true);
     });
   }
 
@@ -134,8 +134,20 @@ export class RaycastManager {
             curr.name.startsWith('crystal_') ||
             curr.name.startsWith('exit_') ||
             curr.name === 'exit_airlock_passage' ||
-            curr.name === 'vault_crt_screen'
+            curr.name === 'vault_crt_screen' ||
+            curr.userData?.isInteractiveProp ||
+            !!curr.userData?.interactionPrompt
           ) {
+            return curr;
+          }
+          if (curr.name.startsWith('group_door_')) {
+            const doorChild = curr.children.find((c) => c.name.startsWith('door_'));
+            if (doorChild) return doorChild;
+            return curr;
+          }
+          if (curr.name.startsWith('group_prop_')) {
+            const propChild = curr.children.find((c) => c.name.startsWith('prop_'));
+            if (propChild) return propChild;
             return curr;
           }
         }
@@ -166,8 +178,19 @@ export class RaycastManager {
       prop_brass_shunt: '[COLLECT: MACHINED BRASS SHUNT]',
       door_corridor: '[ENTER: OBSERVATION CORRIDOR]',
       door_corridor_passage: '[ENTER: OBSERVATION CORRIDOR]',
+      door_portal_sleep_ward: '[ENTER: SLEEP WARD (SL4-02)]',
+      door_portal_hydrotherapy: '[ENTER: HYDROTHERAPY SUITE (SL4-03)]',
+      door_portal_audiology: '[ENTER: AUDIOLOGY VAULT (SL4-04B)]',
+      door_portal_archive: '[ENTER: ARCHIVE & RECORDS (SL4-05)]',
+      door_portal_directors_office: "[ENTER: DIRECTOR'S OFFICE (SL4-06)]",
+      door_portal_synthesis: '[ENTER: SYNTHESIS CORE (SL4-07)]',
+      door_portal_velvet_lounge: '[ENTER: VELVET LOUNGE (SL4-08)]',
       door_return_hub: '[RETURN: CENTRAL HUB]',
       prop_facility_map: '[EXAMINE: SUB-LEVEL 04 FACILITY BLUEPRINT]',
+      prop_facility_directory: '[READ: DEPARTMENTAL ROSTER DIRECTORY]',
+      prop_pneumatic_terminal: '[INSPECT: PNEUMATIC DOSSIER DISPATCH]',
+      prop_waiting_bench: '[EXAMINE: INSTITUTIONAL WAITING BENCH]',
+      prop_wall_clock: '[CHECK: SYNCHRONOUS SLAVE CLOCK]',
 
       // Sleep Ward
       prop_uv_toggle: '[TOGGLE: SURGICAL ULTRAVIOLET LAMP]',
@@ -224,11 +247,15 @@ export class RaycastManager {
       prop_director_drawer: '[SEARCH: SECRET DESK DRAWER]',
       prop_tape_deck: '[INSPECT: REEL-TO-REEL TAPE DECK]',
       prop_carriage_clock: '[INSPECT: BRASS CARRIAGE CLOCK]',
+      prop_executive_chair: '[EXAMINE: EXECUTIVE LEATHER CHAIR]',
       crystal_05_celadon: '[COLLECT: GLOWING CELADON CORE]',
 
       // Velvet Lounge
       prop_lounge_bar: '[INSPECT MAHOGANY BAR COUNTER]',
       prop_whiskey_glass: '[EXAMINE: AMBER WHISKEY & ICE]',
+      prop_velvet_stool_1: '[EXAMINE: VELVET BAR STOOL]',
+      prop_velvet_stool_2: '[EXAMINE: VELVET BAR STOOL]',
+      prop_cocktail_table: '[EXAMINE: MARBLE COCKTAIL TABLE]',
       prop_bar_mirror_glass: '[INSPECT GILDED MIRROR REFLECTION]',
       prop_crystal_decanter: '[EXAMINE: CUT-CRYSTAL DECANTER]',
       prop_bar_mirror_silhouette: '[LOOK: SHADOW SILHOUETTE IN GLASS]',
@@ -345,6 +372,15 @@ export class RaycastManager {
   }
 
   public setEnabled(enabled: boolean): void {
+    if (enabled) {
+      const openModals = document.querySelectorAll(
+        '.overlay-screen:not(.hidden), .diegetic-screen-overlay:not(.hidden), #modal-dossier:not(.hidden), #modal-settings:not(.hidden), #screen-facility-map:not(.hidden)'
+      );
+      if (openModals.length > 0) {
+        this.isEnabled = false;
+        return;
+      }
+    }
     this.isEnabled = enabled;
   }
 }

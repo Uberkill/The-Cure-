@@ -1,6 +1,7 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act07SynthesisState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
+import { StripChartRecorder } from '../components/StripChartRecorder';
 
 export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisState> {
   public readonly id: string = 'screen-galvanometer-grid';
@@ -14,6 +15,7 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
   private audioEngine: AudioEngine;
   private solveTimeoutId: number | null = null;
   private breakerTripped: boolean = false;
+  private chartRecorder: StripChartRecorder | null = null;
 
   private needleEls: HTMLElement[] = [];
   private sliderEls: HTMLInputElement[] = [];
@@ -48,6 +50,8 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
                 RESET MASTER BREAKER
               </button>
             </div>
+
+            <div id="chart-recorder-mount"></div>
 
             <div class="galvanometer-channels-grid">
               ${[0, 1, 2, 3, 4].map(i => `
@@ -102,6 +106,17 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
           this.handleSliderChange(i, val);
         });
       }
+    }
+
+    // Mount StripChartRecorder for live polygraph monitoring
+    const chartMount = el.querySelector('#chart-recorder-mount') as HTMLElement | null;
+    if (chartMount) {
+      this.chartRecorder = new StripChartRecorder(chartMount, {
+        label: 'POLYGRAPH RECORDER // BUS IMPEDANCE HARMONICS',
+        initialSpeed: 25,
+        frequencyHz: 2.5,
+        amplitude: 24
+      });
     }
 
     this.btnBusLeverEl?.addEventListener('click', () => this.handleLeverThrow());
@@ -237,13 +252,35 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
         this.btnBusLeverEl.classList.remove('ready', 'unlocked');
       }
     }
+
+    // 4. Strip Chart dynamic impedance monitor
+    if (this.chartRecorder) {
+      if (this.breakerTripped) {
+        this.chartRecorder.setSpeed(0);
+      } else if (this.state.gridBalanced) {
+        this.chartRecorder.setSpeed(25);
+        this.chartRecorder.setAmplitude(2);
+      } else {
+        this.chartRecorder.setSpeed(25);
+        const totalImbalance = this.state.shuntResistances.reduce(
+          (sum, r) => sum + Math.abs(r - 100),
+          0
+        );
+        const dynamicAmp = Math.min(36, 4 + (totalImbalance / 500) * 32);
+        this.chartRecorder.setAmplitude(dynamicAmp);
+      }
+    }
   }
 
   protected onOpened(): void {
+    if (!this.breakerTripped) {
+      this.chartRecorder?.setSpeed(25);
+    }
     this.syncDom();
   }
 
   protected onClosed(): void {
+    this.chartRecorder?.setSpeed(0);
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;
@@ -285,5 +322,13 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
       const current = this.state.shuntResistances[idx];
       this.handleSliderChange(idx, Math.max(0, Math.min(200, current + delta)));
     }
+  }
+
+  public override teardown(): void {
+    if (this.chartRecorder) {
+      this.chartRecorder.destroy();
+      this.chartRecorder = null;
+    }
+    super.teardown();
   }
 }

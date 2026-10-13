@@ -70,7 +70,7 @@ const FACILITY_SECTORS: SectorDefinition[] = [
     svgY: 40,
     svgWidth: 125,
     svgHeight: 65,
-    corridorStart: [245, 160],
+    corridorStart: [290, 115],
     corridorEnd: [165, 105]
   },
   {
@@ -91,7 +91,7 @@ const FACILITY_SECTORS: SectorDefinition[] = [
     svgY: 25,
     svgWidth: 124,
     svgHeight: 65,
-    corridorStart: [290, 150],
+    corridorStart: [290, 115],
     corridorEnd: [290, 90]
   },
   {
@@ -112,7 +112,7 @@ const FACILITY_SECTORS: SectorDefinition[] = [
     svgY: 40,
     svgWidth: 125,
     svgHeight: 65,
-    corridorStart: [335, 160],
+    corridorStart: [380, 185],
     corridorEnd: [415, 105]
   },
   {
@@ -133,7 +133,7 @@ const FACILITY_SECTORS: SectorDefinition[] = [
     svgY: 155,
     svgWidth: 125,
     svgHeight: 65,
-    corridorStart: [345, 185],
+    corridorStart: [380, 185],
     corridorEnd: [415, 185]
   },
   {
@@ -154,7 +154,7 @@ const FACILITY_SECTORS: SectorDefinition[] = [
     svgY: 270,
     svgWidth: 125,
     svgHeight: 65,
-    corridorStart: [335, 210],
+    corridorStart: [380, 185],
     corridorEnd: [415, 270]
   },
   {
@@ -464,7 +464,53 @@ export class FacilityMapScreen extends DiegeticScreenBase<FacilityMapState> {
     const wrapper = this.modalEl.querySelector('#facility-svg-wrapper');
     if (!wrapper) return;
 
-    let corridorsSvg = '';
+    // Wing A (Clinical Care) Trunk State
+    const wingADiscovered = this.isSectorDiscovered('sleep_ward') || this.isSectorDiscovered('hydrotherapy');
+    const wingAUnlocked = this.isSectorUnlocked('sleep_ward') || this.isSectorUnlocked('hydrotherapy');
+    const wingAColor = wingADiscovered
+      ? 'var(--color-sage-deep, #2d4a3e)'
+      : wingAUnlocked
+      ? 'var(--color-brass-cast, #c28833)'
+      : '#94a3b8';
+    const wingADash = wingADiscovered ? 'none' : '4 3';
+
+    // Wing B (Diagnostics & Records) Trunk State
+    const wingBDiscovered =
+      this.isSectorDiscovered('audiology') ||
+      this.isSectorDiscovered('archive') ||
+      this.isSectorDiscovered('directors_office');
+    const wingBUnlocked =
+      this.isSectorUnlocked('audiology') ||
+      this.isSectorUnlocked('archive') ||
+      this.isSectorUnlocked('directors_office');
+    const wingBColor = wingBDiscovered
+      ? 'var(--color-sage-deep, #2d4a3e)'
+      : wingBUnlocked
+      ? 'var(--color-brass-cast, #c28833)'
+      : '#94a3b8';
+    const wingBDash = wingBDiscovered ? 'none' : '4 3';
+
+    let corridorsSvg = `
+      <!-- Wing A Concourse Arterial Trunk (North Concourse) -->
+      <line x1="290" y1="150" x2="290" y2="115"
+            stroke="${wingAColor}" stroke-width="8" stroke-linecap="square" />
+      <line x1="290" y1="150" x2="290" y2="115"
+            stroke="#ffffff" stroke-width="2" stroke-dasharray="${wingADash}" />
+      <circle cx="290" cy="115" r="4.5" fill="${wingAColor}" stroke="#ffffff" stroke-width="1.5" />
+      <text x="296" y="136" font-family="var(--font-mono)" font-size="7" font-weight="bold" fill="${wingAColor}" letter-spacing="0.5">WING A</text>
+
+      <!-- Wing B Concourse Arterial Trunk (East Concourse) -->
+      <line x1="345" y1="185" x2="380" y2="185"
+            stroke="${wingBColor}" stroke-width="8" stroke-linecap="square" />
+      <line x1="345" y1="185" x2="380" y2="185"
+            stroke="#ffffff" stroke-width="2" stroke-dasharray="${wingBDash}" />
+      <circle cx="380" cy="185" r="4.5" fill="${wingBColor}" stroke="#ffffff" stroke-width="1.5" />
+      <text x="350" y="179" font-family="var(--font-mono)" font-size="7" font-weight="bold" fill="${wingBColor}" letter-spacing="0.5">WING B</text>
+
+      <!-- Sector C Concourse Annotation -->
+      <text x="296" y="252" font-family="var(--font-mono)" font-size="7" font-weight="bold" fill="var(--color-sage-deep, #2d4a3e)" letter-spacing="0.5">SECTOR C</text>
+    `;
+
     FACILITY_SECTORS.forEach((sec) => {
       if (sec.id === 'room_04') return;
       const isDiscovered = this.isSectorDiscovered(sec.id);

@@ -398,17 +398,20 @@
 .manifold-housing {
   background: #171d1b;
   border-color: #2b3935;
+  max-width: 860px;
+  width: min(92vw, 860px);
 }
 
 .manifold-top-readout {
-  display: flex;
+  display: grid;
+  grid-template-columns: 240px 1fr;
   gap: 24px;
   align-items: center;
-  justify-content: space-around;
   background: #101514;
   padding: 20px;
   border-radius: 6px;
   border: 1px solid #24302c;
+  min-height: 260px;
 }
 
 .bourdon-gauge-panel {
@@ -418,45 +421,34 @@
   gap: 8px;
 }
 
-.gauge-title {
-  font-size: 10px;
-  color: #72847d;
-  letter-spacing: 0.12em;
-}
-
+/* Flat transparent mount point — canvas paints its own bezel and face */
 .bourdon-dial {
   position: relative;
-  width: 130px;
-  height: 130px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #1a221f 60%, #0d1210 100%);
-  border: 4px solid #364641;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9), 0 4px 10px rgba(0, 0, 0, 0.4);
-  display: flex;
+  width: 210px;
+  height: auto;
+}
+
+/* Strip standalone card chrome when flush-mounted inside the manifold chassis */
+.manifold-housing .bourdon-gauge-widget {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  gap: 12px;
+}
+
+/* Sized to match 210px so ResizeObserver fires with non-zero rect on first paint */
+.manifold-housing .bourdon-dial-wrap {
+  width: 210px;
+  height: 210px;
+}
+
+/* Lay readout and bleeder valve side-by-side to recover vertical height */
+.manifold-housing .bourdon-controls-wrap {
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-}
-
-.gauge-needle {
-  position: absolute;
-  width: 3px;
-  height: 48px;
-  background: #ef4444;
-  bottom: 50%;
-  left: calc(50% - 1.5px);
-  transform-origin: bottom center;
-  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
-  box-shadow: 0 0 4px rgba(239, 68, 68, 0.6);
-}
-
-.gauge-center-cap {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #c28833;
-  border: 2px solid #5a411a;
-  z-index: 2;
+  width: 210px;
 }
 
 .gauge-readout-value {
@@ -468,7 +460,9 @@
 
 .sight-tubes-bank {
   display: flex;
-  gap: 20px;
+  gap: 28px;
+  align-items: flex-end;
+  justify-content: center;
 }
 
 .sight-tube-col {
@@ -485,24 +479,42 @@
 }
 
 .sight-glass-well {
-  width: 28px;
-  height: 120px;
+  width: 44px;
+  height: 160px;
   background: #090e0c;
   border: 2px solid #2d3b37;
-  border-radius: 14px;
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.85), 0 2px 8px rgba(0, 0, 0, 0.4);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
+}
+
+/* Calibration graduation marks at each 25% increment (levels 0–4) */
+.sight-glass-well::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0px,
+    transparent calc(25% - 1px),
+    rgba(45, 59, 55, 0.9) calc(25% - 1px),
+    rgba(45, 59, 55, 0.9) 25%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
 .water-column {
   width: 100%;
   background: linear-gradient(180deg, #4ade80, #14532d);
   transition: height 0.3s ease;
-  box-shadow: 0 0 10px rgba(74, 222, 128, 0.5);
+  box-shadow: 0 0 12px rgba(74, 222, 128, 0.55);
+  position: relative;
+  z-index: 0;
 }
 
 .tube-readout {

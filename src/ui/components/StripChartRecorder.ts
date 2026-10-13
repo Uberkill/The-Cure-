@@ -164,6 +164,10 @@ export class StripChartRecorder {
     this.frequencyHz = hz;
   }
 
+  public setAmplitude(amp: number): void {
+    this.amplitude = amp;
+  }
+
   private wakeAnimation(): void {
     if (document.hidden || this.speed === 0) return;
     this.isSleeping = false;

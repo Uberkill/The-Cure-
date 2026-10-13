@@ -128,28 +128,28 @@ export class Room08_VelvetLounge implements RoomScenario {
       roughness: 0.65
     });
 
-    // Floor: Black-and-white chevron zigzag
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), matChevron);
+    // Floor: Black-and-white chevron zigzag (Expansive Sub-Baltic Velvet Lounge)
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(16, 18), matChevron);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.group.add(floor);
 
     // Ceiling & Deep Red Velvet Drapes
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(16, 16), new THREE.MeshBasicMaterial({ color: 0x050505 }));
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(16, 18), new THREE.MeshBasicMaterial({ color: 0x050505 }));
     ceiling.position.y = 4.2;
     ceiling.rotation.x = Math.PI / 2;
     this.group.add(ceiling);
 
     const drapesBack = new THREE.Mesh(new THREE.BoxGeometry(16, 4.2, 0.4), matVelvet);
-    drapesBack.position.set(0, 2.1, -6);
+    drapesBack.position.set(0, 2.1, -6.5);
     this.group.add(drapesBack);
 
-    const drapesLeft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 16), matVelvet);
-    drapesLeft.position.set(-6, 2.1, 0);
+    const drapesLeft = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 18), matVelvet);
+    drapesLeft.position.set(-7.5, 2.1, 0);
     this.group.add(drapesLeft);
 
-    const drapesRight = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 16), matVelvet);
-    drapesRight.position.set(6, 2.1, 0);
+    const drapesRight = new THREE.Mesh(new THREE.BoxGeometry(0.4, 4.2, 18), matVelvet);
+    drapesRight.position.set(7.5, 2.1, 0);
     this.group.add(drapesRight);
 
     // Return Door to Hub / Previous Chamber
@@ -157,7 +157,7 @@ export class Room08_VelvetLounge implements RoomScenario {
       new THREE.BoxGeometry(1.6, 3.0, 0.15),
       new THREE.MeshStandardMaterial({ color: 0x221a18, metalness: 0.3, roughness: 0.6 })
     );
-    returnDoor.position.set(0, 1.5, 5.9);
+    returnDoor.position.set(0, 1.5, 8.85);
     returnDoor.name = 'door_return_hub';
     this.group.add(returnDoor);
 
@@ -212,25 +212,23 @@ export class Room08_VelvetLounge implements RoomScenario {
     this.group.add(barGroup);
 
     // Two Tufted Burgundy Leather Bar Stools
-    [-2.8, -1.2].forEach((sx) => {
+    [-2.8, -1.2].forEach((sx, idx) => {
       const stoolGroup = new THREE.Group();
       stoolGroup.position.set(sx, 0, 1.0);
-      stoolGroup.name = 'mesh_bar_stool';
+      stoolGroup.name = `prop_velvet_stool_${idx + 1}`;
+      stoolGroup.userData.flavorText = 'A plush burgundy velvet bar stool with polished brass trim.';
 
       const stoolBase = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.26, 0.04, 24), matBrass);
       stoolBase.position.y = 0.02;
-      stoolBase.raycast = () => {};
       stoolGroup.add(stoolBase);
 
       const stoolStem = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.70, 16), matBrass);
       stoolStem.position.y = 0.38;
-      stoolStem.raycast = () => {};
       stoolGroup.add(stoolStem);
 
       const stoolSeat = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.23, 0.12, 24), matLeather);
       stoolSeat.position.y = 0.75;
       stoolSeat.castShadow = true;
-      stoolSeat.raycast = () => {};
       stoolGroup.add(stoolSeat);
 
       this.group!.add(stoolGroup);
@@ -245,13 +243,14 @@ export class Room08_VelvetLounge implements RoomScenario {
       new THREE.BoxGeometry(0.08, 2.4, 3.2),
       new THREE.MeshStandardMaterial({ color: 0x14100d, roughness: 0.3, metalness: 0.4 })
     );
+    shelfBack.userData.isSubPart = true;
     backBarGroup.add(shelfBack);
 
     // 3 Glass Shelves with Bottles
     [-0.6, 0.0, 0.6].forEach((sy) => {
       const shelfGlass = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.03, 3.0), matGlass);
       shelfGlass.position.set(0.18, sy, 0);
-      shelfGlass.raycast = () => {};
+      shelfGlass.userData.isSubPart = true;
       backBarGroup.add(shelfGlass);
 
       // Vintage Bottles along shelf
@@ -262,7 +261,7 @@ export class Room08_VelvetLounge implements RoomScenario {
           new THREE.MeshPhysicalMaterial({ color: bottleColor, roughness: 0.1, transmission: 0.7 })
         );
         bottle.position.set(0.18, sy + 0.155, bz);
-        bottle.raycast = () => {};
+        bottle.userData.isSubPart = true;
         backBarGroup.add(bottle);
       });
     });
@@ -289,28 +288,27 @@ export class Room08_VelvetLounge implements RoomScenario {
     const silhouette = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 1.1, 8, 16), matSilhouette);
     silhouette.position.set(-1.4, 1.8, -5.55);
     silhouette.name = 'prop_bar_mirror_silhouette';
+    silhouette.userData.isSubPart = true;
     this.group.add(silhouette);
 
     // Round Pedestal Marble Cocktail Table in front of Mirror
     const tableGroup = new THREE.Group();
     tableGroup.position.set(-1.4, 0, -4.5);
-    tableGroup.name = 'mesh_mirror_cocktail_table';
+    tableGroup.name = 'prop_cocktail_table';
+    tableGroup.userData.flavorText = 'A round pedestal cocktail table topped with green-veined marble.';
 
     const tableBase = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 0.04, 24), matBrass);
     tableBase.position.y = 0.02;
-    tableBase.raycast = () => {};
     tableGroup.add(tableBase);
 
     const tableStem = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.82, 16), matBrass);
     tableStem.position.y = 0.44;
-    tableStem.raycast = () => {};
     tableGroup.add(tableStem);
 
     const tableTop = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.68, 0.05, 32), matMarble);
     tableTop.position.y = 0.87;
     tableTop.castShadow = true;
     tableTop.receiveShadow = true;
-    tableTop.raycast = () => {};
     tableGroup.add(tableTop);
 
     // The Faceted Crystal Decanter (Key puzzle prop)
@@ -399,6 +397,17 @@ export class Room08_VelvetLounge implements RoomScenario {
       switchboardGroup.add(toggleKey);
     });
 
+    // Operator PBX Routing Directory Card resting on key shelf
+    const directoryCard = new THREE.Mesh(
+      new THREE.BoxGeometry(0.35, 0.015, 0.22),
+      new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.9 })
+    );
+    directoryCard.position.set(-0.25, -0.36, 0.22);
+    directoryCard.rotation.x = 0.3;
+    directoryCard.name = 'prop_switchboard_directory';
+    directoryCard.userData.interactionPrompt = '[READ: PBX DIRECTORY]';
+    switchboardGroup.add(directoryCard);
+
     this.group.add(switchboardGroup);
 
     // Wall Vintage Payphone with Armored Cord & Acoustic Wings
@@ -422,6 +431,7 @@ export class Room08_VelvetLounge implements RoomScenario {
       new THREE.MeshStandardMaterial({ color: 0x1f2924, roughness: 0.3, metalness: 0.8 })
     );
     phoneBox.name = 'prop_lounge_payphone';
+    phoneBox.userData.isSubPart = true;
     phoneGroup.add(phoneBox);
 
     // Instruction Placard
@@ -446,6 +456,7 @@ export class Room08_VelvetLounge implements RoomScenario {
     );
     this.payphoneMesh.position.set(-0.24, 0.02, 0.12);
     this.payphoneMesh.name = 'prop_lounge_payphone';
+    this.payphoneMesh.userData.isSubPart = true;
     phoneGroup.add(this.payphoneMesh);
 
     // Armored Flexible Metal Cord (Curved tube)
@@ -507,7 +518,7 @@ export class Room08_VelvetLounge implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
-      bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_velvet_lounge' });
       return true;
     }
 
@@ -515,6 +526,15 @@ export class Room08_VelvetLounge implements RoomScenario {
       audio.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'switchboard' });
       this.switchboardScreen.open();
+      return true;
+    }
+
+    if (objectId === 'prop_switchboard_directory') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'switchboard' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'PBX ROUTING DIRECTORY: "TRUNK 101: Infirmary (SEVERED) | TRUNK 102: Hydrotherapy (OFFLINE) | TRUNK 103: Sound Lab (ISOLATED) | TRUNK 104: Subject 104 Terminal ---> ROUTE TO LINE 4 TO CONNECT OUTSIDE PAYPHONE CIRCUIT."'
+      });
       return true;
     }
 
@@ -531,6 +551,16 @@ export class Room08_VelvetLounge implements RoomScenario {
       bus.emit('camera:move_to_hotspot', { hotspotId: 'mirror' });
       bus.emit('ui:subtitle_changed', {
         text: 'The gilded mirror reflects a hollow silhouette staring back. Place the crystal decanter to clarify the alignment.'
+      });
+      return true;
+    }
+
+    if (objectId.startsWith('prop_velvet_stool_') || objectId === 'prop_cocktail_table') {
+      audio.playTumblerClick();
+      bus.emit('ui:subtitle_changed', {
+        text: objectId === 'prop_cocktail_table'
+          ? 'A round pedestal cocktail table topped with green-veined marble.'
+          : 'A plush burgundy velvet bar stool with polished brass trim.'
       });
       return true;
     }

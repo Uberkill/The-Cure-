@@ -83,6 +83,83 @@ export class Room04_SterileChamber implements RoomScenario {
         position: new THREE.Vector3(-3.2, 1.8, -3.0),
         target: new THREE.Vector3(-6.75, 1.8, -3.0)
       }
+    },
+    door_portal_sleep_ward: {
+      id: 'door_portal_sleep_ward',
+      name: 'VII. Sleep Ward Portal',
+      position: new THREE.Vector3(-4.2, 1.8, -6.74),
+      interactionPrompt: '[ENTER: SLEEP WARD (SL4-02)]',
+      cameraPreset: {
+        name: 'door_portal_sleep_ward',
+        position: new THREE.Vector3(-3.4, 1.9, -4.8),
+        target: new THREE.Vector3(0, 1.0, 0)
+      }
+    },
+    door_portal_hydrotherapy: {
+      id: 'door_portal_hydrotherapy',
+      name: 'V. Hydrotherapy Concourse',
+      position: new THREE.Vector3(0, 1.8, -6.72),
+      interactionPrompt: '[ENTER: HYDROTHERAPY SUITE (SL4-03)]',
+      cameraPreset: {
+        name: 'door_portal_hydrotherapy',
+        position: new THREE.Vector3(0, 1.9, -4.6),
+        target: new THREE.Vector3(0, 1.0, 0)
+      }
+    },
+    door_portal_audiology: {
+      id: 'door_portal_audiology',
+      name: 'VIII. Audiology Vault Portal',
+      position: new THREE.Vector3(4.2, 1.8, -6.74),
+      interactionPrompt: '[ENTER: AUDIOLOGY VAULT (SL4-04B)]',
+      cameraPreset: {
+        name: 'door_portal_audiology',
+        position: new THREE.Vector3(3.4, 1.9, -4.8),
+        target: new THREE.Vector3(0, 1.0, 0)
+      }
+    },
+    door_portal_archive: {
+      id: 'door_portal_archive',
+      name: 'IX. Archive & Records Portal',
+      position: new THREE.Vector3(6.74, 1.8, -3.2),
+      interactionPrompt: '[ENTER: ARCHIVE & RECORDS (SL4-05)]',
+      cameraPreset: {
+        name: 'door_portal_archive',
+        position: new THREE.Vector3(4.8, 1.9, -2.5),
+        target: new THREE.Vector3(0, 1.0, 0)
+      }
+    },
+    door_portal_directors_office: {
+      id: 'door_portal_directors_office',
+      name: "X. Director's Suite Portal",
+      position: new THREE.Vector3(6.74, 1.8, 3.6),
+      interactionPrompt: "[ENTER: DIRECTOR'S OFFICE (SL4-06)]",
+      cameraPreset: {
+        name: 'door_portal_directors_office',
+        position: new THREE.Vector3(4.8, 1.9, 2.8),
+        target: new THREE.Vector3(0, 1.0, 0)
+      }
+    },
+    door_portal_synthesis: {
+      id: 'door_portal_synthesis',
+      name: 'XI. Synthesis Core Portal',
+      position: new THREE.Vector3(3.8, 1.8, 6.74),
+      interactionPrompt: '[ENTER: SYNTHESIS CORE (SL4-07)]',
+      cameraPreset: {
+        name: 'door_portal_synthesis',
+        position: new THREE.Vector3(2.8, 1.9, 4.8),
+        target: new THREE.Vector3(0, 1.0, 0)
+      }
+    },
+    door_portal_velvet_lounge: {
+      id: 'door_portal_velvet_lounge',
+      name: 'XII. Velvet Lounge Portal',
+      position: new THREE.Vector3(-6.74, 1.8, 2.8),
+      interactionPrompt: '[ENTER: VELVET LOUNGE (SL4-08)]',
+      cameraPreset: {
+        name: 'door_portal_velvet_lounge',
+        position: new THREE.Vector3(-4.8, 1.9, 2.2),
+        target: new THREE.Vector3(0, 1.0, 0)
+      }
     }
   };
 
@@ -206,6 +283,8 @@ export class Room04_SterileChamber implements RoomScenario {
     mapGroup.userData.interactionPrompt = '[EXAMINE: SUB-LEVEL 04 FACILITY BLUEPRINT]';
     this.entities.group.add(mapGroup);
 
+    this.updatePortalLeds();
+
     return this.entities.group;
   }
 
@@ -306,6 +385,8 @@ export class Room04_SterileChamber implements RoomScenario {
     const unsubStage = bus.on('game:stage_transition', ({ to }) => {
       if (!this.entities) return;
 
+      this.updatePortalLeds();
+
       if (to === GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
         this.animatePressureRelease();
       }
@@ -324,6 +405,11 @@ export class Room04_SterileChamber implements RoomScenario {
     });
     this.unsubscribers.push(unsubStage, unsubInv);
 
+    const unsubPatch = bus.on('puzzle:crt_patch_completed', () => {
+      this.updatePortalLeds();
+    });
+    this.unsubscribers.push(unsubPatch);
+
     const unsubFreq = bus.on('puzzle:frequency_changed', ({ frequency }) => {
       if (!this.entities) return;
       const angle = ((frequency - 400) / 300) * Math.PI * 2;
@@ -337,6 +423,68 @@ export class Room04_SterileChamber implements RoomScenario {
     this.unsubscribers.push(unsubSwitch);
   }
 
+  private updatePortalLeds(): void {
+    if (!this.entities?.portalLeds) return;
+    const gs = GameState.getInstance();
+    const stage = gs.getStage();
+
+    const portalStatusMap: Record<string, { unlocked: boolean; cleared: boolean }> = {
+      door_portal_sleep_ward: {
+        unlocked: stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN,
+        cleared: gs.isCrystalPatched('crystal_01_quartz')
+      },
+      door_portal_hydrotherapy: {
+        unlocked: stage >= GameStage.ACT_2_PATCH_1_COMPLETE,
+        cleared: gs.isCrystalPatched('crystal_02_bronze')
+      },
+      door_portal_audiology: {
+        unlocked: stage >= GameStage.ACT_3_PATCH_2_COMPLETE,
+        cleared: gs.isCrystalPatched('crystal_03_amethyst')
+      },
+      door_portal_archive: {
+        unlocked: stage >= GameStage.ACT_4_PATCH_3_COMPLETE,
+        cleared: gs.isCrystalPatched('crystal_04_obsidian')
+      },
+      door_portal_directors_office: {
+        unlocked: stage >= GameStage.ACT_5_PATCH_4_COMPLETE,
+        cleared: gs.isCrystalPatched('crystal_05_celadon')
+      },
+      door_portal_synthesis: {
+        unlocked: stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT,
+        cleared: gs.isSynthesisComplete()
+      },
+      door_portal_velvet_lounge: {
+        unlocked: stage >= GameStage.ACT_8_VELVET_LOUNGE,
+        cleared: false
+      }
+    };
+
+    const redColor = 0x8b1e23;
+    const amberColor = 0xf59e0b;
+    const greenColor = 0x4ade80;
+
+    for (const [doorId, status] of Object.entries(portalStatusMap)) {
+      const led = this.entities.portalLeds[doorId];
+      if (!led || !(led.material instanceof THREE.MeshBasicMaterial)) continue;
+
+      if (status.cleared) {
+        led.material.color.setHex(greenColor);
+      } else if (status.unlocked) {
+        led.material.color.setHex(amberColor);
+      } else {
+        led.material.color.setHex(redColor);
+      }
+    }
+
+    if (this.entities.corridorLed && this.entities.corridorLed.material instanceof THREE.MeshBasicMaterial) {
+      if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
+        this.entities.corridorLed.material.color.setHex(greenColor);
+      } else {
+        this.entities.corridorLed.material.color.setHex(redColor);
+      }
+    }
+  }
+
   private getNextSpokeRoomId(): string {
     const gameState = GameState.getInstance();
     if (!gameState.isCrystalPatched('crystal_01_quartz')) return 'sleep_ward';
@@ -348,7 +496,7 @@ export class Room04_SterileChamber implements RoomScenario {
 
   private animatePressureRelease(): void {
     if (!this.entities) return;
-    (this.entities.corridorLed.material as THREE.MeshBasicMaterial).color.setHex(0x4ade80);
+    this.updatePortalLeds();
     this.audioElement.playTumblerClick();
   }
 
@@ -501,6 +649,199 @@ export class Room04_SterileChamber implements RoomScenario {
 
 
 
+    if (objectId === 'door_portal_sleep_ward') {
+      const stage = GameState.getInstance().getStage();
+      if (stage < GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_sleep_ward' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Sleep Ward pneumatic lock is active. Complete Phase I harmonic tuning to 528 Hz on the central CRT oscilloscope.'
+        });
+        return true;
+      }
+
+      if (!GameState.getInstance().hasItem('prop_key')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_sleep_ward' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The pressure seal is released, but the mechanical cipher lock requires a heavy brass key.'
+        });
+        return true;
+      }
+
+      const pending = GameState.getInstance().getPendingCrystal();
+      if (pending) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'A memory crystal is recovered. Slot it into the CRT oscilloscope at the central desk before proceeding deeper into the facility.'
+        });
+        return true;
+      }
+
+      if (this.isTransitioning) return true;
+      this.isTransitioning = true;
+      AudioEngine.getInstance().playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Traversing observation corridor to Sleep Ward (SL4-02-SLP).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'sleep_ward', doorThresholdId: 'door_portal_sleep_ward' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_hydrotherapy') {
+      const stage = GameState.getInstance().getStage();
+      if (stage < GameStage.ACT_2_PATCH_1_COMPLETE) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_hydrotherapy' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'Hydrotherapy Suite interlock active. Recover and patch Memory Crystal 01 from Sleep Ward first.'
+        });
+        return true;
+      }
+
+      const pending = GameState.getInstance().getPendingCrystal();
+      if (pending) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'A memory crystal is recovered. Slot it into the CRT oscilloscope at the central desk before proceeding deeper into the facility.'
+        });
+        return true;
+      }
+
+      if (this.isTransitioning) return true;
+      this.isTransitioning = true;
+      AudioEngine.getInstance().playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Traversing concourse to Hydrotherapy Suite (SL4-03-HYD).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'hydrotherapy', doorThresholdId: 'door_portal_hydrotherapy' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_audiology') {
+      const stage = GameState.getInstance().getStage();
+      if (stage < GameStage.ACT_3_PATCH_2_COMPLETE) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_audiology' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'Audiology Vault acoustic seal active. Solve hydraulic pressure balance in Hydrotherapy Suite first.'
+        });
+        return true;
+      }
+
+      const pending = GameState.getInstance().getPendingCrystal();
+      if (pending) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'A memory crystal is recovered. Slot it into the CRT oscilloscope at the central desk before proceeding deeper into the facility.'
+        });
+        return true;
+      }
+
+      if (this.isTransitioning) return true;
+      this.isTransitioning = true;
+      AudioEngine.getInstance().playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Traversing corridor to Audiology Vault (SL4-04B-AUD).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'audiology', doorThresholdId: 'door_portal_audiology' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_archive') {
+      const stage = GameState.getInstance().getStage();
+      if (stage < GameStage.ACT_4_PATCH_3_COMPLETE) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_archive' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'Archive & Records security gate sealed. Synthesize Chladni resonance in Audiology Vault first.'
+        });
+        return true;
+      }
+
+      const pending = GameState.getInstance().getPendingCrystal();
+      if (pending) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'A memory crystal is recovered. Slot it into the CRT oscilloscope at the central desk before proceeding deeper into the facility.'
+        });
+        return true;
+      }
+
+      if (this.isTransitioning) return true;
+      this.isTransitioning = true;
+      AudioEngine.getInstance().playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Traversing corridor to Archive & Records (SL4-05-ARC).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'archive', doorThresholdId: 'door_portal_archive' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_directors_office') {
+      const stage = GameState.getInstance().getStage();
+      if (stage < GameStage.ACT_5_PATCH_4_COMPLETE) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_directors_office' });
+        bus.emit('ui:subtitle_changed', {
+          text: "Director's Suite administrative lock engaged. Retrieve and calibrate Obsidian Crystal from Archive first."
+        });
+        return true;
+      }
+
+      const pending = GameState.getInstance().getPendingCrystal();
+      if (pending) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'vault' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'A memory crystal is recovered. Slot it into the CRT oscilloscope at the central desk before proceeding deeper into the facility.'
+        });
+        return true;
+      }
+
+      if (this.isTransitioning) return true;
+      this.isTransitioning = true;
+      AudioEngine.getInstance().playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: "Traversing private concourse to Director's Office (SL4-06-DIR)."
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'directors_office', doorThresholdId: 'door_portal_directors_office' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_synthesis') {
+      const stage = GameState.getInstance().getStage();
+      if (stage < GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_synthesis' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'Synthesis Core heavy blast airlock sealed. High-voltage cathode acceleration requires alignment of all prior sectors.'
+        });
+        return true;
+      }
+
+      if (this.isTransitioning) return true;
+      this.isTransitioning = true;
+      AudioEngine.getInstance().playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Traversing high-voltage airlock to Synthesis Core (SL4-07-SYN).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'synthesis_blackout', doorThresholdId: 'door_portal_synthesis' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_velvet_lounge') {
+      const stage = GameState.getInstance().getStage();
+      if (stage < GameStage.ACT_8_VELVET_LOUNGE) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_velvet_lounge' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'Velvet Lounge solarium corridor locked. Complete the Synthesis Core cathode balancing circuit first.'
+        });
+        return true;
+      }
+
+      if (this.isTransitioning) return true;
+      this.isTransitioning = true;
+      AudioEngine.getInstance().playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Entering Velvet Lounge (SL4-08-VEL).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge', doorThresholdId: 'door_portal_velvet_lounge' });
+      return true;
+    }
+
     if (objectId === 'door_corridor' || objectId === 'door_corridor_passage') {
       const stage = GameState.getInstance().getStage();
       if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
@@ -556,6 +897,42 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'prop_facility_map') {
       bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
       bus.emit('ui:open_facility_map', {});
+      return true;
+    }
+
+    if (objectId === 'prop_facility_directory') {
+      this.audioElement.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'Sanatorium Departmental Directory: Wing A (Clinical Care & Hydrotherapy) // Wing B (Diagnostic Acoustics & Records) // Sector C (Administrative & Sub-Core).'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_pneumatic_terminal') {
+      this.audioElement.playPneumaticHiss();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'Pneumatic Dispatch Terminal Model 72: Vacuum conduits pressurized at 145 kPa. Intake routing specimen canisters to peripheral sanatorium wings.'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_waiting_bench') {
+      this.audioElement.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'desk' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'Institutional waiting bench: Bent teak shell with tubular chrome chassis. Cold, utilitarian, and designed for prolonged clinical observation.'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_wall_clock') {
+      this.audioElement.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'Synchronous slave wall clock: Bakelite casing hums with a 50 Hz pulse. The sweep hand steps with a dry, mechanical tick.'
+      });
       return true;
     }
 

@@ -181,6 +181,42 @@ export class EditorPrefabs {
         group.add(housing, lens, arm);
         break;
       }
+      case 'MedicalCart': {
+        const topTray = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.04, 0.45), mat.brushedChrome);
+        topTray.position.set(0, 0.85, 0);
+        topTray.castShadow = true;
+        const bottomTray = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.04, 0.45), mat.brushedChrome);
+        bottomTray.position.set(0, 0.25, 0);
+        bottomTray.castShadow = true;
+        group.add(topTray, bottomTray);
+        const legGeo = new THREE.CylinderGeometry(0.015, 0.015, 0.85, 12);
+        const legCoords = [[-0.32, 0.2], [0.32, 0.2], [-0.32, -0.2], [0.32, -0.2]];
+        for (const [lx, lz] of legCoords) {
+          const leg = new THREE.Mesh(legGeo, mat.titaniumChassis);
+          leg.position.set(lx, 0.45, lz);
+          leg.castShadow = true;
+          group.add(leg);
+        }
+        const handle = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.45), mat.brushedChrome);
+        handle.position.set(-0.35, 0.9, 0);
+        group.add(handle);
+        break;
+      }
+      case 'Typewriter': {
+        const chassis = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.08, 0.32), mat.titaniumChassis);
+        chassis.position.set(0, 0.04, 0);
+        chassis.castShadow = true;
+        const keysBed = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.03, 0.14), mat.smokedTeak);
+        keysBed.position.set(0, 0.08, 0.06);
+        const roller = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.32, 16), mat.smokedTeak);
+        roller.rotation.z = Math.PI / 2;
+        roller.position.set(0, 0.11, -0.08);
+        const lever = new THREE.Mesh(new THREE.CylinderGeometry(0.005, 0.005, 0.08, 8), mat.brushedChrome);
+        lever.position.set(-0.16, 0.14, -0.08);
+        lever.rotation.z = Math.PI / 4;
+        group.add(chassis, keysBed, roller, lever);
+        break;
+      }
       case 'Rug': {
         const rug = new THREE.Mesh(
           new THREE.BoxGeometry(3.0, 0.02, 2.0),

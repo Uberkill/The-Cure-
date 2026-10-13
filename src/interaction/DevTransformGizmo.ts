@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { SelectionBox } from 'three/examples/jsm/interactive/SelectionBox.js';
 import { RaycastManager } from './RaycastManager';
 import { EventBus } from '../core/EventBus';
+import { EditorVisualizers } from '../editor/EditorVisualizers';
 
 
 export interface TransformSnapshot {
@@ -157,6 +158,7 @@ export class DevTransformGizmo {
           }
           // Update start states for next drag
           this.cacheStartStates();
+          EventBus.getInstance().emit('editor:rebuild_visualizers', {});
         }
       }
     });
@@ -228,6 +230,7 @@ export class DevTransformGizmo {
     if (this.onSelectionChange) {
       this.onSelectionChange(this.selectedObjects);
     }
+    EventBus.getInstance().emit('editor:selection_changed', { selected: this.selectedObjects });
   }
 
   private cacheStartStates(): void {
@@ -255,6 +258,7 @@ export class DevTransformGizmo {
     if (this.onSelectionChange) {
       this.onSelectionChange([]);
     }
+    EventBus.getInstance().emit('editor:selection_changed', { selected: [] });
   }
 
   public setMode(mode: 'translate' | 'rotate' | 'scale'): void {
@@ -446,7 +450,12 @@ export class DevTransformGizmo {
       let isHelper = false;
       let curr: THREE.Object3D | null = target;
       while (curr) {
-        if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers_node') {
+        if (
+          curr.name === 'Editor_Helpers_Group' ||
+          curr.userData.isHelper ||
+          curr.name === 'dev_visualizers_node' ||
+          curr.name === 'dev_selected_visualizer_node'
+        ) {
           isHelper = true;
           break;
         }
@@ -454,14 +463,19 @@ export class DevTransformGizmo {
       }
       if (isHelper) continue;
 
-      let found: THREE.Object3D | null = null;
+      let lowestProp: THREE.Object3D | null = null;
+      let highestProp: THREE.Object3D | null = null;
       while (target && target.parent && target.parent !== this.scene) {
-        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_')) {
-          found = target;
-          break;
+        if (EditorVisualizers.isTrackedProp(target)) {
+          if (!lowestProp) lowestProp = target;
+          if (!target.userData?.isSubPart) {
+            highestProp = target;
+          }
         }
         target = target.parent;
       }
+
+      const found = (e.altKey && lowestProp) ? lowestProp : (highestProp || lowestProp);
 
       if (found) {
         target = found;
@@ -550,7 +564,12 @@ export class DevTransformGizmo {
       let isHelper = false;
       let curr: THREE.Object3D | null = obj;
       while (curr) {
-        if (curr.name === 'Editor_Helpers_Group' || curr.userData.isHelper || curr.name === 'dev_visualizers_node') {
+        if (
+          curr.name === 'Editor_Helpers_Group' ||
+          curr.userData.isHelper ||
+          curr.name === 'dev_visualizers_node' ||
+          curr.name === 'dev_selected_visualizer_node'
+        ) {
           isHelper = true;
           break;
         }
@@ -559,14 +578,19 @@ export class DevTransformGizmo {
       if (isHelper) continue;
 
       let target: THREE.Object3D | null = obj;
-      let found: THREE.Object3D | null = null;
+      let lowestProp: THREE.Object3D | null = null;
+      let highestProp: THREE.Object3D | null = null;
       while (target && target.parent && target.parent !== this.scene) {
-        if (target.userData.isPrefab || target.name.startsWith('prop_') || target.name.startsWith('door_')) {
-          found = target;
-          break;
+        if (EditorVisualizers.isTrackedProp(target)) {
+          if (!lowestProp) lowestProp = target;
+          if (!target.userData?.isSubPart) {
+            highestProp = target;
+          }
         }
         target = target.parent;
       }
+
+      const found = (e.altKey && lowestProp) ? lowestProp : (highestProp || lowestProp);
 
       if (found) {
         newSelection.add(found);

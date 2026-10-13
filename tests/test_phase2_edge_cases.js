@@ -125,21 +125,36 @@ export async function runSuite(page, baseUrl) {
 
     await page.waitForSelector('#screen-hydraulic-manifold', { state: 'hidden', timeout: 3000 });
 
+    const hydroBeforePickup = await page.evaluate(() => {
+      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      return {
+        hasCrystal: window.__VAULT_APP__.gameState.hasCrystal('crystal_02_bronze'),
+        drainLidMoved: sc.drainLidMesh.position.x > 0.1,
+        crystalVisible: sc.crystalMesh ? sc.crystalMesh.visible : false
+      };
+    });
+    if (hydroBeforePickup.hasCrystal) {
+      throw new Error('Expected crystal_02_bronze NOT in GameState before physical 3D pickup.');
+    }
+    if (!hydroBeforePickup.drainLidMoved) {
+      throw new Error('Expected 3D drain lid mesh to be displaced open.');
+    }
+    if (!hydroBeforePickup.crystalVisible) {
+      throw new Error('Expected 3D bronze crystal mesh to be visible after manifold solve.');
+    }
+
+    // Now physically collect the bronze crystal in 3D
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_02_bronze');
+    });
+
     const hydroHasCrystal = await page.evaluate(() => {
       return window.__VAULT_APP__.gameState.hasCrystal('crystal_02_bronze');
     });
     if (!hydroHasCrystal) {
-      throw new Error('Expected crystal_02_bronze in GameState after solve.');
+      throw new Error('Expected crystal_02_bronze in GameState after 3D pickup.');
     }
-
-    const drainLidMoved = await page.evaluate(() => {
-      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      return sc.drainLidMesh.position.x > 0.1;
-    });
-    if (!drainLidMoved) {
-      throw new Error('Expected 3D drain lid mesh to be displaced open.');
-    }
-    console.log('PASSED: Manifold reached 0.0 PSI, ESC spam handled cleanly, drain lid unsealed.');
+    console.log('PASSED: Manifold reached 0.0 PSI, ESC spam handled cleanly, drain lid unsealed, crystal retrieved.');
 
     console.log('--- Test 2.5: Hydrotherapy Scene Re-Entry & Re-Click Idempotency ---');
     // Switch away to sleep ward and return to hydrotherapy
@@ -322,10 +337,22 @@ export async function runSuite(page, baseUrl) {
     if (!teardownHealth.oscNodeNull) {
       throw new Error('Expected oscNode to be disconnected and nullified.');
     }
-    if (!teardownHealth.hasCrystal) {
-      throw new Error('Expected crystal_03_amethyst in GameState.');
+    if (teardownHealth.hasCrystal) {
+      throw new Error('Expected crystal_03_amethyst NOT in GameState before physical 3D pickup.');
     }
-    console.log('PASSED: Chladni loop stopped, Web Audio cleaned up, Crystal 03 registered.');
+
+    // Physically click 3D crystal to pick up
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_03_amethyst');
+    });
+
+    const hasAmethystAfter = await page.evaluate(() => {
+      return window.__VAULT_APP__.gameState.hasCrystal('crystal_03_amethyst');
+    });
+    if (!hasAmethystAfter) {
+      throw new Error('Expected crystal_03_amethyst in GameState after 3D pickup.');
+    }
+    console.log('PASSED: Chladni loop stopped, Web Audio cleaned up, Crystal 03 registered in 3D.');
 
     console.log('--- Test 3.3: Audiology Scene Re-Entry & Monolith Re-Click Idempotency ---');
     // Switch away to room_04 and return to audiology

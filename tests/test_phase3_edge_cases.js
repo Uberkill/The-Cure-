@@ -128,21 +128,36 @@ export async function runSuite(page, baseUrl) {
 
     await page.waitForSelector('#screen-microfiche-viewer', { state: 'hidden', timeout: 3000 });
 
+    const archiveBeforePickup = await page.evaluate(() => {
+      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      return {
+        hasCrystal: window.__VAULT_APP__.gameState.hasCrystal('crystal_04_obsidian'),
+        drawerSlidOpen: sc.drawer104Mesh && sc.drawer104Mesh.position.z > 0.4,
+        crystalVisible: sc.crystalMesh ? sc.crystalMesh.visible : false
+      };
+    });
+    if (archiveBeforePickup.hasCrystal) {
+      throw new Error('Expected crystal_04_obsidian NOT in GameState before physical 3D pickup.');
+    }
+    if (!archiveBeforePickup.drawerSlidOpen) {
+      throw new Error('Expected 3D drawer 104 to slide open.');
+    }
+    if (!archiveBeforePickup.crystalVisible) {
+      throw new Error('Expected 3D obsidian crystal to be visible inside drawer.');
+    }
+
+    // Physically click 3D crystal to pick it up
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_04_obsidian');
+    });
+
     const archiveHasCrystal = await page.evaluate(() => {
       return window.__VAULT_APP__.gameState.hasCrystal('crystal_04_obsidian');
     });
     if (!archiveHasCrystal) {
-      throw new Error('Expected crystal_04_obsidian in GameState after solve.');
+      throw new Error('Expected crystal_04_obsidian in GameState after 3D pickup.');
     }
-
-    const drawerSlidOpen = await page.evaluate(() => {
-      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      return sc.drawer104Mesh && sc.drawer104Mesh.position.z > 0.4;
-    });
-    if (!drawerSlidOpen) {
-      throw new Error('Expected 3D drawer 104 to slide open.');
-    }
-    console.log('PASSED: Solve confirmed, ESC spam handled cleanly, 3D drawer extended.');
+    console.log('PASSED: Solve confirmed, ESC spam handled cleanly, 3D drawer extended, crystal retrieved.');
 
     console.log('--- Test 2.5: Archive Scene Re-Entry & Re-Click Idempotency ---');
     await page.evaluate(() => {
@@ -294,21 +309,36 @@ export async function runSuite(page, baseUrl) {
 
     await page.waitForSelector('#screen-wiretap-tapedeck', { state: 'hidden', timeout: 3000 });
 
+    const directorBeforePickup = await page.evaluate(() => {
+      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      return {
+        hasCrystal: window.__VAULT_APP__.gameState.hasCrystal('crystal_05_celadon'),
+        secretDrawerOpen: sc.secretDrawerMesh && sc.secretDrawerMesh.position.z > 0.4,
+        crystalVisible: sc.crystalMesh ? sc.crystalMesh.visible : false
+      };
+    });
+    if (directorBeforePickup.hasCrystal) {
+      throw new Error('Expected crystal_05_celadon NOT in GameState before physical 3D pickup.');
+    }
+    if (!directorBeforePickup.secretDrawerOpen) {
+      throw new Error('Expected secret mahogany drawer to be unlatched.');
+    }
+    if (!directorBeforePickup.crystalVisible) {
+      throw new Error('Expected 3D celadon crystal to be visible inside secret drawer.');
+    }
+
+    // Physically click 3D crystal to pick it up
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_05_celadon');
+    });
+
     const directorHasCrystal = await page.evaluate(() => {
       return window.__VAULT_APP__.gameState.hasCrystal('crystal_05_celadon');
     });
     if (!directorHasCrystal) {
-      throw new Error('Expected crystal_05_celadon in GameState after solve.');
+      throw new Error('Expected crystal_05_celadon in GameState after 3D pickup.');
     }
-
-    const secretDrawerOpen = await page.evaluate(() => {
-      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      return sc.secretDrawerMesh && sc.secretDrawerMesh.position.z > 0.4;
-    });
-    if (!secretDrawerOpen) {
-      throw new Error('Expected secret mahogany drawer to be unlatched.');
-    }
-    console.log('PASSED: Rotary override solve confirmed, ESC spam handled cleanly, secret drawer opened.');
+    console.log('PASSED: Rotary override solve confirmed, ESC spam handled cleanly, secret drawer opened, crystal retrieved.');
 
     console.log('--- Test 3.5: Director\'s Office Re-Entry & Re-Click Idempotency ---');
     await page.evaluate(() => {

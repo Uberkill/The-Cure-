@@ -49,18 +49,30 @@ export class Room04_AudiologyVault implements RoomScenario {
     door: {
       id: 'door',
       name: 'IV. Hub Corridor',
-      position: new THREE.Vector3(0, 1.8, 5.5),
+      position: new THREE.Vector3(0, 1.8, 6.8),
       interactionPrompt: '[RETURN: CENTRAL HUB]',
       cameraPreset: {
         name: 'door',
-        position: new THREE.Vector3(0, 1.8, 3.8),
-        target: new THREE.Vector3(0, 1.8, 5.8)
+        position: new THREE.Vector3(0, 1.8, 5.2),
+        target: new THREE.Vector3(0, 1.8, 7.8)
+      }
+    },
+    workstation: {
+      id: 'workstation',
+      name: 'V. Technician Workstation',
+      position: new THREE.Vector3(-3.2, 1.2, 3.0),
+      interactionPrompt: '[INSPECT TECHNICIAN LOGBOOK]',
+      cameraPreset: {
+        name: 'workstation',
+        position: new THREE.Vector3(-2.2, 1.6, 3.8),
+        target: new THREE.Vector3(-3.4, 0.9, 3.0)
       }
     }
   };
 
   private group: THREE.Group | null = null;
   private crystalMesh: THREE.Mesh | null = null;
+  private crystalLight: THREE.PointLight | null = null;
   private crystalCollected: boolean = false;
   private ampTuned: boolean = false;
   private currentToneFreq: number = 600;
@@ -79,15 +91,25 @@ export class Room04_AudiologyVault implements RoomScenario {
     this.group = new THREE.Group();
 
     const hasCrystal = GameState.getInstance().hasCrystal('crystal_03_amethyst');
-    if (hasCrystal) {
+    if (hasCrystal || this.binauralScreen.isAcousticNullAchieved()) {
       this.ampTuned = true;
-      this.crystalCollected = true;
+      this.crystalCollected = hasCrystal;
       this.currentToneFreq = 741;
     } else {
       this.ampTuned = false;
       this.crystalCollected = false;
       this.currentToneFreq = 600;
     }
+
+    const unsubNull = EventBus.getInstance().on('puzzle:acoustic_null_achieved', () => {
+      this.ampTuned = true;
+      this.currentToneFreq = 741;
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.visible = true;
+        if (this.crystalLight) this.crystalLight.visible = true;
+      }
+    });
+    this.unsubscribers.push(unsubNull);
 
     const unsub = EventBus.getInstance().on('puzzle:crystal_collected', (payload) => {
       if (payload.crystalId === 'crystal_03_amethyst') {
@@ -96,6 +118,9 @@ export class Room04_AudiologyVault implements RoomScenario {
         this.currentToneFreq = 741;
         if (this.crystalMesh) {
           this.crystalMesh.visible = false;
+        }
+        if (this.crystalLight) {
+          this.crystalLight.visible = false;
         }
       }
     });
@@ -113,27 +138,27 @@ export class Room04_AudiologyVault implements RoomScenario {
     const matFoam = new THREE.MeshStandardMaterial({ color: 0x121714, roughness: 0.98 });
     const matConcrete = new THREE.MeshStandardMaterial({ color: 0x2a312d, roughness: 0.75 });
 
-    // Terrazzo Floor
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), matFloor);
+    // Terrazzo Floor (Elongated acoustic bunker)
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 16), matFloor);
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     this.group.add(floor);
 
     // Ceiling
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(12, 12), matWall);
-    ceiling.position.y = 4.2;
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 16), matWall);
+    ceiling.position.y = 4.4;
     ceiling.rotation.x = Math.PI / 2;
     this.group.add(ceiling);
 
     // Slanted Non-Euclidean Walls (converging inward)
-    const wallBack = new THREE.Mesh(new THREE.BoxGeometry(12, 4.4, 0.2), matWall);
-    wallBack.position.set(0, 2.2, -6);
-    wallBack.rotation.x = 0.08;
+    const wallBack = new THREE.Mesh(new THREE.BoxGeometry(10, 4.6, 0.2), matWall);
+    wallBack.position.set(0, 2.3, -8);
+    wallBack.rotation.x = 0.05;
     this.group.add(wallBack);
 
-    const wallFront = new THREE.Mesh(new THREE.BoxGeometry(12, 4.4, 0.2), matWall);
-    wallFront.position.set(0, 2.2, 6);
-    wallFront.rotation.x = -0.08;
+    const wallFront = new THREE.Mesh(new THREE.BoxGeometry(10, 4.6, 0.2), matWall);
+    wallFront.position.set(0, 2.3, 8);
+    wallFront.rotation.x = -0.05;
     this.group.add(wallFront);
 
     // Return Door to Hub
@@ -141,18 +166,18 @@ export class Room04_AudiologyVault implements RoomScenario {
       new THREE.BoxGeometry(1.6, 3.0, 0.22),
       new THREE.MeshStandardMaterial({ color: 0x3d4a41, metalness: 0.4, roughness: 0.4 })
     );
-    returnDoor.position.set(0, 1.5, 5.9);
+    returnDoor.position.set(0, 1.5, 7.85);
     returnDoor.name = 'door_return_hub';
     this.group.add(returnDoor);
 
-    const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.4, 12), matWall);
-    wallLeft.position.set(-6, 2.2, 0);
-    wallLeft.rotation.z = -0.08;
+    const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.6, 16), matWall);
+    wallLeft.position.set(-5, 2.3, 0);
+    wallLeft.rotation.z = -0.05;
     this.group.add(wallLeft);
 
-    const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.4, 12), matWall);
-    wallRight.position.set(6, 2.2, 0);
-    wallRight.rotation.z = 0.08;
+    const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.6, 16), matWall);
+    wallRight.position.set(5, 2.3, 0);
+    wallRight.rotation.z = 0.05;
     this.group.add(wallRight);
 
     // Anechoic Baffle Wedge Panels on Walls (decorative; raycast disabled)
@@ -160,15 +185,82 @@ export class Room04_AudiologyVault implements RoomScenario {
 
     // Graphic Acoustic Notation Score on Rear Wall
     const paintingFrame = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.8, 0.04), new THREE.MeshStandardMaterial({ color: 0x141a21 }));
-    paintingFrame.position.set(0, 2.4, -5.85);
+    paintingFrame.position.set(0, 2.4, -7.85);
     const paintingCanvas = new THREE.Mesh(
       new THREE.BoxGeometry(2.2, 1.6, 0.06),
       new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.9 })
     );
-    paintingCanvas.position.set(0, 2.4, -5.83);
+    paintingCanvas.position.set(0, 2.4, -7.83);
     paintingCanvas.name = 'prop_audiology_score';
     this.group.add(paintingFrame);
     this.group.add(paintingCanvas);
+
+    // Technician Workstation Alcove (Left Wall at z=3.0)
+    const workstationGroup = new THREE.Group();
+    workstationGroup.position.set(-3.6, 0, 3.0);
+    workstationGroup.name = 'prop_technician_desk';
+
+    // Workstation Table Frame & Legs
+    const deskBase = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.76, 0.8), matCastIron);
+    deskBase.position.y = 0.38;
+    deskBase.castShadow = true;
+    deskBase.receiveShadow = true;
+    workstationGroup.add(deskBase);
+
+    // Linoleum Workstation Desktop
+    const deskTop = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 0.05, 0.88),
+      new THREE.MeshStandardMaterial({ color: 0x1f2e26, roughness: 0.5, metalness: 0.2 })
+    );
+    deskTop.position.y = 0.785;
+    deskTop.castShadow = true;
+    workstationGroup.add(deskTop);
+
+    // Gooseneck Inspection Lamp with Warm Glow
+    const lampArm = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.45, 12), matBrass);
+    lampArm.position.set(-0.55, 1.0, -0.25);
+    lampArm.rotation.z = -0.25;
+    workstationGroup.add(lampArm);
+
+    const lampShade = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.12, 16), matAmp);
+    lampShade.position.set(-0.48, 1.18, -0.25);
+    lampShade.rotation.z = 0.5;
+    workstationGroup.add(lampShade);
+
+    const deskLight = new THREE.PointLight(0xfef08a, 1.2, 4);
+    deskLight.position.set(-0.45, 1.15, -0.25);
+    workstationGroup.add(deskLight);
+
+    // Open Laboratory Spiral Logbook (Diegetic Clue Item)
+    const journalGroup = new THREE.Group();
+    journalGroup.position.set(0.1, 0.82, 0.05);
+    journalGroup.name = 'prop_audiology_journal';
+    journalGroup.userData.interactionPrompt = '[READ: AUDIOLOGY LAB JOURNAL]';
+
+    const journalCover = new THREE.Mesh(
+      new THREE.BoxGeometry(0.44, 0.02, 0.32),
+      new THREE.MeshStandardMaterial({ color: 0x1e3a2b, roughness: 0.8 })
+    );
+    journalCover.castShadow = true;
+    journalGroup.add(journalCover);
+
+    const journalPages = new THREE.Mesh(
+      new THREE.BoxGeometry(0.41, 0.024, 0.29),
+      new THREE.MeshStandardMaterial({ color: 0xe2d9c2, roughness: 0.9 })
+    );
+    journalPages.position.y = 0.012;
+    journalGroup.add(journalPages);
+
+    for (let r = -0.12; r <= 0.12; r += 0.03) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(0.015, 0.003, 6, 12), matBrass);
+      ring.position.set(-0.205, 0.025, r);
+      ring.rotation.y = Math.PI / 2;
+      ring.raycast = () => {};
+      journalGroup.add(ring);
+    }
+
+    workstationGroup.add(journalGroup);
+    this.group.add(workstationGroup);
 
     // Directional Acoustic Horn Assemblies (45 deg Left, 135 deg Right)
     const hornLeft = this.createAcousticHorn(
@@ -214,6 +306,7 @@ export class Room04_AudiologyVault implements RoomScenario {
       const cab = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.9, 0.8), matAmp);
       cab.position.y = 0.45 + i * 0.95;
       cab.name = 'prop_amp_stack';
+      cab.userData.isSubPart = true;
       ampGroup.add(cab);
 
       // Speaker grille
@@ -278,6 +371,7 @@ export class Room04_AudiologyVault implements RoomScenario {
     cone.rotation.x = Math.PI / 2;
     cone.position.set(0, 1.4, 0.46);
     cone.name = 'prop_speaker_cone';
+    cone.userData.isSubPart = true;
     ampGroup.add(cone);
 
     // Memory Crystal 03 (Amethyst / Fractured Core)
@@ -293,6 +387,12 @@ export class Room04_AudiologyVault implements RoomScenario {
     this.crystalMesh.position.set(0, 1.4, 0.65);
     this.crystalMesh.name = 'crystal_03_amethyst';
     this.crystalMesh.visible = false;
+
+    this.crystalLight = new THREE.PointLight(0xc084fc, 1.5, 3);
+    this.crystalLight.position.set(0, 0, 0);
+    this.crystalLight.visible = false;
+    this.crystalMesh.add(this.crystalLight);
+
     ampGroup.add(this.crystalMesh);
 
     this.group.add(ampGroup);
@@ -313,6 +413,7 @@ export class Room04_AudiologyVault implements RoomScenario {
       this.currentToneFreq = 741;
       if (this.crystalMesh && !this.crystalCollected) {
         this.crystalMesh.visible = true;
+        if (this.crystalLight) this.crystalLight.visible = true;
       }
     }
 
@@ -557,20 +658,19 @@ export class Room04_AudiologyVault implements RoomScenario {
           wedge.rotation.z = (r + c) % 2 === 0 ? 0 : Math.PI / 2;
           wedge.castShadow = false;
           wedge.receiveShadow = true;
-          wedge.raycast = () => {};
+          wedge.userData.isSubPart = true;
           rowGroup.add(wedge);
         }
       }
-      rowGroup.raycast = () => {};
+      rowGroup.userData.isSubPart = true;
       return rowGroup;
     };
 
-    bafflesGroup.add(createBaffleRow(4.0, 3.2, -5.85, 0, -3.4));
-    bafflesGroup.add(createBaffleRow(4.0, 3.2, -5.85, 0, 3.4));
-    bafflesGroup.add(createBaffleRow(7.5, 3.2, 0, Math.PI / 2, -5.85));
-    bafflesGroup.add(createBaffleRow(7.5, 3.2, 0, -Math.PI / 2, 5.85));
+    bafflesGroup.add(createBaffleRow(4.0, 3.2, -7.85, 0, -2.8));
+    bafflesGroup.add(createBaffleRow(4.0, 3.2, -7.85, 0, 2.8));
+    bafflesGroup.add(createBaffleRow(10.0, 3.2, 0, Math.PI / 2, -4.85));
+    bafflesGroup.add(createBaffleRow(10.0, 3.2, 0, -Math.PI / 2, 4.85));
 
-    bafflesGroup.raycast = () => {};
     return bafflesGroup;
   }
 
@@ -588,7 +688,7 @@ export class Room04_AudiologyVault implements RoomScenario {
       16, 0.022, 6, false
     );
     const cable1 = new THREE.Mesh(cable1Geo, matRubber);
-    cable1.raycast = () => {};
+    cable1.userData.isSubPart = true;
     cableGroup.add(cable1);
 
     // Cable: Monolith -> Chladni Table
@@ -602,7 +702,7 @@ export class Room04_AudiologyVault implements RoomScenario {
       20, 0.025, 6, false
     );
     const cable2 = new THREE.Mesh(cable2Geo, matRubber);
-    cable2.raycast = () => {};
+    cable2.userData.isSubPart = true;
     cableGroup.add(cable2);
 
     // Cable: Chladni Table -> Right Horn
@@ -616,10 +716,9 @@ export class Room04_AudiologyVault implements RoomScenario {
       20, 0.022, 6, false
     );
     const cable3 = new THREE.Mesh(cable3Geo, matRubber);
-    cable3.raycast = () => {};
+    cable3.userData.isSubPart = true;
     cableGroup.add(cable3);
 
-    cableGroup.raycast = () => {};
     return cableGroup;
   }
 
@@ -635,6 +734,10 @@ export class Room04_AudiologyVault implements RoomScenario {
       scene.remove(this.group);
       this.group = null;
     }
+    if (this.crystalLight) {
+      this.crystalLight.dispose();
+      this.crystalLight = null;
+    }
     this.crystalMesh = null;
   }
 
@@ -643,7 +746,16 @@ export class Room04_AudiologyVault implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
-      bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_audiology' });
+      return true;
+    }
+
+    if (objectId === 'prop_audiology_journal' || objectId === 'prop_technician_desk') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'workstation' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'DR. ARIS AUDIOLOGY PROTOCOL: "Standing waves require destructive cancellation. Orient Left Horn to 45 deg, Right Horn to 135 deg, Carrier to 600 Hz, and invert phase by 180 deg to achieve acoustic null. Alternatively, a manual 741 Hz sweep on the amplifier stack bypasses the clamp."'
+      });
       return true;
     }
 
@@ -730,18 +842,30 @@ export class Room04_AudiologyVault implements RoomScenario {
       if (this.currentToneFreq === 741 && !this.ampTuned) {
         this.ampTuned = true;
         audio.playTumblerClick();
-        if (this.crystalMesh) this.crystalMesh.visible = true;
+        if (this.crystalMesh) {
+          this.crystalMesh.visible = true;
+          if (this.crystalLight) this.crystalLight.visible = true;
+        }
+        bus.emit('puzzle:acoustic_null_achieved', {});
         bus.emit('ui:subtitle_changed', {
-          text: 'Resonance achieved at 741 Hz! The speaker cone vibrates violently and dislodges an Amethyst crystal.'
+          text: 'Resonance achieved at 741 Hz! The speaker cone vibrates violently and unlatches the Amethyst crystal. Click the crystal to retrieve it.'
         });
       }
       return true;
     }
 
     if (objectId === 'crystal_03_amethyst') {
+      if (!this.ampTuned) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Amethyst Core crystal is held firmly in the clamped speaker diaphragm.'
+        });
+        return true;
+      }
+
       if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_03_amethyst')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
+        if (this.crystalLight) this.crystalLight.visible = false;
         audio.playTumblerClick();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_03_amethyst' as CrystalId,
@@ -754,12 +878,27 @@ export class Room04_AudiologyVault implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'mesh_anechoic_baffles') {
+      bus.emit('ui:subtitle_changed', {
+        text: 'Dense polyurethane acoustic wedges line the chamber perimeter, absorbing all room reflections.'
+      });
+      return true;
+    }
+
+    if (objectId === 'mesh_audio_cables') {
+      bus.emit('ui:subtitle_changed', {
+        text: 'Heavy rubberized coaxial umbilical cables link the amplifier monolith directly to the Chladni plate.'
+      });
+      return true;
+    }
+
     return false;
   }
 
   public update(_delta: number): void {
     if (this.crystalMesh && this.crystalMesh.visible) {
       this.crystalMesh.rotation.y += 0.02;
+      this.crystalMesh.position.y = 1.4 + Math.sin(performance.now() * 0.003) * 0.03;
     }
   }
 }

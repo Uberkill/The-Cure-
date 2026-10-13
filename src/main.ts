@@ -113,6 +113,12 @@ class VaultApp {
       }
     });
 
+    this.eventBus.on('editor:selection_changed', ({ selected }: { selected: THREE.Object3D[] }) => {
+      if (this.editorVisualizers) {
+        this.editorVisualizers.setSelectedObject(selected.length === 1 ? selected[0] : null);
+      }
+    });
+
     this.scenarioRegistry = ScenarioRegistry.getInstance();
     this.crtNodePatcher = CRTNodePatcher.getInstance();
     this.facilityMapScreen = FacilityMapScreen.getInstance();
@@ -125,7 +131,7 @@ class VaultApp {
   }
 
   private setupScenarioRouting(): void {
-    this.eventBus.on('scenario:switch_room', async ({ targetRoomId, isDevJump }: { targetRoomId: string; isDevJump?: boolean }) => {
+    this.eventBus.on('scenario:switch_room', async ({ targetRoomId, doorThresholdId, isDevJump }: { targetRoomId: string; doorThresholdId?: string; isDevJump?: boolean }) => {
       this.telemetry.record('info', `Switching scenario to: ${targetRoomId}`);
 
       if (isDevJump) {
@@ -150,9 +156,10 @@ class VaultApp {
         const loadedGroup = await this.scenarioRegistry.loadScenario(nextScenario, this.sceneManager.scene);
         if (!loadedGroup) return;
 
-        const defaultPreset = nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset;
-        if (defaultPreset) {
-          this.cameraDirector.resetForScenario(defaultPreset);
+        const arrivalPreset = (doorThresholdId && nextScenario.hotspots[doorThresholdId]?.cameraPreset)
+          || nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset;
+        if (arrivalPreset) {
+          this.cameraDirector.resetForScenario(arrivalPreset);
         }
 
         this.raycastManager.setExclusiveTarget(null);
@@ -167,6 +174,10 @@ class VaultApp {
         this.eventBus.emit('ui:subtitle_changed', {
           text: `Entered ${nextScenario.title}. ${nextScenario.roomCode}`
         });
+
+        if (this.editorVisualizers) {
+          this.editorVisualizers.rebuild();
+        }
       }
     });
 

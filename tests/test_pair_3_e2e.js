@@ -109,19 +109,36 @@ export async function runSuite(page, baseUrl) {
 
     await page.waitForSelector('#screen-microfiche-viewer', { state: 'hidden', timeout: 4000 });
 
+    const archiveBeforePickup = await page.evaluate(() => {
+      const gs = window.__VAULT_APP__.gameState;
+      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      return {
+        hasCrystal: gs.hasCrystal('crystal_04_obsidian'),
+        drawerOpen: sc.drawerOpen,
+        drawerSlidOpen: sc.drawer104Mesh && sc.drawer104Mesh.position.z > 0.4,
+        crystalVisible: sc.crystalMesh ? sc.crystalMesh.visible : false
+      };
+    });
+    if (archiveBeforePickup.hasCrystal) {
+      throw new Error('GameState should not have crystal_04_obsidian before 3D pickup');
+    }
+    if (!archiveBeforePickup.drawerOpen || !archiveBeforePickup.drawerSlidOpen) {
+      throw new Error('Expected 3D drawer 104 mesh to slide outward after pneumatic dispatch');
+    }
+    if (!archiveBeforePickup.crystalVisible) {
+      throw new Error('Expected 3D obsidian crystal mesh to be visible inside drawer');
+    }
+
+    // Physically click 3D crystal to pick it up
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_04_obsidian');
+    });
+
     const archiveHasCrystal = await page.evaluate(() => {
       return window.__VAULT_APP__.gameState.hasCrystal('crystal_04_obsidian');
     });
     if (!archiveHasCrystal) {
-      throw new Error('Expected crystal_04_obsidian in GameState.');
-    }
-
-    const drawerSlidOpen = await page.evaluate(() => {
-      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      return sc.drawer104Mesh && sc.drawer104Mesh.position.z > 0.4;
-    });
-    if (!drawerSlidOpen) {
-      throw new Error('Expected 3D drawer 104 mesh to slide outward.');
+      throw new Error('Expected crystal_04_obsidian in GameState after 3D pickup.');
     }
     console.log('PASSED: Act V solved, Crystal 04 secured, drawer opened.');
 
@@ -207,19 +224,36 @@ export async function runSuite(page, baseUrl) {
 
     await page.waitForSelector('#screen-wiretap-tapedeck', { state: 'hidden', timeout: 4000 });
 
+    const directorBeforePickup = await page.evaluate(() => {
+      const gs = window.__VAULT_APP__.gameState;
+      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
+      return {
+        hasCrystal: gs.hasCrystal('crystal_05_celadon'),
+        drawerUnlocked: sc.drawerUnlocked,
+        secretDrawerOpen: sc.secretDrawerMesh && sc.secretDrawerMesh.position.z > 0.4,
+        crystalVisible: sc.crystalMesh ? sc.crystalMesh.visible : false
+      };
+    });
+    if (directorBeforePickup.hasCrystal) {
+      throw new Error('GameState should not have crystal_05_celadon before 3D pickup');
+    }
+    if (!directorBeforePickup.drawerUnlocked || !directorBeforePickup.secretDrawerOpen) {
+      throw new Error('Expected secret mahogany drawer to be unlatched after escapement solve');
+    }
+    if (!directorBeforePickup.crystalVisible) {
+      throw new Error('Expected 3D celadon crystal mesh to be visible inside secret drawer');
+    }
+
+    // Physically click 3D crystal to pick it up
+    await page.evaluate(() => {
+      window.__VAULT_APP__.scenarioRegistry.getCurrentScenario().onObjectClick('crystal_05_celadon');
+    });
+
     const directorHasCrystal = await page.evaluate(() => {
       return window.__VAULT_APP__.gameState.hasCrystal('crystal_05_celadon');
     });
     if (!directorHasCrystal) {
-      throw new Error('Expected crystal_05_celadon in GameState.');
-    }
-
-    const secretDrawerOpen = await page.evaluate(() => {
-      const sc = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      return sc.secretDrawerMesh && sc.secretDrawerMesh.position.z > 0.4;
-    });
-    if (!secretDrawerOpen) {
-      throw new Error('Expected secret mahogany drawer to be unlatched.');
+      throw new Error('Expected crystal_05_celadon in GameState after 3D pickup.');
     }
     console.log('PASSED: Act VI solved, Celadon Core secured, secret drawer opened.');
 

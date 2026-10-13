@@ -1,6 +1,7 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { Act08VelvetLoungeState } from '../../types/cure';
 import { AudioEngine } from '../../audio/AudioEngine';
+import { PatchMatrix, PatchSocket } from '../components/PatchMatrix';
 
 export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoungeState> {
   public readonly id: string = 'screen-switchboard-mirror';
@@ -14,6 +15,7 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
 
   private audioEngine: AudioEngine;
   private solveTimeoutId: number | null = null;
+  private patchMatrix: PatchMatrix | null = null;
 
   private selectedTrunk: string | null = null;
   private selectedLine: string | null = null;
@@ -69,29 +71,7 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
                 </span>
               </div>
 
-              <div class="jacks-section">
-                <div class="jacks-row">
-                  <span class="jacks-row-label">INPUT TRUNKS:</span>
-                  <div class="jacks-grid">
-                    ${['101', '102', '103', '104'].map(t => `
-                      <button class="patch-jack-btn" data-trunk="${t}" id="jack-trunk-${t}" data-testid="jack-trunk-${t}">
-                        TRUNK ${t}
-                      </button>
-                    `).join('')}
-                  </div>
-                </div>
-
-                <div class="jacks-row">
-                  <span class="jacks-row-label">OUTPUT LINES:</span>
-                  <div class="jacks-grid">
-                    ${['1', '2', '3', '4'].map(l => `
-                      <button class="patch-jack-btn" data-line="${l}" id="jack-line-${l}" data-testid="jack-line-${l}">
-                        LINE ${l}
-                      </button>
-                    `).join('')}
-                  </div>
-                </div>
-              </div>
+              <div class="jacks-section" id="jacks-section"></div>
 
               <div class="climax-trigger-lane">
                 <button class="answer-climax-btn" id="btn-answer-climax" data-testid="btn-answer-climax" disabled>
@@ -114,23 +94,63 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
 
     this.btnDecanterEl?.addEventListener('click', () => this.handleToggleDecanter());
 
-    // Trunk buttons
-    ['101', '102', '103', '104'].forEach(t => {
-      const btn = el.querySelector(`#jack-trunk-${t}`) as HTMLButtonElement;
-      if (btn) {
-        this.trunkButtons.push(btn);
-        btn.addEventListener('click', () => this.handleSelectTrunk(t));
-      }
-    });
+    // Mount PatchMatrix with authentic brutalist jacks and catenary cords
+    const jacksMount = el.querySelector('#jacks-section') as HTMLElement | null;
+    if (jacksMount) {
+      const sockets: PatchSocket[] = [
+        { id: 'jack-trunk-101', label: 'TRUNK 101', roomCode: 'TRUNK 101', dataAttrs: { 'data-trunk': '101' } },
+        { id: 'jack-trunk-102', label: 'TRUNK 102', roomCode: 'TRUNK 102', dataAttrs: { 'data-trunk': '102' } },
+        { id: 'jack-trunk-103', label: 'TRUNK 103', roomCode: 'TRUNK 103', dataAttrs: { 'data-trunk': '103' } },
+        { id: 'jack-trunk-104', label: 'TRUNK 104', roomCode: 'TRUNK 104', dataAttrs: { 'data-trunk': '104' } },
+        { id: 'jack-line-1', label: 'LINE 1', roomCode: 'OUTPUT 1', dataAttrs: { 'data-line': '1' } },
+        { id: 'jack-line-2', label: 'LINE 2', roomCode: 'OUTPUT 2', dataAttrs: { 'data-line': '2' } },
+        { id: 'jack-line-3', label: 'LINE 3', roomCode: 'OUTPUT 3', dataAttrs: { 'data-line': '3' } },
+        { id: 'jack-line-4', label: 'LINE 4', roomCode: 'OUTPUT 4', dataAttrs: { 'data-line': '4' } }
+      ];
 
-    // Line buttons
-    ['1', '2', '3', '4'].forEach(l => {
-      const btn = el.querySelector(`#jack-line-${l}`) as HTMLButtonElement;
-      if (btn) {
-        this.lineButtons.push(btn);
-        btn.addEventListener('click', () => this.handleSelectLine(l));
-      }
-    });
+      this.patchMatrix = new PatchMatrix(jacksMount, {
+        title: 'TRUNK & LINE MATRIX // DUAL-TIER PATCHBAY',
+        gridColumns: 4,
+        sockets,
+        onSocketClick: (socketId: string) => {
+          if (socketId.startsWith('jack-trunk-')) {
+            const trunk = socketId.replace('jack-trunk-', '');
+            this.handleSelectTrunk(trunk);
+          } else if (socketId.startsWith('jack-line-')) {
+            const line = socketId.replace('jack-line-', '');
+            this.handleSelectLine(line);
+          }
+        }
+      });
+    }
+
+    if (!this.patchMatrix) {
+      ['101', '102', '103', '104'].forEach(t => {
+        const btn = el.querySelector(`#jack-trunk-${t}`) as HTMLButtonElement;
+        if (btn) {
+          this.trunkButtons.push(btn);
+          btn.addEventListener('click', () => this.handleSelectTrunk(t));
+        }
+      });
+
+      ['1', '2', '3', '4'].forEach(l => {
+        const btn = el.querySelector(`#jack-line-${l}`) as HTMLButtonElement;
+        if (btn) {
+          this.lineButtons.push(btn);
+          btn.addEventListener('click', () => this.handleSelectLine(l));
+        }
+      });
+    } else {
+      ['101', '102', '103', '104'].forEach(t => {
+        const btn = el.querySelector(`#jack-trunk-${t}`) as HTMLButtonElement;
+        if (btn) this.trunkButtons.push(btn);
+      });
+
+      ['1', '2', '3', '4'].forEach(l => {
+        const btn = el.querySelector(`#jack-line-${l}`) as HTMLButtonElement;
+        if (btn) this.lineButtons.push(btn);
+      });
+    }
 
     this.btnAnswerClimaxEl?.addEventListener('click', () => this.handleAnswerClimax());
 
@@ -300,6 +320,17 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
         this.btnAnswerClimaxEl.classList.remove('ready', 'unlocked');
       }
     }
+
+    // 6. Sync PatchMatrix cord routing
+    if (this.patchMatrix) {
+      if (this.state.switchboardPatched) {
+        this.patchMatrix.setConnection('jack-trunk-104', 'jack-line-4');
+      } else if (this.selectedTrunk) {
+        this.patchMatrix.setSelectedSocket(`jack-trunk-${this.selectedTrunk}`);
+      } else {
+        this.patchMatrix.clearConnections();
+      }
+    }
   }
 
   protected onOpened(): void {
@@ -348,5 +379,13 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
     if (controlId === 'decanter') {
       this.handleToggleDecanter();
     }
+  }
+
+  public override teardown(): void {
+    if (this.patchMatrix) {
+      this.patchMatrix.destroy();
+      this.patchMatrix = null;
+    }
+    super.teardown();
   }
 }

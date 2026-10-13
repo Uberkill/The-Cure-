@@ -275,3 +275,47 @@ When any diegetic screen opens:
 4. **Phase 4: Climax & Synthesis (Acts VII & VIII)**
    - Implement `GalvanometerGridScreen` and `SwitchboardMirrorScreen`.
    - Finalize the Lynchian psychological descent and telephone climax.
+
+---
+
+## 7. Environmental Investigation, Rummaging Architecture & Room Scale Differentiation
+
+### 7.1 Architectural Scale & Chamber Dimensional Hierarchy
+To prevent repetitive square-room fatigue, every chamber in Sub-Level 04 features unique volumetric proportions, ceiling heights, and acoustic-spatial identities:
+
+1. **Room 04: The Central Hub / Sterile Reception** (10.0m x 10.0m x 3.6m ceiling)
+   - Symmetrical octagonal reception hall lined with sterile alabaster acoustic tiles.
+   - Central pedestal holding the cathode apparatus, with radial corridors leading to clinical wings.
+2. **Room 02: The Sleep Ward** (8.0m x 18.0m x 3.8m ceiling)
+   - Elongated clinical dormitory with tubular Marcel Breuer cots, continuous fluorescent ceiling battens, and mobile dispensary cart.
+3. **Room 03: The Hydrotherapy Room** (12.0m x 12.0m x 4.0m ceiling)
+   - Subterranean tiled wet room with sunken Roman bathtubs, exposed copper plumbing manifolds, and central hydrostatic drainage grates.
+4. **Room 04: The Audiology Vault** (10.0m x 16.0m x 4.6m ceiling)
+   - Elongated acoustic testing bunker with asymmetric baffle wedges, angled sound traps, raised technician monitoring alcove, and central Chladni resonance table.
+5. **Room 05: The Archive** (12.0m x 20.0m x 6.0m ceiling)
+   - Towering double-height records repository with floor-to-ceiling steel shelving bays, overhead industrial gantry beam, and oak card catalog annex.
+6. **Room 06: The Director's Office** (14.0m x 16.0m x 4.8m ceiling)
+   - Mid-century brutalist executive sanctum with smoked teak paneling, coffered ceiling, floor-to-ceiling recessed mahogany bookcases, executive credenza, and solitary void portal.
+7. **Room 07: The Synthesis Chamber** (10.0m x 10.0m x 3.6m ceiling)
+   - Corrupted Hub overlay in total blackout; fallen concrete tiles, sagging copper busbars, overloaded specimen cathode aura, and wall-mounted high-voltage power bus.
+8. **Room 08: The Velvet Lounge** (16.0m x 18.0m x 4.2m ceiling)
+   - Expansive Lynchian subterranean lounge with tufted red velvet drapery, curved mahogany bar with brass foot rail, round marble cocktail table, gilded mirror reflection paradox, and PBX switchboard desk.
+
+### 7.2 Multi-Sensory Environmental Clue Triangulation
+Puzzles are designed so that players do not need to guess arbitrary numbers or rely on single isolated notes. Instead, solutions are diegetically distributed across physical props in the environment:
+
+- **Audiology Vault (Act IV)**:
+  - Open Laboratory Logbook (`prop_audiology_journal`) on technician desk documents the 180-degree phase inversion theory and opposing horn angles (Left: 45 degrees, Right: 135 degrees).
+  - Graphic Acoustic Score on back wall documents the 741 Hz Solfeggio frequency required to shatter the physical diaphragm latch.
+- **The Archive (Act V)**:
+  - Oak Card Catalog Bank (`prop_card_catalog`) contains Subject 104's cross-reference index card specifying Pneumatic Dispatch Sector GAMMA-07 and optical microfiche condenser focus 0.85.
+  - Cabinet 099 points directly to Cabinet 7 (Drawer 104), guiding the player through the filing labyrinth.
+- **The Director's Office (Act VI)**:
+  - Floor-to-Ceiling Mahogany Bookshelf (`prop_director_bookshelf`) contains the Director's confidential log detailing the 11:03 chronometer setting, half-speed (0.5x) playback, and rotary telephone exchange dialing.
+  - Breathing Phone (`prop_void_phone`) whispers corroborating temporal clues before unlatching the secret mahogany drawer.
+- **The Synthesis Chamber (Act VII)**:
+  - Wall-Mounted High-Voltage Bus Schematic (`prop_bus_schematic`) specifies nominal 100 Ohm shunt balance per channel and the 200 Ohm total differential trip threshold.
+- **The Velvet Lounge (Act VIII)**:
+  - Operator PBX Routing Directory (`prop_switchboard_directory`) on the switchboard desk specifies patching Trunk 104 to Line 4 for outside exchange.
+  - Gilded Mirror (`prop_bar_mirror_glass`) reflection reveals the decanter placement paradox required to restore equilibrium.
+

@@ -49,18 +49,30 @@ export class Room05_Archive implements RoomScenario {
     door: {
       id: 'door',
       name: 'IV. Hub Corridor',
-      position: new THREE.Vector3(0, 1.8, 5.5),
+      position: new THREE.Vector3(0, 1.8, 8.8),
       interactionPrompt: '[RETURN: CENTRAL HUB]',
       cameraPreset: {
         name: 'door',
-        position: new THREE.Vector3(0, 1.8, 3.8),
-        target: new THREE.Vector3(0, 1.8, 5.8)
+        position: new THREE.Vector3(0, 1.8, 6.8),
+        target: new THREE.Vector3(0, 1.8, 9.8)
+      }
+    },
+    catalog: {
+      id: 'catalog',
+      name: 'V. Oak Card Catalog Bank',
+      position: new THREE.Vector3(-3.2, 1.4, 3.5),
+      interactionPrompt: '[INSPECT CARD CATALOG]',
+      cameraPreset: {
+        name: 'catalog',
+        position: new THREE.Vector3(-2.2, 1.6, 4.4),
+        target: new THREE.Vector3(-3.4, 1.2, 3.5)
       }
     }
   };
 
   private group: THREE.Group | null = null;
   private crystalMesh: THREE.Mesh | null = null;
+  private crystalLight: THREE.PointLight | null = null;
   private crystalCollected: boolean = false;
   private drawerOpen: boolean = false;
   private drawer104Mesh: THREE.Group | THREE.Mesh | null = null;
@@ -70,11 +82,29 @@ export class Room05_Archive implements RoomScenario {
   public async buildScene(_scene: THREE.Scene): Promise<THREE.Group> {
     this.group = new THREE.Group();
 
-    // Rehydrate state from GameState
-    this.drawerOpen = GameState.getInstance().hasCrystal('crystal_04_obsidian');
-    this.crystalCollected = this.drawerOpen;
+    // Rehydrate state from GameState or Microfiche screen
+    const hasCrystal = GameState.getInstance().hasCrystal('crystal_04_obsidian');
+    if (hasCrystal || this.microficheScreen.isCanisterDelivered()) {
+      this.drawerOpen = true;
+      this.crystalCollected = hasCrystal;
+    } else {
+      this.drawerOpen = false;
+      this.crystalCollected = false;
+    }
 
     const bus = EventBus.getInstance();
+    this.unsubscribers.push(
+      bus.on('puzzle:canister_delivered', () => {
+        this.drawerOpen = true;
+        if (this.drawer104Mesh) {
+          this.drawer104Mesh.position.z = 0.45;
+        }
+        if (this.crystalMesh && !this.crystalCollected) {
+          this.crystalMesh.visible = true;
+          if (this.crystalLight) this.crystalLight.visible = true;
+        }
+      })
+    );
     this.unsubscribers.push(
       bus.on('puzzle:crystal_collected', (payload) => {
         const data = payload as { crystalId?: string };
@@ -82,10 +112,13 @@ export class Room05_Archive implements RoomScenario {
           this.drawerOpen = true;
           this.crystalCollected = true;
           if (this.drawer104Mesh) {
-            this.drawer104Mesh.position.z += 0.45;
+            this.drawer104Mesh.position.z = 0.45;
           }
           if (this.crystalMesh) {
             this.crystalMesh.visible = false;
+          }
+          if (this.crystalLight) {
+            this.crystalLight.visible = false;
           }
         }
       })
@@ -96,30 +129,113 @@ export class Room05_Archive implements RoomScenario {
     const matCord = new THREE.MeshStandardMaterial({ color: 0x0a0c0a, roughness: 0.95 });
     const matBrass = new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 });
 
-    // Sickly dark floor
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), new THREE.MeshStandardMaterial({ color: 0x101612, roughness: 0.6 }));
+    // Sickly dark floor (Expansive records repository)
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 20), new THREE.MeshStandardMaterial({ color: 0x101612, roughness: 0.6 }));
     floor.rotation.x = -Math.PI / 2;
     this.group.add(floor);
 
-    // Ceiling & Walls
-    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), matWall);
-    ceiling.position.y = 4.4;
+    // Ceiling & Walls (Towering 6.0m double-height records vault)
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(12, 20), matWall);
+    ceiling.position.y = 6.0;
     ceiling.rotation.x = Math.PI / 2;
     this.group.add(ceiling);
 
-    const wallBack = new THREE.Mesh(new THREE.BoxGeometry(14, 4.4, 0.2), matWall);
-    wallBack.position.set(0, 2.2, -7);
+    const wallBack = new THREE.Mesh(new THREE.BoxGeometry(12, 6.2, 0.2), matWall);
+    wallBack.position.set(0, 3.1, -10);
     this.group.add(wallBack);
 
-    const wallFront = new THREE.Mesh(new THREE.BoxGeometry(14, 4.4, 0.2), matWall);
-    wallFront.position.set(0, 2.2, 7);
+    const wallFront = new THREE.Mesh(new THREE.BoxGeometry(12, 6.2, 0.2), matWall);
+    wallFront.position.set(0, 3.1, 10);
     this.group.add(wallFront);
+
+    const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 6.2, 20), matWall);
+    wallLeft.position.set(-6, 3.1, 0);
+    this.group.add(wallLeft);
+
+    const wallRight = new THREE.Mesh(new THREE.BoxGeometry(0.2, 6.2, 20), matWall);
+    wallRight.position.set(6, 3.1, 0);
+    this.group.add(wallRight);
+
+    // Overhead Steel Gantry Crane Beam
+    const gantry = new THREE.Mesh(
+      new THREE.BoxGeometry(0.35, 0.45, 20),
+      new THREE.MeshStandardMaterial({ color: 0x1f2924, metalness: 0.8, roughness: 0.3 })
+    );
+    gantry.position.set(0, 5.75, 0);
+    gantry.raycast = () => {};
+    this.group.add(gantry);
 
     // Return Door
     const returnDoor = new THREE.Mesh(new THREE.BoxGeometry(1.6, 3.0, 0.22), new THREE.MeshStandardMaterial({ color: 0x223025 }));
-    returnDoor.position.set(0, 1.5, 6.9);
+    returnDoor.position.set(0, 1.5, 9.85);
     returnDoor.name = 'door_return_hub';
     this.group.add(returnDoor);
+
+    // Oak Card Catalog Bank (Mid-century institutional record index)
+    const catalogGroup = new THREE.Group();
+    catalogGroup.position.set(-3.8, 0, 3.5);
+    catalogGroup.rotation.y = Math.PI / 4;
+    catalogGroup.name = 'prop_card_catalog';
+
+    const matOak = new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.6, metalness: 0.1 });
+    const catalogBody = new THREE.Mesh(new THREE.BoxGeometry(1.4, 1.5, 0.65), matOak);
+    catalogBody.position.y = 0.95;
+    catalogBody.castShadow = true;
+    catalogBody.receiveShadow = true;
+    catalogGroup.add(catalogBody);
+
+    const catalogLegs = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.2, 0.55), matBrass);
+    catalogLegs.position.y = 0.1;
+    catalogGroup.add(catalogLegs);
+
+    for (let cr = 0; cr < 4; cr++) {
+      for (let cc = 0; cc < 4; cc++) {
+        const dx = -0.48 + cc * 0.32;
+        const dy = 0.45 + cr * 0.32;
+
+        const drawerPlate = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.26, 0.02), matOak);
+        drawerPlate.position.set(dx, dy, 0.33);
+        drawerPlate.raycast = () => {};
+        catalogGroup.add(drawerPlate);
+
+        const brassPull = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.04, 0.03), matBrass);
+        brassPull.position.set(dx, dy, 0.35);
+        brassPull.raycast = () => {};
+        catalogGroup.add(brassPull);
+
+        const labelSlot = new THREE.Mesh(
+          new THREE.PlaneGeometry(0.09, 0.04),
+          new THREE.MeshStandardMaterial({ color: 0xf5eedb, roughness: 0.9 })
+        );
+        labelSlot.position.set(dx, dy + 0.06, 0.352);
+        labelSlot.raycast = () => {};
+        catalogGroup.add(labelSlot);
+      }
+    }
+
+    catalogGroup.userData.interactionPrompt = '[SEARCH: OAK CARD CATALOG]';
+    this.group.add(catalogGroup);
+
+    // Physical Microfilm Canister 104 (Resting on catalog top ledge)
+    const canisterGroup = new THREE.Group();
+    canisterGroup.position.set(-3.5, 1.74, 3.4);
+    canisterGroup.name = 'prop_film_canister_104';
+    canisterGroup.userData.interactionPrompt = '[EXAMINE: MICROFILM CANISTER 104]';
+
+    const canBody = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.12, 0.12, 0.08, 24),
+      new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.85, roughness: 0.25 })
+    );
+    canBody.castShadow = true;
+    canisterGroup.add(canBody);
+
+    const canLabel = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.122, 0.122, 0.03, 24, 1, true),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.8 })
+    );
+    canisterGroup.add(canLabel);
+
+    this.group.add(canisterGroup);
 
     // Carpet of Coiling Telephone Cords on the floor
     for (let c = 0; c < 24; c++) {
@@ -166,6 +282,7 @@ export class Room05_Archive implements RoomScenario {
         const drawerGroup = new THREE.Group();
         drawerGroup.position.set(0, 1.0, 0.5);
         drawerGroup.name = 'prop_drawer_104';
+        drawerGroup.userData.isSubPart = true;
 
         // Outer drawer chassis shell
         const drawerMat = new THREE.MeshStandardMaterial({ color: 0x1a261c, roughness: 0.5, metalness: 0.4 });
@@ -235,6 +352,12 @@ export class Room05_Archive implements RoomScenario {
         this.crystalMesh.position.set(0, 1.25, 0.7);
         this.crystalMesh.name = 'crystal_04_obsidian';
         this.crystalMesh.visible = false;
+
+        this.crystalLight = new THREE.PointLight(0x818cf8, 1.5, 3);
+        this.crystalLight.position.set(0, 0, 0);
+        this.crystalLight.visible = false;
+        this.crystalMesh.add(this.crystalLight);
+
         cabGroup.add(this.crystalMesh);
       }
 
@@ -554,10 +677,11 @@ export class Room05_Archive implements RoomScenario {
     // Re-entry state restoration
     if (this.drawerOpen) {
       if (this.drawer104Mesh) {
-        this.drawer104Mesh.position.z += 0.45;
+        this.drawer104Mesh.position.z = 0.45;
       }
       if (this.crystalMesh && !this.crystalCollected) {
         this.crystalMesh.visible = true;
+        if (this.crystalLight) this.crystalLight.visible = true;
       }
     }
 
@@ -568,6 +692,10 @@ export class Room05_Archive implements RoomScenario {
     this.unsubscribers.forEach(u => u());
     this.unsubscribers = [];
     this.microficheScreen.teardown();
+    if (this.crystalLight) {
+      this.crystalLight.dispose();
+      this.crystalLight = null;
+    }
     if (this.group) {
       scene.remove(this.group);
       this.group.traverse((child) => {
@@ -604,7 +732,24 @@ export class Room05_Archive implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
-      bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_archive' });
+      return true;
+    }
+
+    if (objectId === 'prop_card_catalog') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'catalog' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'OAK CARD CATALOG // SUBJECT 104 INDEX CARD: "Pneumatic Dispatch Destination: Sector GAMMA-07. Optical Reader Condenser Focus: 0.85. Master dossier stored in Cabinet 7 (Drawer 104)."'
+      });
+      return true;
+    }
+
+    if (objectId === 'prop_film_canister_104') {
+      audio.playTumblerClick();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Canister 104 (Marked GAMMA-07): "Microfilm organigram ready for inspection. Access the Microfiche Terminal to align optical focus at 0.85 and dispatch pneumatic canister."'
+      });
       return true;
     }
 
@@ -633,17 +778,25 @@ export class Room05_Archive implements RoomScenario {
     if (objectId === 'prop_cabinet_7' || objectId === 'prop_drawer_104') {
       audio.playTumblerClick();
 
+      if (!this.microficheScreen.isCanisterDelivered() && !this.drawerOpen) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'Filing Drawer 104 is locked by the pneumatic transit relay. Dispatch canister from Sector GAMMA-07 on the Microfiche terminal.'
+        });
+        return true;
+      }
+
       if (!this.drawerOpen) {
         this.drawerOpen = true;
         if (this.drawer104Mesh) {
-          this.drawer104Mesh.position.z += 0.45;
+          this.drawer104Mesh.position.z = 0.45;
         }
-        if (this.crystalMesh) {
+        if (this.crystalMesh && !this.crystalCollected) {
           this.crystalMesh.visible = true;
+          if (this.crystalLight) this.crystalLight.visible = true;
         }
         audio.playPneumaticHiss();
         bus.emit('ui:subtitle_changed', {
-          text: 'Filing Drawer 104 slides outward on oiled tracks, revealing a jagged Pitch-Black Obsidian crystal.'
+          text: 'Filing Drawer 104 slides outward on oiled tracks, revealing a jagged Pitch-Black Obsidian crystal. Click the crystal to retrieve it.'
         });
       } else {
         bus.emit('ui:subtitle_changed', {
@@ -654,9 +807,17 @@ export class Room05_Archive implements RoomScenario {
     }
 
     if (objectId === 'crystal_04_obsidian') {
+      if (!this.drawerOpen) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Pitch-Black Obsidian crystal is sealed inside locked Filing Drawer 104.'
+        });
+        return true;
+      }
+
       if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_04_obsidian')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
+        if (this.crystalLight) this.crystalLight.visible = false;
         audio.playTumblerClick();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_04_obsidian' as CrystalId,
@@ -675,6 +836,7 @@ export class Room05_Archive implements RoomScenario {
   public update(_delta: number): void {
     if (this.crystalMesh && this.crystalMesh.visible) {
       this.crystalMesh.rotation.y += 0.02;
+      this.crystalMesh.position.y = 1.25 + Math.sin(performance.now() * 0.003) * 0.03;
     }
   }
 }

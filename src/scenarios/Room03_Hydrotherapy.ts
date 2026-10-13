@@ -61,6 +61,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
 
   private group: THREE.Group | null = null;
   private crystalMesh: THREE.Mesh | null = null;
+  private crystalLight: THREE.PointLight | null = null;
   private crystalCollected: boolean = false;
   private manifoldBalanced: boolean = false;
   private valveRotations = [0, 0, 0];
@@ -77,15 +78,31 @@ export class Room03_Hydrotherapy implements RoomScenario {
     this.group = new THREE.Group();
 
     const hasCrystal = GameState.getInstance().hasCrystal('crystal_02_bronze');
-    if (hasCrystal) {
+    if (hasCrystal || this.manifoldScreen.isManifoldBalanced()) {
       this.manifoldBalanced = true;
-      this.crystalCollected = true;
+      this.crystalCollected = hasCrystal;
       this.valveRotations = [2, 1, 3];
     } else {
       this.manifoldBalanced = false;
       this.crystalCollected = false;
       this.valveRotations = [0, 0, 0];
     }
+
+    const unsubManifold = EventBus.getInstance().on('puzzle:manifold_balanced', () => {
+      this.manifoldBalanced = true;
+      if (this.drainLidMesh) {
+        this.drainLidMesh.position.x = 0.25;
+      }
+      if (this.crystalMesh && !this.crystalCollected) {
+        this.crystalMesh.visible = true;
+        if (this.crystalLight) this.crystalLight.visible = true;
+      }
+      this.valveRotations = [2, 1, 3];
+      this.valveMeshes.forEach((mesh, idx) => {
+        mesh.rotation.z = this.valveRotations[idx] * (Math.PI / 2);
+      });
+    });
+    this.unsubscribers.push(unsubManifold);
 
     const unsub = EventBus.getInstance().on('puzzle:crystal_collected', (payload) => {
       if (payload.crystalId === 'crystal_02_bronze') {
@@ -96,6 +113,9 @@ export class Room03_Hydrotherapy implements RoomScenario {
         }
         if (this.crystalMesh) {
           this.crystalMesh.visible = false;
+        }
+        if (this.crystalLight) {
+          this.crystalLight.visible = false;
         }
         this.valveRotations = [2, 1, 3];
         this.valveMeshes.forEach((mesh, idx) => {
@@ -295,6 +315,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
       const valveWheel = new THREE.Mesh(new THREE.TorusGeometry(0.14, 0.03, 8, 24), matBrass);
       valveWheel.position.set(xOffset, 0, 0.15);
       valveWheel.name = `prop_valve_${i}`;
+      valveWheel.userData.isSubPart = true;
       manifoldGroup.add(valveWheel);
       this.valveMeshes.push(valveWheel);
 
@@ -333,6 +354,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
     this.drainLidMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.03, 24), matCastIron);
     this.drainLidMesh.position.y = 0.02;
     this.drainLidMesh.name = 'prop_drain_lid';
+    this.drainLidMesh.userData.isSubPart = true;
     drainGroup.add(this.drainLidMesh);
 
     // Memory Crystal 02 (Oxidized Bronze / Amber Tint)
@@ -349,6 +371,12 @@ export class Room03_Hydrotherapy implements RoomScenario {
     this.crystalMesh.position.set(1.5, 0.25, 1.8);
     this.crystalMesh.name = 'crystal_02_bronze';
     this.crystalMesh.visible = false;
+
+    this.crystalLight = new THREE.PointLight(0xf59e0b, 1.5, 3);
+    this.crystalLight.position.set(0, 0, 0);
+    this.crystalLight.visible = false;
+    this.crystalMesh.add(this.crystalLight);
+
     this.group.add(this.crystalMesh);
 
     this.group.add(drainGroup);
@@ -362,10 +390,11 @@ export class Room03_Hydrotherapy implements RoomScenario {
     // Re-entry state restoration
     if (this.manifoldBalanced) {
       if (this.drainLidMesh) {
-        this.drainLidMesh.position.x += 0.25;
+        this.drainLidMesh.position.x = 0.25;
       }
       if (this.crystalMesh && !this.crystalCollected) {
         this.crystalMesh.visible = true;
+        if (this.crystalLight) this.crystalLight.visible = true;
       }
       this.valveRotations = [2, 1, 3];
       this.valveMeshes.forEach((mesh, idx) => {
@@ -380,6 +409,10 @@ export class Room03_Hydrotherapy implements RoomScenario {
     this.unsubscribers.forEach(u => u());
     this.unsubscribers = [];
     this.manifoldScreen.teardown();
+    if (this.crystalLight) {
+      this.crystalLight.dispose();
+      this.crystalLight = null;
+    }
     if (this.group) {
       scene.remove(this.group);
       this.group = null;
@@ -401,7 +434,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
-      bus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
+      bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_hydrotherapy' });
       return true;
     }
 
@@ -477,22 +510,32 @@ export class Room03_Hydrotherapy implements RoomScenario {
         this.manifoldBalanced = true;
         audio.playPneumaticHiss();
         if (this.drainLidMesh) {
-          this.drainLidMesh.position.x += 0.25;
+          this.drainLidMesh.position.x = 0.25;
         }
         if (this.crystalMesh) {
           this.crystalMesh.visible = true;
+          if (this.crystalLight) this.crystalLight.visible = true;
         }
+        bus.emit('puzzle:manifold_balanced', {});
         bus.emit('ui:subtitle_changed', {
-          text: 'Pressure reaches 0.0 PSI. The floor drain hatch pops open, exposing an Oxidized Bronze crystal.'
+          text: 'Pressure reaches 0.0 PSI. The floor drain hatch pops open, exposing an Oxidized Bronze crystal. Click the crystal to retrieve it.'
         });
       }
       return true;
     }
 
     if (objectId === 'crystal_02_bronze') {
+      if (!this.manifoldBalanced) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Oxidized Bronze crystal is sealed beneath the locked hydrostatic floor drain.'
+        });
+        return true;
+      }
+
       if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_02_bronze')) {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
+        if (this.crystalLight) this.crystalLight.visible = false;
         audio.playTumblerClick();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_02_bronze' as CrystalId,
@@ -511,6 +554,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
   public update(_delta: number): void {
     if (this.crystalMesh && this.crystalMesh.visible) {
       this.crystalMesh.rotation.y += 0.02;
+      this.crystalMesh.position.y = 0.25 + Math.sin(performance.now() * 0.003) * 0.03;
     }
   }
 }

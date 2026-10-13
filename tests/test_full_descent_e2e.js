@@ -153,8 +153,8 @@ export async function runSuite(page, baseUrl) {
     console.log('--- Step 9: Balancing Hydrotherapy Valves & Recovering Bronze Crystal ---');
     await page.evaluate(() => {
       const current = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      current.valveRotations = [2, 1, 3];
-      current.onObjectClick('prop_manifold');
+      current.valveRotations = [1, 1, 3];
+      current.onObjectClick('prop_valve_0');
       current.onObjectClick('crystal_02_bronze');
     });
 
@@ -186,7 +186,7 @@ export async function runSuite(page, baseUrl) {
     console.log('--- Step 12: Tuning Amplifier to 741 Hz & Recovering Amethyst Crystal ---');
     await page.evaluate(() => {
       const current = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      current.currentToneFreq = 741;
+      current.freqIndex = 3;
       current.onObjectClick('prop_amp_stack');
       current.onObjectClick('crystal_03_amethyst');
     });
@@ -219,7 +219,7 @@ export async function runSuite(page, baseUrl) {
     console.log('--- Step 15: Searching Drawer 104 & Recovering Obsidian Crystal ---');
     await page.evaluate(() => {
       const current = window.__VAULT_APP__.scenarioRegistry.getCurrentScenario();
-      current.onObjectClick('prop_drawer_104');
+      current.microficheScreen.handleSolveTrigger();
       current.onObjectClick('crystal_04_obsidian');
     });
 
