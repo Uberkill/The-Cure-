@@ -174,16 +174,19 @@ export class Room03_Hydrotherapy implements RoomScenario {
 
     const returnDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.2, 0.24), matHexTile);
     returnDoorFrame.position.set(0, 1.6, 0);
+    returnDoorFrame.raycast = () => {};
+    returnDoorFrame.userData.isSubPart = true;
     returnDoorGroup.add(returnDoorFrame);
 
     const returnDoor = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.9, 0.1), matChrome);
-    returnDoor.position.set(0, 1.45, -0.05);
+    returnDoor.position.set(0, 1.45, -0.14);
     returnDoor.name = 'door_return_hub';
     returnDoorGroup.add(returnDoor);
 
     const returnPlaque = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.16, 0.04), matBrass);
-    returnPlaque.position.set(0, 3.15, -0.1);
+    returnPlaque.position.set(0, 3.15, -0.14);
     returnPlaque.name = 'plaque_sleep_ward_concourse';
+    returnPlaque.raycast = () => {};
     returnPlaque.userData.isSubPart = true;
     returnDoorGroup.add(returnPlaque);
 

@@ -222,16 +222,19 @@ export class Room02_SleepWard implements RoomScenario {
 
     const hydroDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.2, 0.24), matTiles);
     hydroDoorFrame.position.set(0, 1.6, 0);
+    hydroDoorFrame.raycast = () => {};
+    hydroDoorFrame.userData.isSubPart = true;
     hydroDoorGroup.add(hydroDoorFrame);
 
     const hydroDoorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.9, 0.1), matMetal);
-    hydroDoorPanel.position.set(0, 1.45, 0.05);
+    hydroDoorPanel.position.set(0, 1.45, 0.14);
     hydroDoorPanel.name = 'door_portal_hydrotherapy';
     hydroDoorGroup.add(hydroDoorPanel);
 
     const hydroPlaque = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.16, 0.04), matBrass);
-    hydroPlaque.position.set(0, 3.15, 0.1);
+    hydroPlaque.position.set(0, 3.15, 0.14);
     hydroPlaque.name = 'plaque_hydrotherapy_suite';
+    hydroPlaque.raycast = () => {};
     hydroPlaque.userData.isSubPart = true;
     hydroDoorGroup.add(hydroPlaque);
 

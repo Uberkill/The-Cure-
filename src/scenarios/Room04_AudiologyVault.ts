@@ -193,13 +193,15 @@ export class Room04_AudiologyVault implements RoomScenario {
       new THREE.MeshStandardMaterial({ color: 0x242d2a, roughness: 0.6 })
     );
     archiveDoorFrame.position.set(0, 1.6, 0);
+    archiveDoorFrame.raycast = () => {};
+    archiveDoorFrame.userData.isSubPart = true;
     archiveDoorGroup.add(archiveDoorFrame);
 
     const archiveDoorPanel = new THREE.Mesh(
       new THREE.BoxGeometry(1.5, 2.9, 0.1),
       new THREE.MeshStandardMaterial({ color: 0x3d4a41, metalness: 0.6, roughness: 0.4 })
     );
-    archiveDoorPanel.position.set(0, 1.45, 0.05);
+    archiveDoorPanel.position.set(0, 1.45, 0.14);
     archiveDoorPanel.name = 'door_portal_archive';
     archiveDoorGroup.add(archiveDoorPanel);
 
@@ -207,8 +209,9 @@ export class Room04_AudiologyVault implements RoomScenario {
       new THREE.BoxGeometry(1.2, 0.16, 0.04),
       new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 })
     );
-    archivePlaque.position.set(0, 3.15, 0.1);
+    archivePlaque.position.set(0, 3.15, 0.14);
     archivePlaque.name = 'plaque_archive_gate';
+    archivePlaque.raycast = () => {};
     archivePlaque.userData.isSubPart = true;
     archiveDoorGroup.add(archivePlaque);
 

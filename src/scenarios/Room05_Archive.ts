@@ -174,13 +174,15 @@ export class Room05_Archive implements RoomScenario {
       new THREE.MeshStandardMaterial({ color: 0x18241d, roughness: 0.6 })
     );
     returnDoorFrame.position.set(0, 1.6, 0);
+    returnDoorFrame.raycast = () => {};
+    returnDoorFrame.userData.isSubPart = true;
     returnDoorGroup.add(returnDoorFrame);
 
     const returnDoor = new THREE.Mesh(
       new THREE.BoxGeometry(1.5, 2.9, 0.1),
       new THREE.MeshStandardMaterial({ color: 0x223025, metalness: 0.5, roughness: 0.4 })
     );
-    returnDoor.position.set(0, 1.45, -0.05);
+    returnDoor.position.set(0, 1.45, -0.14);
     returnDoor.name = 'door_return_hub';
     returnDoorGroup.add(returnDoor);
 
@@ -188,8 +190,9 @@ export class Room05_Archive implements RoomScenario {
       new THREE.BoxGeometry(1.2, 0.16, 0.04),
       new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 })
     );
-    returnPlaque.position.set(0, 3.15, -0.1);
+    returnPlaque.position.set(0, 3.15, -0.14);
     returnPlaque.name = 'plaque_audiology_concourse';
+    returnPlaque.raycast = () => {};
     returnPlaque.userData.isSubPart = true;
     returnDoorGroup.add(returnPlaque);
 

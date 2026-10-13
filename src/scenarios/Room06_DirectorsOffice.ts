@@ -193,13 +193,15 @@ export class Room06_DirectorsOffice implements RoomScenario {
       new THREE.MeshStandardMaterial({ color: 0x1f2421, roughness: 0.6 })
     );
     synthDoorFrame.position.set(0, 1.6, 0);
+    synthDoorFrame.raycast = () => {};
+    synthDoorFrame.userData.isSubPart = true;
     synthDoorGroup.add(synthDoorFrame);
 
     const synthDoorPanel = new THREE.Mesh(
       new THREE.BoxGeometry(1.5, 2.9, 0.1),
       new THREE.MeshStandardMaterial({ color: 0x2b3831, metalness: 0.7, roughness: 0.3 })
     );
-    synthDoorPanel.position.set(0, 1.45, 0.05);
+    synthDoorPanel.position.set(0, 1.45, 0.14);
     synthDoorPanel.name = 'door_portal_synthesis';
     synthDoorGroup.add(synthDoorPanel);
 
@@ -207,8 +209,9 @@ export class Room06_DirectorsOffice implements RoomScenario {
       new THREE.BoxGeometry(1.2, 0.16, 0.04),
       new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 })
     );
-    synthPlaque.position.set(0, 3.15, 0.1);
+    synthPlaque.position.set(0, 3.15, 0.14);
     synthPlaque.name = 'plaque_synthesis_hatch';
+    synthPlaque.raycast = () => {};
     synthPlaque.userData.isSubPart = true;
     synthDoorGroup.add(synthPlaque);
 
