@@ -193,6 +193,16 @@ export class UIManager {
 
       this.eventBus.on('scenario:switch_room', () => {
         this.setCameraHotspot('overview');
+      }),
+
+      this.eventBus.on('inventory:add', () => {
+        const btnToggle = document.getElementById('btn-inventory-toggle');
+        if (btnToggle) {
+          btnToggle.classList.add('pulse-inventory');
+          window.setTimeout(() => {
+            btnToggle.classList.remove('pulse-inventory');
+          }, 1200);
+        }
       })
     );
 

@@ -30,18 +30,18 @@
     </div>
     
     <!-- Top-Left: Camera Disengage / Step Back HUD Button (Contextual) -->
-    <div style="position: absolute; top: 32px; left: 32px; pointer-events: auto; z-index: 100;">
-      <button class="camera-disengage-btn hidden" id="btn-camera-disengage" title="Step Back to Room Overview [ESC]" aria-label="Return to room overview" aria-hidden="true">
+    <div style="position: absolute; top: 32px; left: 32px; pointer-events: auto; z-index: var(--z-hud-floating, 20);">
+      <button class="camera-disengage-btn camera-disengage--md hidden" id="btn-camera-disengage" title="Step Back to Room Overview [ESC]" aria-label="Step back to room overview (ESC)" aria-hidden="true">
         <span class="btn-disengage-icon">
-          <!-- Tactical Retreat / Step Back Return Arrow SVG -->
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M9 14l-4-4 4-4"></path>
-            <path d="M5 10h11a4 4 0 1 1 0 8h-1"></path>
+          <!-- Tactical Revert / Step Back Return Arrow SVG -->
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 14 4 9l5-5"></path>
+            <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5v0a5.5 5.5 0 0 1-5.5 5.5H11"></path>
           </svg>
         </span>
-        <span class="key-badge">ESC</span>
         <span class="nav-label">STEP BACK</span>
-        <span class="nav-target" id="nav-disengage-target">// OVERVIEW</span>
+        <span class="key-badge">ESC</span>
+        <span class="nav-target sr-only" id="nav-disengage-target">// OVERVIEW</span>
       </button>
     </div>
     

@@ -206,7 +206,10 @@ export class Room04_SterileChamber implements RoomScenario {
       if (GameState.getInstance().hasItem('prop_envelope')) {
         const envMesh = this.entities.group.getObjectByName('prop_envelope');
         if (envMesh) {
-          envMesh.userData.flavorText = 'The unsealed clinical intake dossier folder. Its contents are archived in your Asset Manifest.';
+          envMesh.visible = false;
+        }
+        if (this.hotspots.envelope) {
+          this.hotspots.envelope.interactionPrompt = '[DESK: DOSSIER SECURED]';
         }
       }
 
@@ -381,7 +384,10 @@ export class Room04_SterileChamber implements RoomScenario {
         if (itemId === 'prop_envelope') {
           const envMesh = this.entities?.group.getObjectByName('prop_envelope');
           if (envMesh) {
-            envMesh.userData.flavorText = 'The unsealed clinical intake dossier folder. Its contents are archived in your Asset Manifest.';
+            envMesh.visible = false;
+          }
+          if (this.hotspots.envelope) {
+            this.hotspots.envelope.interactionPrompt = '[DESK: DOSSIER SECURED]';
           }
         }
     });
@@ -622,6 +628,12 @@ export class Room04_SterileChamber implements RoomScenario {
 
     if (objectId === 'prop_envelope') {
       this.audioElement.playTumblerClick();
+      if (GameState.getInstance().hasItem('prop_envelope')) {
+        bus.emit('ui:subtitle_changed', {
+          text: 'FORM 104-ALPHA is secured in your Asset Manifest. Open inventory to inspect.'
+        });
+        return true;
+      }
       bus.emit('camera:move_to_hotspot', { hotspotId: 'envelope' });
       bus.emit('ui:view_changed', { view: 'dossier' });
       return true;
