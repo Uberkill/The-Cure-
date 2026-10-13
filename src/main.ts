@@ -15,6 +15,7 @@ import { UIManager } from './ui/UIManager';
 import { CRTNodePatcher } from './entities/CRTNodePatcher';
 import { FacilityMapScreen } from './ui/screens/FacilityMapScreen';
 import { StaffRosterScreen } from './ui/screens/StaffRosterScreen';
+import { AssetManifestScreen } from './ui/screens/AssetManifestScreen';
 import { SaveManager } from './core/SaveManager';
 import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
 import { DevTransformGizmo } from './interaction/DevTransformGizmo';
@@ -43,6 +44,7 @@ class VaultApp {
   public crtNodePatcher: CRTNodePatcher;
   public facilityMapScreen: FacilityMapScreen;
   public staffRosterScreen: StaffRosterScreen;
+  public assetManifestScreen: AssetManifestScreen;
 
   public screenManager: ScreenManager;
   public uiManager: UIManager;
@@ -125,6 +127,7 @@ class VaultApp {
     this.crtNodePatcher = CRTNodePatcher.getInstance();
     this.facilityMapScreen = FacilityMapScreen.getInstance();
     this.staffRosterScreen = StaffRosterScreen.getInstance();
+    this.assetManifestScreen = AssetManifestScreen.getInstance();
 
     this.screenManager = new ScreenManager();
     this.uiManager = new UIManager();
@@ -134,7 +137,7 @@ class VaultApp {
   }
 
   private setupScenarioRouting(): void {
-    this.eventBus.on('scenario:switch_room', async ({ targetRoomId, doorThresholdId, isDevJump }: { targetRoomId: string; doorThresholdId?: string; isDevJump?: boolean }) => {
+    this.eventBus.on('scenario:switch_room', async ({ targetRoomId, isDevJump }: { targetRoomId: string; doorThresholdId?: string; isDevJump?: boolean }) => {
       this.telemetry.record('info', `Switching scenario to: ${targetRoomId}`);
 
       if (isDevJump) {
@@ -159,8 +162,8 @@ class VaultApp {
         const loadedGroup = await this.scenarioRegistry.loadScenario(nextScenario, this.sceneManager.scene);
         if (!loadedGroup) return;
 
-        const arrivalPreset = (doorThresholdId && nextScenario.hotspots[doorThresholdId]?.cameraPreset)
-          || nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset;
+        const arrivalPreset = nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset
+          ?? nextScenario.hotspots['overview']?.cameraPreset;
         if (arrivalPreset) {
           this.cameraDirector.resetForScenario(arrivalPreset);
         }

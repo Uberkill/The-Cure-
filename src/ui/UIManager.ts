@@ -158,47 +158,6 @@ export class UIManager {
       }
     });
 
-    this.eventBus.on('ui:inventory_updated', ({ inventory }) => {
-      const invList = document.getElementById('inventory-list');
-      if (invList) {
-        invList.innerHTML = '';
-        if (inventory.length === 0) {
-          invList.innerHTML = '<div style="color: var(--ink-muted); font-size: 12px; font-style: italic; text-align: center; margin-top: 20px;">No items acquired.</div>';
-        }
-        inventory.forEach(item => {
-          const slot = document.createElement('div');
-          slot.style.cssText = 'padding: 12px; border: 1px solid rgba(20, 26, 33, 0.15); font-family: var(--font-mono); font-size: 12px; background: rgba(0,0,0,0.02); color: var(--ink-primary); border-left: 4px solid var(--color-sage-deep);';
-          
-          let itemName = item;
-          let itemDesc = 'A strange artifact collected during the investigation.';
-          if (item === 'prop_key') {
-            itemName = 'Heavy Brass Tuning Key';
-            itemDesc = 'Machined from solid brass. Used to unseal the forward observation corridor.';
-          } else if (item === 'prop_brass_shunt') {
-              itemName = 'Machined Brass Shunt';
-              itemDesc = 'Knurled industrial cylinder designed to seat inside a ceramic fuse terminal.';
-            } else if (item === 'prop_envelope') {
-              itemName = 'Intake Protocol Dossier';
-              itemDesc = 'Sanatorium Sector 04 - Subject 104 intake instructions. [CLICK TO READ]';
-            }
-          
-          if (item === 'prop_envelope') {
-              slot.style.cursor = 'pointer';
-              slot.addEventListener('click', () => {
-                const invEl = document.getElementById('modal-inventory');
-                if (invEl) {
-                  invEl.classList.add('hidden');
-                  this.eventBus.emit('ui:modal_closed', {});
-                }
-                this.eventBus.emit('ui:view_changed', { view: 'dossier' });
-              });
-            }
-            slot.innerHTML = `<strong style="display: block; margin-bottom: 4px; font-size: 14px;">${itemName}</strong><span style="color: var(--ink-secondary); font-size: 11px;">${itemDesc}</span>`;
-            invList.appendChild(slot);
-          });
-      }
-    });
-
     const btnFacilityMap = document.getElementById('btn-facility-map-toggle');
     btnFacilityMap?.addEventListener('click', () => {
       this.eventBus.emit('ui:open_facility_map', {});
@@ -319,13 +278,6 @@ export class UIManager {
         const crtPatcherEl = document.getElementById('modal-crt-patcher');
         if (crtPatcherEl && !crtPatcherEl.classList.contains('hidden')) {
           crtPatcherEl.classList.add('hidden');
-          this.eventBus.emit('ui:modal_closed', {});
-          handled = true;
-        }
-
-        const invEl = document.getElementById('modal-inventory');
-        if (invEl && !invEl.classList.contains('hidden')) {
-          invEl.classList.add('hidden');
           this.eventBus.emit('ui:modal_closed', {});
           handled = true;
         }
@@ -451,32 +403,8 @@ export class UIManager {
 
   private setupInventoryModal(): void {
     const btnToggle = document.getElementById('btn-inventory-toggle');
-    const btnClose = document.getElementById('btn-close-inventory');
-    const btnCloseX = document.getElementById('btn-close-inventory-x');
-    const modal = document.getElementById('modal-inventory');
-
-    const openInventory = () => {
-      if (modal) {
-        modal.classList.remove('hidden');
-        this.eventBus.emit('ui:modal_opened', {});
-      }
-    };
-
-    const closeInventory = () => {
-      if (modal) {
-        modal.classList.add('hidden');
-        this.eventBus.emit('ui:modal_closed', {});
-      }
-    };
-
-    btnToggle?.addEventListener('click', openInventory);
-    btnClose?.addEventListener('click', closeInventory);
-    btnCloseX?.addEventListener('click', closeInventory);
-
-    modal?.addEventListener('click', (e) => {
-      if (e.target === modal) {
-        closeInventory();
-      }
+    btnToggle?.addEventListener('click', () => {
+      this.eventBus.emit('ui:open_asset_manifest', {});
     });
   }
 

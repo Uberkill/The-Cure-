@@ -11,7 +11,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
   public override title = 'The Synthesis Chamber';
   public override actTitle = 'ACT VII • THE SYNTHESIS / EGRESS';
   public override roomCode = 'Airlock Sector 07 • Threshold';
-  public override defaultHotspot = 'door';
+  public override defaultHotspot = 'overview';
 
   public override hotspots: Record<string, HotspotAnchor> = {
     door: {
@@ -599,7 +599,6 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       if (this.galvanometerScreen.getState().gridBalanced || GameState.getInstance().isSynthesisComplete()) {
         bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge', doorThresholdId: 'door_portal_velvet_lounge' });
       } else {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door' });
         bus.emit('ui:subtitle_changed', {
           text: 'Velvet Lounge blastdoor electromagnetically clamped. The galvanometer circuit bus remains unbalanced.'
         });
@@ -617,7 +616,6 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       objectId === 'door_portal_synthesis'
     ) {
       audio.playTumblerClick();
-      bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
       bus.emit('ui:subtitle_changed', {
         text: 'EMERGENCY CONTAINMENT INTERLOCK // Sector blast bulkheads sealed under atmospheric containment protocol. Balance power bus at galvanometer grid.'
       });
@@ -648,7 +646,6 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
     }
 
     if (objectId === 'door_corridor' || objectId === 'door_corridor_passage') {
-      bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
       bus.emit('ui:subtitle_changed', {
         text: 'The observation corridor behind you has collapsed under containment pressure. Egress through the unsealed blastdoor.'
       });

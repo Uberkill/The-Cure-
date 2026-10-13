@@ -131,6 +131,7 @@ export interface EventPayloadMap {
   'ui:modal_closed': Record<string, never>;
   'ui:open_facility_map': Record<string, never>;
   'ui:open_staff_roster': { staffId?: string };
+  'ui:open_asset_manifest': { trayId?: 'hardware' | 'crystals' | 'records'; itemId?: string };
   'ui:subtitle_changed': { text: string };
   'ui:chapter_display': { act: string; title: string; roomCode?: string; durationMs?: number };
   'audio:toggle_synth': { type: 'drone' | 'ballast' | 'phone'; active: boolean };

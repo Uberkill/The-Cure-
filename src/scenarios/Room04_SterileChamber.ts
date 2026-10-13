@@ -652,7 +652,6 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_portal_sleep_ward') {
       const stage = GameState.getInstance().getStage();
       if (stage < GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_sleep_ward' });
         bus.emit('ui:subtitle_changed', {
           text: 'The Sleep Ward pneumatic lock is active. Complete Phase I harmonic tuning to 528 Hz on the central CRT oscilloscope.'
         });
@@ -660,7 +659,6 @@ export class Room04_SterileChamber implements RoomScenario {
       }
 
       if (!GameState.getInstance().hasItem('prop_key')) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_sleep_ward' });
         bus.emit('ui:subtitle_changed', {
           text: 'The pressure seal is released, but the mechanical cipher lock requires a heavy brass key.'
         });
@@ -689,7 +687,6 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_portal_hydrotherapy') {
       const stage = GameState.getInstance().getStage();
       if (stage < GameStage.ACT_2_PATCH_1_COMPLETE) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_hydrotherapy' });
         bus.emit('ui:subtitle_changed', {
           text: 'Hydrotherapy Suite interlock active. Recover and patch Memory Crystal 01 from Sleep Ward first.'
         });
@@ -718,7 +715,6 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_portal_audiology') {
       const stage = GameState.getInstance().getStage();
       if (stage < GameStage.ACT_3_PATCH_2_COMPLETE) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_audiology' });
         bus.emit('ui:subtitle_changed', {
           text: 'Audiology Vault acoustic seal active. Solve hydraulic pressure balance in Hydrotherapy Suite first.'
         });
@@ -747,7 +743,6 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_portal_archive') {
       const stage = GameState.getInstance().getStage();
       if (stage < GameStage.ACT_4_PATCH_3_COMPLETE) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_archive' });
         bus.emit('ui:subtitle_changed', {
           text: 'Archive & Records security gate sealed. Synthesize Chladni resonance in Audiology Vault first.'
         });
@@ -776,7 +771,6 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_portal_directors_office') {
       const stage = GameState.getInstance().getStage();
       if (stage < GameStage.ACT_5_PATCH_4_COMPLETE) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_directors_office' });
         bus.emit('ui:subtitle_changed', {
           text: "Director's Suite administrative lock engaged. Retrieve and calibrate Obsidian Crystal from Archive first."
         });
@@ -805,7 +799,6 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_portal_synthesis') {
       const stage = GameState.getInstance().getStage();
       if (stage < GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_synthesis' });
         bus.emit('ui:subtitle_changed', {
           text: 'Synthesis Core heavy blast airlock sealed. High-voltage cathode acceleration requires alignment of all prior sectors.'
         });
@@ -825,7 +818,6 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'door_portal_velvet_lounge') {
       const stage = GameState.getInstance().getStage();
       if (stage < GameStage.ACT_8_VELVET_LOUNGE) {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door_portal_velvet_lounge' });
         bus.emit('ui:subtitle_changed', {
           text: 'Velvet Lounge solarium corridor locked. Complete the Synthesis Core cathode balancing circuit first.'
         });
@@ -846,7 +838,6 @@ export class Room04_SterileChamber implements RoomScenario {
       const stage = GameState.getInstance().getStage();
       if (stage >= GameStage.ACT_1_HUB_CORRIDOR_OPEN) {
         if (!GameState.getInstance().hasItem('prop_key')) {
-          bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
           bus.emit('ui:subtitle_changed', { text: 'The pressure seal is released, but the mechanical cipher lock requires a heavy brass key.' });
           return true;
         }
@@ -872,7 +863,6 @@ export class Room04_SterileChamber implements RoomScenario {
           bus.emit('scenario:switch_room', { targetRoomId: this.getNextSpokeRoomId() });
         }
       } else {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
         bus.emit('ui:subtitle_changed', {
           text: 'The observation corridor is sealed. Complete the Phase I harmonic tuning to 528 Hz on the desk terminal.'
         });
@@ -886,7 +876,6 @@ export class Room04_SterileChamber implements RoomScenario {
         const targetRoom = stage >= GameStage.ACT_8_VELVET_LOUNGE ? 'velvet_lounge' : 'synthesis_blackout';
         bus.emit('scenario:switch_room', { targetRoomId: targetRoom });
       } else {
-        bus.emit('camera:move_to_hotspot', { hotspotId: 'door' });
         bus.emit('ui:subtitle_changed', {
           text: 'The heavy steel exit blastdoor is locked from the outside. The indicator light is red.'
         });

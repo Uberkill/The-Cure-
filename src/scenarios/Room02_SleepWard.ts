@@ -313,53 +313,70 @@ export class Room02_SleepWard implements RoomScenario {
     wainscotTrimR.raycast = () => {};
     this.group.add(wainscotTrimR);
 
-    // 4 Military Observation Cots
-    const cotZPositions = [-4.5, -1.5, 1.5, 4.5];
-    cotZPositions.forEach((z, idx) => {
+    // Left Row: 4 Patient Observation Cots (101-104) Oriented Perpendicular to Wall (Facing Central Aisle)
+    const leftCotZPositions = [-4.2, -1.5, 1.2, 4.2];
+    leftCotZPositions.forEach((z, idx) => {
       const cotGroup = new THREE.Group();
-      cotGroup.position.set(-2.8, 0, z);
+      cotGroup.position.set(-3.9, 0, z);
       cotGroup.name = idx === 3 ? 'prop_cot_104' : `prop_cot_${101 + idx}`;
 
-      // Steel frame
-      const frame = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.45, 2.2), matMetal);
+      // Tubular steel cot frame (elongated along X, facing center aisle)
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.45, 1.1), matMetal);
       frame.position.y = 0.25;
       frame.castShadow = true;
       cotGroup.add(frame);
 
-      // Mattress
-      const mattress = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.2, 2.1), matOlive);
+      // Hospital mattress with institutional olive vinyl cover
+      const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.2, 1.05), matOlive);
       mattress.position.y = 0.55;
       cotGroup.add(mattress);
 
-      // Headboard
-      const headboard = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.65, 0.06), matMetal);
-      headboard.position.set(0, 0.55, -1.05);
+      // Steel headboard against left wall
+      const headboard = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.65, 1.1), matMetal);
+      headboard.position.set(-1.05, 0.55, 0);
       headboard.name = idx === 3 ? 'prop_headboard_104' : `prop_headboard_${101 + idx}`;
       headboard.userData.isSubPart = true;
       headboard.castShadow = true;
       cotGroup.add(headboard);
 
-      // Pillow
-      const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.1, 0.4), new THREE.MeshStandardMaterial({ color: 0xedf0eb }));
-      pillow.position.set(0, 0.68, -0.75);
+      // Headrest Pillow near headboard
+      const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.8), new THREE.MeshStandardMaterial({ color: 0xedf0eb }));
+      pillow.position.set(-0.75, 0.68, 0);
       if (idx === 3) {
         pillow.rotation.y = 0.35;
-        pillow.position.x = 0.15;
+        pillow.position.z = 0.15;
       }
       cotGroup.add(pillow);
 
-      // Patient Clipboard at foot of bed
+      // Folded institutional wool blanket or rumpled unbuckled restraints for Cot 104
+      if (idx !== 3) {
+        const blanket = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 1.04), new THREE.MeshStandardMaterial({ color: 0x4a5d4e, roughness: 0.9 }));
+        blanket.position.set(0.5, 0.68, 0);
+        blanket.raycast = () => {};
+        cotGroup.add(blanket);
+      } else {
+        // Unbuckled leather restraints dangling off sides of vacant cot
+        const leatherMat = new THREE.MeshStandardMaterial({ color: 0x3d2817, roughness: 0.7 });
+        [-0.4, 0.2].forEach(rx => {
+          const strap = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.35, 1.14), leatherMat);
+          strap.position.set(rx, 0.48, 0);
+          strap.raycast = () => {};
+          cotGroup.add(strap);
+        });
+      }
+
+      // Patient Clipboard at foot of bed (facing central aisle)
       const clipboardGroup = new THREE.Group();
-      clipboardGroup.position.set(0, 0.66, 0.95);
+      clipboardGroup.position.set(1.02, 0.66, 0);
       clipboardGroup.name = `prop_clipboard_${101 + idx}`;
       clipboardGroup.userData.isSubPart = true;
 
-      const clipboardBoard = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.03, 0.46), matBrass);
+      const clipboardBoard = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.03, 0.32), matBrass);
       clipboardBoard.castShadow = true;
       clipboardGroup.add(clipboardBoard);
 
       const paperSheet = new THREE.Mesh(
-        new THREE.PlaneGeometry(0.28, 0.40),
+        new THREE.PlaneGeometry(0.40, 0.28),
         new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85 })
       );
       paperSheet.rotation.x = -Math.PI / 2;
@@ -367,15 +384,53 @@ export class Room02_SleepWard implements RoomScenario {
       clipboardGroup.add(paperSheet);
 
       const metalClip = new THREE.Mesh(
-        new THREE.BoxGeometry(0.12, 0.02, 0.05),
+        new THREE.BoxGeometry(0.05, 0.02, 0.12),
         matMetal
       );
-      metalClip.position.set(0, 0.02, -0.18);
+      metalClip.position.set(0.18, 0.02, 0);
       clipboardGroup.add(metalClip);
 
       cotGroup.add(clipboardGroup);
-
       this.group!.add(cotGroup);
+    });
+
+    // Right Row: 3 Observation Cots (105-107) Facing Inward (Leaves z = -1.5 for Dispensary Bay)
+    const rightCotZPositions = [-4.2, 1.2, 4.2];
+    rightCotZPositions.forEach((z, rIdx) => {
+      const dormCotGroup = new THREE.Group();
+      dormCotGroup.position.set(3.9, 0, z);
+      dormCotGroup.name = `dorm_cot_${105 + rIdx}`;
+      dormCotGroup.userData.isSubPart = true;
+      dormCotGroup.raycast = () => {};
+
+      const frame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.45, 1.1), matMetal);
+      frame.position.y = 0.25;
+      frame.castShadow = true;
+      frame.raycast = () => {};
+      dormCotGroup.add(frame);
+
+      const mattress = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.2, 1.05), matOlive);
+      mattress.position.y = 0.55;
+      mattress.raycast = () => {};
+      dormCotGroup.add(mattress);
+
+      const headboard = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.65, 1.1), matMetal);
+      headboard.position.set(1.05, 0.55, 0);
+      headboard.castShadow = true;
+      headboard.raycast = () => {};
+      dormCotGroup.add(headboard);
+
+      const pillow = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.1, 0.8), new THREE.MeshStandardMaterial({ color: 0xedf0eb }));
+      pillow.position.set(0.75, 0.68, 0);
+      pillow.raycast = () => {};
+      dormCotGroup.add(pillow);
+
+      const blanket = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.08, 1.04), new THREE.MeshStandardMaterial({ color: 0x3d4a3b, roughness: 0.9 }));
+      blanket.position.set(-0.5, 0.68, 0);
+      blanket.raycast = () => {};
+      dormCotGroup.add(blanket);
+
+      this.group!.add(dormCotGroup);
     });
 
     // Surgical UV Lamp Wall Toggle
@@ -421,11 +476,11 @@ export class Room02_SleepWard implements RoomScenario {
       return mesh;
     };
 
-    createUVSign('HE CANNOT STOP CRYING', '// THE CURE EXTRACTS THE TEARS', -4.5);
+    createUVSign('HE CANNOT STOP CRYING', '// THE CURE EXTRACTS THE TEARS', -4.2);
     createUVSign('THE VOCAL CORDS ARE RESISTANCE', '// CUT THEM TO CURE THEM', -1.5);
-    createUVSign('PATIENT ZERO // INTAKE ID: 104', '[ NITROUS ] - [ BROMIDE ] - [ VALERIAN ]', 4.5, '#fbbf24');
+    createUVSign('PATIENT ZERO // INTAKE ID: 104', '[ NITROUS ] - [ BROMIDE ] - [ VALERIAN ]', 4.2, '#fbbf24');
     
-    // Chemical symbols on headboard of 104 (facing into ward down cot)
+    // Chemical symbols on headboard of Cot 104 (facing inward down bed toward aisle)
     const headboardCvs = document.createElement('canvas');
     headboardCvs.width = 512;
     headboardCvs.height = 128;
@@ -439,9 +494,9 @@ export class Room02_SleepWard implements RoomScenario {
     
     const hcTex = new THREE.CanvasTexture(headboardCvs);
     const hcMat = new THREE.MeshBasicMaterial({ map: hcTex, transparent: true, opacity: 0.0, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, depthWrite: false });
-    const hcMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 0.32), hcMat);
-    hcMesh.position.set(-2.8, 1.25, 3.48);
-    hcMesh.rotation.y = 0;
+    const hcMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.0, 0.28), hcMat);
+    hcMesh.position.set(-4.91, 0.85, 4.2);
+    hcMesh.rotation.y = Math.PI / 2;
     this.group.add(hcMesh);
     this.uvDecals.push(hcMesh);
 
@@ -579,33 +634,166 @@ export class Room02_SleepWard implements RoomScenario {
 
     this.group.add(trolleyGroup);
 
-    // Ward Partition Curtain Rails & Drapes between Cots (drawn back against wall)
-    [-3.0, 0.0, 3.0].forEach((cz) => {
-      const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 3.6, 12), matMetal);
-      rail.position.set(-4.0, 3.8, cz);
-      rail.raycast = () => {};
-      this.group!.add(rail);
+    // Ward Partition Curtain Rails & Drapes between Cots (Left & Right Rows)
+    [-2.85, 0.0, 2.7].forEach((cz) => {
+      const railL = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.8, 12), matMetal);
+      railL.position.set(-4.2, 3.6, cz);
+      railL.rotation.z = Math.PI / 2;
+      railL.raycast = () => {};
+      this.group!.add(railL);
 
-      const curtain = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.4, 0.4), matOlive);
-      curtain.position.set(-5.6, 2.5, cz);
-      curtain.castShadow = true;
-      curtain.raycast = () => {};
-      this.group!.add(curtain);
+      const curtainL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.6, 0.45), matOlive);
+      curtainL.position.set(-5.6, 2.3, cz);
+      curtainL.castShadow = true;
+      curtainL.raycast = () => {};
+      this.group!.add(curtainL);
     });
 
-    // Bedside Vitals Stands next to Cots
-    cotZPositions.forEach((z) => {
-      const stand = new THREE.Mesh(
-        new THREE.BoxGeometry(0.48, 0.65, 0.48),
-        new THREE.MeshStandardMaterial({ color: 0xd4d8db, roughness: 0.4, metalness: 0.6 })
+    [-2.85, 2.7].forEach((cz) => {
+      const railR = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 2.8, 12), matMetal);
+      railR.position.set(4.2, 3.6, cz);
+      railR.rotation.z = Math.PI / 2;
+      railR.raycast = () => {};
+      this.group!.add(railR);
+
+      const curtainR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.6, 0.45), matOlive);
+      curtainR.position.set(5.6, 2.3, cz);
+      curtainR.castShadow = true;
+      curtainR.raycast = () => {};
+      this.group!.add(curtainR);
+    });
+
+    // Bedside Vitals Nightstands & Drug Lockers (Left Row)
+    leftCotZPositions.forEach((z) => {
+      const standGroup = new THREE.Group();
+      standGroup.position.set(-4.95, 0.35, z + 0.85);
+      standGroup.raycast = () => {};
+
+      const standBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.48, 0.70, 0.44),
+        new THREE.MeshStandardMaterial({ color: 0xd4d8db, roughness: 0.35, metalness: 0.65 })
       );
-      stand.position.set(-4.5, 0.325, z - 0.75);
-      stand.castShadow = true;
-      stand.raycast = () => {};
-      this.group!.add(stand);
+      standBody.castShadow = true;
+      standBody.raycast = () => {};
+      standGroup.add(standBody);
+
+      const pullHandle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.04, 0.14), matBrass);
+      pullHandle.position.set(0.25, 0.12, 0);
+      pullHandle.raycast = () => {};
+      standGroup.add(pullHandle);
+
+      this.group!.add(standGroup);
     });
 
-    // Right-Wall Oxygen Valve Manifold & Conduits
+    // Bedside Vitals Nightstands (Right Row)
+    rightCotZPositions.forEach((z) => {
+      const standGroup = new THREE.Group();
+      standGroup.position.set(4.95, 0.35, z + 0.85);
+      standGroup.raycast = () => {};
+
+      const standBody = new THREE.Mesh(
+        new THREE.BoxGeometry(0.48, 0.70, 0.44),
+        new THREE.MeshStandardMaterial({ color: 0xd4d8db, roughness: 0.35, metalness: 0.65 })
+      );
+      standBody.castShadow = true;
+      standBody.raycast = () => {};
+      standGroup.add(standBody);
+
+      const pullHandle = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.04, 0.14), matBrass);
+      pullHandle.position.set(-0.25, 0.12, 0);
+      pullHandle.raycast = () => {};
+      standGroup.add(pullHandle);
+
+      this.group!.add(standGroup);
+    });
+
+    // Wall-Mounted Medical Gas Service Panels (Oxygen & Vacuum behind each headboard)
+    leftCotZPositions.forEach((z) => {
+      const gasPanel = new THREE.Group();
+      gasPanel.position.set(-5.88, 1.85, z);
+      gasPanel.raycast = () => {};
+
+      const panelBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.42, 0.75),
+        new THREE.MeshStandardMaterial({ color: 0x233229, roughness: 0.5 })
+      );
+      panelBox.raycast = () => {};
+      gasPanel.add(panelBox);
+
+      const o2Port = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 12), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.4 }));
+      o2Port.rotation.z = Math.PI / 2;
+      o2Port.position.set(0.04, 0.06, -0.2);
+      o2Port.raycast = () => {};
+      gasPanel.add(o2Port);
+
+      const vacPort = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 12), new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.4 }));
+      vacPort.rotation.z = Math.PI / 2;
+      vacPort.position.set(0.04, 0.06, 0.2);
+      vacPort.raycast = () => {};
+      gasPanel.add(vacPort);
+
+      this.group!.add(gasPanel);
+    });
+
+    rightCotZPositions.forEach((z) => {
+      const gasPanel = new THREE.Group();
+      gasPanel.position.set(5.88, 1.85, z);
+      gasPanel.raycast = () => {};
+
+      const panelBox = new THREE.Mesh(
+        new THREE.BoxGeometry(0.06, 0.42, 0.75),
+        new THREE.MeshStandardMaterial({ color: 0x233229, roughness: 0.5 })
+      );
+      panelBox.raycast = () => {};
+      gasPanel.add(panelBox);
+
+      const o2Port = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 12), new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.4 }));
+      o2Port.rotation.z = Math.PI / 2;
+      o2Port.position.set(-0.04, 0.06, -0.2);
+      o2Port.raycast = () => {};
+      gasPanel.add(o2Port);
+
+      const vacPort = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.04, 12), new THREE.MeshStandardMaterial({ color: 0xf59e0b, roughness: 0.4 }));
+      vacPort.rotation.z = Math.PI / 2;
+      vacPort.position.set(-0.04, 0.06, 0.2);
+      vacPort.raycast = () => {};
+      gasPanel.add(vacPort);
+
+      this.group!.add(gasPanel);
+    });
+
+    // Cast-Iron Steam Radiators at Ward End Walls
+    const matCastIron = new THREE.MeshStandardMaterial({ color: 0x2b2d2f, roughness: 0.75 });
+    [[-3.8, -7.75], [3.8, -7.75], [-3.8, 7.75], [3.8, 7.75]].forEach(([rx, rz]) => {
+      const radGroup = new THREE.Group();
+      radGroup.position.set(rx, 0.55, rz);
+      radGroup.raycast = () => {};
+
+      const radBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.9, 0.2), matCastIron);
+      radBody.castShadow = true;
+      radBody.raycast = () => {};
+      radGroup.add(radBody);
+
+      for (let rib = -0.5; rib <= 0.5; rib += 0.12) {
+        const fin = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.86, 0.24), matCastIron);
+        fin.position.x = rib;
+        fin.raycast = () => {};
+        radGroup.add(fin);
+      }
+
+      this.group!.add(radGroup);
+    });
+
+    // Overhead HVAC Supply Ventilation Ducts along ceiling margins
+    const matDuct = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.5, roughness: 0.4 });
+    [-4.8, 4.8].forEach((dx) => {
+      const duct = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.35, 15.0), matDuct);
+      duct.position.set(dx, 4.0, 0);
+      duct.raycast = () => {};
+      this.group!.add(duct);
+    });
+
+    // Right-Wall Main Oxygen Valve Manifold & Conduits
     const o2Manifold = new THREE.Mesh(
       new THREE.BoxGeometry(0.12, 0.45, 1.8),
       new THREE.MeshStandardMaterial({ color: 0x22352b, roughness: 0.5 })
@@ -654,24 +842,70 @@ export class Room02_SleepWard implements RoomScenario {
 
     this.group.add(thorneStationGroup);
 
-    // Overhead Clinical Fluorescent Lights
-    const light1 = new THREE.PointLight(0xf4f9f4, 1.2, 12);
-    light1.position.set(0, 3.8, -3);
-    this.group.add(light1);
+    // Continuous Overhead Linear Fluorescent Troffers ("Line Lights")
+    this.trofferMat = new THREE.MeshStandardMaterial({
+      color: 0xedf4ee,
+      emissive: 0xd6edd9,
+      emissiveIntensity: 1.8,
+      roughness: 0.3
+    });
 
-    const light2 = new THREE.PointLight(0xf4f9f4, 1.2, 12);
-    light2.position.set(0, 3.8, 3);
-    this.group.add(light2);
+    this.uvTrofferMat = new THREE.MeshStandardMaterial({
+      color: 0x221338,
+      emissive: 0x1a102a,
+      emissiveIntensity: 0.1,
+      roughness: 0.5
+    });
 
-    this.fluorescentLights = [light1, light2];
+    [-1.8, 1.8].forEach((lx) => {
+      const trofferGroup = new THREE.Group();
+      trofferGroup.position.set(lx, 3.82, 0);
+      trofferGroup.raycast = () => {};
+
+      // Cold-rolled steel housing channel
+      const channel = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.14, 12.6), matMetal);
+      channel.raycast = () => {};
+      trofferGroup.add(channel);
+
+      // Ribbed acrylic diffuser lens (main linear fluorescent light)
+      const diffuser = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.03, 12.4), this.trofferMat!);
+      diffuser.position.y = -0.06;
+      diffuser.raycast = () => {};
+      trofferGroup.add(diffuser);
+
+      // UV tube channel
+      const uvTube = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.02, 12.4), this.uvTrofferMat!);
+      uvTube.position.y = -0.08;
+      uvTube.raycast = () => {};
+      trofferGroup.add(uvTube);
+
+      // Suspension down-rods to ceiling (y = 4.2)
+      [-4.0, 0.0, 4.0].forEach((rz) => {
+        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.38, 8), matMetal);
+        rod.position.set(0, 0.22, rz);
+        rod.raycast = () => {};
+        trofferGroup.add(rod);
+      });
+
+      this.group!.add(trofferGroup);
+    });
+
+    // 4 Soft Central Fill Lights along the central ceiling spline
+    this.fluorescentLights = [];
+    [-4.5, -1.5, 1.5, 4.5].forEach((fz) => {
+      const fillLight = new THREE.PointLight(0xf2f7f2, 1.0, 10);
+      fillLight.position.set(0, 3.7, fz);
+      this.group!.add(fillLight);
+      this.fluorescentLights.push(fillLight);
+    });
 
     // UV Blacklights (initialized dim)
     const uvLight1 = new THREE.PointLight(0x7c3aed, 0, 14);
-    uvLight1.position.set(-2, 3.8, -2);
+    uvLight1.position.set(-1.5, 3.7, -2.0);
     this.group.add(uvLight1);
 
     const uvLight2 = new THREE.PointLight(0x6366f1, 0, 14);
-    uvLight2.position.set(-2, 3.8, 2);
+    uvLight2.position.set(-1.5, 3.7, 2.0);
     this.group.add(uvLight2);
 
     this.uvLights = [uvLight1, uvLight2];
@@ -696,14 +930,30 @@ export class Room02_SleepWard implements RoomScenario {
     audio.playTumblerClick();
 
     if (this.uvActive) {
-      this.fluorescentLights.forEach(l => { l.intensity = 0.05; });
-      this.uvLights.forEach(l => { l.intensity = 3.5; });
+      if (this.trofferMat) {
+        this.trofferMat.emissive.setHex(0x181e1a);
+        this.trofferMat.emissiveIntensity = 0.2;
+      }
+      if (this.uvTrofferMat) {
+        this.uvTrofferMat.emissive.setHex(0x7c3aed);
+        this.uvTrofferMat.emissiveIntensity = 2.5;
+      }
+      this.fluorescentLights.forEach(l => { l.intensity = 0.06; });
+      this.uvLights.forEach(l => { l.intensity = 3.6; });
       this.uvDecals.forEach(m => { (m.material as THREE.MeshBasicMaterial).opacity = 1.0; });
       EventBus.getInstance().emit('ui:subtitle_changed', {
         text: 'Surgical ultraviolet lamp engaged. Deep indigo blacklight reveals luminescent handwriting across the ward and glowing chemical formulas above Vacant Cot 104.'
       });
     } else {
-      this.fluorescentLights.forEach(l => { l.intensity = 1.2; });
+      if (this.trofferMat) {
+        this.trofferMat.emissive.setHex(0xd6edd9);
+        this.trofferMat.emissiveIntensity = 1.8;
+      }
+      if (this.uvTrofferMat) {
+        this.uvTrofferMat.emissive.setHex(0x1a102a);
+        this.uvTrofferMat.emissiveIntensity = 0.1;
+      }
+      this.fluorescentLights.forEach(l => { l.intensity = 1.0; });
       this.uvLights.forEach(l => { l.intensity = 0.0; });
       this.uvDecals.forEach(m => { (m.material as THREE.MeshBasicMaterial).opacity = 0.0; });
       EventBus.getInstance().emit('ui:subtitle_changed', {
@@ -717,6 +967,14 @@ export class Room02_SleepWard implements RoomScenario {
     this.unsubscribers = [];
     this.dispensaryScreen.teardown();
     this.clipboardScreen.teardown();
+    if (this.trofferMat) {
+      this.trofferMat.dispose();
+      this.trofferMat = null;
+    }
+    if (this.uvTrofferMat) {
+      this.uvTrofferMat.dispose();
+      this.uvTrofferMat = null;
+    }
     if (this.crystalLight) {
       this.crystalLight.dispose();
       this.crystalLight = null;
