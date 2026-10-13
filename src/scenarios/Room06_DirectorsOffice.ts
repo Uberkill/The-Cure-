@@ -303,7 +303,12 @@ export class Room06_DirectorsOffice implements RoomScenario {
       deskGroup.add(pedestal);
     });
 
-    // Dark Green Leather Desk Blotter Pad with Brass Corners (resting flush on mahogany desk surface y=1.02)
+    // Desk accessories group (resting on mahogany desk surface y=1.02)
+    const deskAccessories = new THREE.Group();
+    deskAccessories.name = 'prop_desk_accessories';
+    deskAccessories.userData.isSubPart = true;
+
+    // Dark Green Leather Desk Blotter Pad with Brass Corners
     const blotter = new THREE.Mesh(
       new THREE.BoxGeometry(1.3, 0.015, 0.75),
       new THREE.MeshStandardMaterial({ color: 0x18261e, roughness: 0.6 })
@@ -311,7 +316,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
     blotter.position.set(0, 1.028, 0.12);
     blotter.castShadow = true;
     blotter.raycast = () => {};
-    deskGroup.add(blotter);
+    deskAccessories.add(blotter);
 
     // 4 Brass Corner Clips on Blotter
     [
@@ -323,7 +328,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
       const clip = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.018, 0.04), matBrass);
       clip.position.set(cx, 1.044, cz);
       clip.raycast = () => {};
-      deskGroup.add(clip);
+      deskAccessories.add(clip);
     });
 
     // Heavy Crystal Glass Ashtray
@@ -331,7 +336,8 @@ export class Room06_DirectorsOffice implements RoomScenario {
     ashtray.position.set(-0.55, 1.040, 0.35);
     ashtray.castShadow = true;
     ashtray.raycast = () => {};
-    deskGroup.add(ashtray);
+    deskAccessories.add(ashtray);
+    this.group.add(deskAccessories);
 
     // Unplugged Cream Bakelite Rotary Telephone
     const phoneGroup = new THREE.Group();
@@ -504,7 +510,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
     this.crystalLight.visible = false;
     this.crystalMesh.add(this.crystalLight);
 
-    deskGroup.add(this.crystalMesh);
+    this.group.add(this.crystalMesh);
 
     this.group.add(deskGroup);
 

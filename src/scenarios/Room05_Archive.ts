@@ -38,12 +38,12 @@ export class Room05_Archive implements RoomScenario {
     microfiche: {
       id: 'microfiche',
       name: 'III. Microfiche Terminal',
-      position: new THREE.Vector3(1.6, 1.4, -1.2),
+      position: new THREE.Vector3(1.4, 1.4, -0.6),
       interactionPrompt: '[ACCESS OPTICAL READER]',
       cameraPreset: {
         name: 'microfiche',
-        position: new THREE.Vector3(1.6, 1.5, -0.2),
-        target: new THREE.Vector3(1.6, 1.1, -1.2)
+        position: new THREE.Vector3(1.4, 1.5, 0.4),
+        target: new THREE.Vector3(1.4, 1.1, -0.6)
       }
     },
     door: {
@@ -376,7 +376,7 @@ export class Room05_Archive implements RoomScenario {
           emissiveIntensity: 0.2
         });
         this.crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
-        this.crystalMesh.position.set(0, 1.25, 0.7);
+        this.crystalMesh.position.set(0, 0.28, 0);
         this.crystalMesh.name = 'crystal_04_obsidian';
         this.crystalMesh.visible = false;
 
@@ -385,7 +385,7 @@ export class Room05_Archive implements RoomScenario {
         this.crystalLight.visible = false;
         this.crystalMesh.add(this.crystalLight);
 
-        cabGroup.add(this.crystalMesh);
+        drawerGroup.add(this.crystalMesh);
       }
 
       this.group!.add(cabGroup);
@@ -393,7 +393,7 @@ export class Room05_Archive implements RoomScenario {
 
     // Dedicated Microfiche Reader Console Table
     const readerDesk = new THREE.Group();
-    readerDesk.position.set(1.6, 0, -1.2);
+    readerDesk.position.set(1.4, 0, -0.6);
     readerDesk.name = 'prop_microfiche_reader';
 
     // Stand base / pedestal chassis
@@ -583,7 +583,7 @@ export class Room05_Archive implements RoomScenario {
 
     // Archivist Evelyn Cross's Retention Ledger & Duty Register
     const ledgerGroup = new THREE.Group();
-    ledgerGroup.position.set(2.05, 0.90, -1.25);
+    ledgerGroup.position.set(1.60, 0.90, -0.65);
     ledgerGroup.name = 'prop_cross_ledger';
 
     const ledgerBinder = new THREE.Mesh(

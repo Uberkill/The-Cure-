@@ -121,21 +121,21 @@
       ]
     },
     "prop_envelope": {
-      "x": -0.9265752250477145,
-      "y": 0.856,
-      "z": 0.2672946630710298,
+      "x": -0.78,
+      "y": 0.865,
+      "z": 0.22,
       "rx": 0,
-      "ry": 0.25,
+      "ry": 0.22,
       "rz": 0,
       "sx": 1,
       "sy": 1,
       "sz": 1,
       "flavorText": [
-        "A heavy crimson envelope. 'Department of Cognitive Alignment' is embossed on the front in gold foil.",
+        "A heavy classified clinical dossier folder. 'FORM 104-ALPHA // DEPT. OF COGNITIVE ALIGNMENT' is embossed on the front cover.",
         "The wax seal is stamped with an insignia of a tuning fork striking a human skull.",
         "It feels unusually heavy, as if the paper inside is lined with lead."
       ],
-      "interactionPrompt": "[EXAMINE DOSSIER]"
+      "interactionPrompt": "[UNSEAL: CLINICAL DOSSIER]"
     },
     "prop_telephone": {
       "x": 0.9601651393321209,

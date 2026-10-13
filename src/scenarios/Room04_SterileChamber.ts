@@ -205,7 +205,9 @@ export class Room04_SterileChamber implements RoomScenario {
       }
       if (GameState.getInstance().hasItem('prop_envelope')) {
         const envMesh = this.entities.group.getObjectByName('prop_envelope');
-        if (envMesh) envMesh.visible = false;
+        if (envMesh) {
+          envMesh.userData.flavorText = 'The unsealed clinical intake dossier folder. Its contents are archived in your Asset Manifest.';
+        }
       }
 
     if (stage >= GameStage.ACT_7_SYNTHESIS_BLACKOUT) {
@@ -378,7 +380,9 @@ export class Room04_SterileChamber implements RoomScenario {
         }
         if (itemId === 'prop_envelope') {
           const envMesh = this.entities?.group.getObjectByName('prop_envelope');
-          if (envMesh) envMesh.visible = false;
+          if (envMesh) {
+            envMesh.userData.flavorText = 'The unsealed clinical intake dossier folder. Its contents are archived in your Asset Manifest.';
+          }
         }
     });
 

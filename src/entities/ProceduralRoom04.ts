@@ -15,7 +15,7 @@ export interface Room04Entities {
   containmentBell: THREE.Mesh;
   smallBellJar: THREE.Mesh;
   cipherKey: THREE.Group;
-  crimsonEnvelope: THREE.Mesh;
+  crimsonEnvelope: THREE.Group | THREE.Mesh;
   telephone: THREE.Group;
   brassShunt: THREE.Mesh;
   facilityDirectory: THREE.Group;

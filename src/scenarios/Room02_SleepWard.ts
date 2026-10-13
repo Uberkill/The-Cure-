@@ -367,9 +367,10 @@ export class Room02_SleepWard implements RoomScenario {
 
       // Patient Clipboard at foot of bed (facing central aisle)
       const clipboardGroup = new THREE.Group();
-      clipboardGroup.position.set(1.02, 0.66, 0);
+      clipboardGroup.position.set(-2.86, 0.96, z);
+      clipboardGroup.rotation.z = -0.18;
       clipboardGroup.name = `prop_clipboard_${101 + idx}`;
-      clipboardGroup.userData.isSubPart = true;
+      clipboardGroup.userData.interactionPrompt = `[EXAMINE: PATIENT ${101 + idx} INTAKE CLIPBOARD]`;
 
       const clipboardBoard = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.03, 0.32), matBrass);
       clipboardBoard.castShadow = true;
@@ -390,7 +391,7 @@ export class Room02_SleepWard implements RoomScenario {
       metalClip.position.set(0.18, 0.02, 0);
       clipboardGroup.add(metalClip);
 
-      cotGroup.add(clipboardGroup);
+      this.group!.add(clipboardGroup);
       this.group!.add(cotGroup);
     });
 
@@ -622,15 +623,15 @@ export class Room02_SleepWard implements RoomScenario {
       emissiveIntensity: 0.35
     });
     this.crystalMesh = new THREE.Mesh(crystalGeo, crystalMat);
-    this.crystalMesh.position.set(0, 1.08, 0);
+    this.crystalMesh.position.set(1.8, 1.08, -1.2);
     this.crystalMesh.name = 'crystal_01_quartz';
     this.crystalMesh.visible = this.trolleyUnlocked && !this.crystalCollected;
-    trolleyGroup.add(this.crystalMesh);
+    this.group.add(this.crystalMesh);
 
     this.crystalLight = new THREE.PointLight(0xa5f3fc, 1.5, 3.0);
-    this.crystalLight.position.set(0, 1.08, 0);
+    this.crystalLight.position.set(1.8, 1.08, -1.2);
     this.crystalLight.visible = this.trolleyUnlocked && !this.crystalCollected;
-    trolleyGroup.add(this.crystalLight);
+    this.group.add(this.crystalLight);
 
     this.group.add(trolleyGroup);
 

@@ -233,12 +233,6 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
 
     el.innerHTML = `
       <div class="manifest-case-container">
-        <!-- Brass corner escutcheons for period brutalism -->
-        <div class="manifest-corner-rivet corner-tl"></div>
-        <div class="manifest-corner-rivet corner-tr"></div>
-        <div class="manifest-corner-rivet corner-bl"></div>
-        <div class="manifest-corner-rivet corner-br"></div>
-
         <!-- Case Header -->
         <div class="manifest-case-header">
           <div class="manifest-header-titles">
@@ -699,37 +693,37 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
 
   private generateBlueprintSvg(def: ManifestItemDef): string {
     const isCrystal = def.tray === 'crystals';
-    const color = def.ledColor || '#4ade80';
+    const color = def.ledColor || '#2d4a3e';
 
     if (isCrystal) {
       return `
         <svg viewBox="0 0 320 180" class="blueprint-svg">
           <defs>
             <pattern id="bp-grid" width="20" height="20" patternUnits="userSpaceOnUse">
-              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(74, 222, 128, 0.08)" stroke-width="1"/>
+              <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(45, 74, 62, 0.12)" stroke-width="1"/>
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="#08100c" />
+          <rect width="100%" height="100%" fill="#edf0eb" />
           <rect width="100%" height="100%" fill="url(#bp-grid)" />
           
           <!-- Outer technical frame -->
-          <rect x="10" y="10" width="300" height="160" fill="none" stroke="rgba(74, 222, 128, 0.3)" stroke-width="1" />
-          <line x1="160" y1="10" x2="160" y2="170" stroke="rgba(74, 222, 128, 0.15)" stroke-dasharray="3,3" />
-          <line x1="10" y1="90" x2="310" y2="90" stroke="rgba(74, 222, 128, 0.15)" stroke-dasharray="3,3" />
+          <rect x="10" y="10" width="300" height="160" fill="none" stroke="rgba(45, 74, 62, 0.35)" stroke-width="1" />
+          <line x1="160" y1="10" x2="160" y2="170" stroke="rgba(45, 74, 62, 0.2)" stroke-dasharray="3,3" />
+          <line x1="10" y1="90" x2="310" y2="90" stroke="rgba(45, 74, 62, 0.2)" stroke-dasharray="3,3" />
 
           <!-- Crystal Octahedron Projection -->
-          <polygon points="160,35 220,90 160,145 100,90" fill="none" stroke="${color}" stroke-width="2" />
-          <polygon points="160,35 180,90 160,145 140,90" fill="none" stroke="${color}" stroke-width="1.2" stroke-opacity="0.6" />
+          <polygon points="160,35 220,90 160,145 100,90" fill="none" stroke="${color}" stroke-width="1.8" />
+          <polygon points="160,35 180,90 160,145 140,90" fill="none" stroke="${color}" stroke-width="1.2" stroke-opacity="0.65" />
           <line x1="100" y1="90" x2="220" y2="90" stroke="${color}" stroke-width="1" stroke-opacity="0.5" />
 
           <!-- Dimension markings -->
-          <line x1="75" y1="35" x2="75" y2="145" stroke="#94a3b8" stroke-width="1" />
-          <line x1="70" y1="35" x2="80" y2="35" stroke="#94a3b8" stroke-width="1" />
-          <line x1="70" y1="145" x2="80" y2="145" stroke="#94a3b8" stroke-width="1" />
-          <text x="65" y="93" fill="#94a3b8" font-size="9" font-family="monospace" text-anchor="end">110mm</text>
+          <line x1="75" y1="35" x2="75" y2="145" stroke="#4a5568" stroke-width="1" />
+          <line x1="70" y1="35" x2="80" y2="35" stroke="#4a5568" stroke-width="1" />
+          <line x1="70" y1="145" x2="80" y2="145" stroke="#4a5568" stroke-width="1" />
+          <text x="65" y="93" fill="#141a21" font-size="9" font-family="monospace" text-anchor="end">110mm</text>
 
-          <text x="20" y="25" fill="#4ade80" font-size="9" font-family="monospace" font-weight="bold">SPECIMEN ORTHOGRAPHIC [ELEVATION]</text>
-          <text x="20" y="160" fill="#64748b" font-size="8" font-family="monospace">SCALE: 1:1 // REF: ${def.serialNumber}</text>
+          <text x="20" y="25" fill="#2d4a3e" font-size="9" font-family="monospace" font-weight="bold">SPECIMEN ORTHOGRAPHIC [ELEVATION]</text>
+          <text x="20" y="160" fill="#718096" font-size="8" font-family="monospace">SCALE: 1:1 // REF: ${def.serialNumber}</text>
         </svg>
       `;
     }
@@ -739,25 +733,25 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
       <svg viewBox="0 0 320 180" class="blueprint-svg">
         <defs>
           <pattern id="bp-grid-hw" width="20" height="20" patternUnits="userSpaceOnUse">
-            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(74, 222, 128, 0.08)" stroke-width="1"/>
+            <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(45, 74, 62, 0.12)" stroke-width="1"/>
           </pattern>
         </defs>
-        <rect width="100%" height="100%" fill="#08100c" />
+        <rect width="100%" height="100%" fill="#edf0eb" />
         <rect width="100%" height="100%" fill="url(#bp-grid-hw)" />
 
-        <rect x="10" y="10" width="300" height="160" fill="none" stroke="rgba(74, 222, 128, 0.3)" stroke-width="1" />
-        <line x1="160" y1="10" x2="160" y2="170" stroke="rgba(74, 222, 128, 0.15)" stroke-dasharray="3,3" />
-        <line x1="10" y1="90" x2="310" y2="90" stroke="rgba(74, 222, 128, 0.15)" stroke-dasharray="3,3" />
+        <rect x="10" y="10" width="300" height="160" fill="none" stroke="rgba(45, 74, 62, 0.35)" stroke-width="1" />
+        <line x1="160" y1="10" x2="160" y2="170" stroke="rgba(45, 74, 62, 0.2)" stroke-dasharray="3,3" />
+        <line x1="10" y1="90" x2="310" y2="90" stroke="rgba(45, 74, 62, 0.2)" stroke-dasharray="3,3" />
 
         <!-- Machined mechanical silhouette -->
-        <rect x="90" y="70" width="140" height="40" rx="3" fill="none" stroke="#4ade80" stroke-width="1.8" />
-        <circle cx="120" cy="90" r="10" fill="none" stroke="#4ade80" stroke-width="1.2" />
-        <line x1="145" y1="70" x2="145" y2="110" stroke="#4ade80" stroke-width="1" stroke-dasharray="2,2" />
-        <line x1="175" y1="70" x2="175" y2="110" stroke="#4ade80" stroke-width="1" stroke-dasharray="2,2" />
-        <rect x="230" y="80" width="25" height="20" fill="none" stroke="#4ade80" stroke-width="1.5" />
+        <rect x="90" y="70" width="140" height="40" rx="3" fill="rgba(45, 74, 62, 0.04)" stroke="#2d4a3e" stroke-width="1.8" />
+        <circle cx="120" cy="90" r="10" fill="none" stroke="#2d4a3e" stroke-width="1.2" />
+        <line x1="145" y1="70" x2="145" y2="110" stroke="#2d4a3e" stroke-width="1" stroke-dasharray="2,2" />
+        <line x1="175" y1="70" x2="175" y2="110" stroke="#2d4a3e" stroke-width="1" stroke-dasharray="2,2" />
+        <rect x="230" y="80" width="25" height="20" fill="none" stroke="#2d4a3e" stroke-width="1.5" />
 
-        <text x="20" y="25" fill="#4ade80" font-size="9" font-family="monospace" font-weight="bold">COMPONENT SCHEMATIC // TOP PROFILE</text>
-        <text x="20" y="160" fill="#64748b" font-size="8" font-family="monospace">MACHINED BRASS // MAT SPEC 74B</text>
+        <text x="20" y="25" fill="#2d4a3e" font-size="9" font-family="monospace" font-weight="bold">COMPONENT SCHEMATIC // TOP PROFILE</text>
+        <text x="20" y="160" fill="#718096" font-size="8" font-family="monospace">MACHINED BRASS // MAT SPEC 74B</text>
       </svg>
     `;
   }

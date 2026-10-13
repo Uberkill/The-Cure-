@@ -175,23 +175,8 @@ Alignment precedes release.</div>
     </div>
   </div>
 
-  <!-- Modal: Inventory -->
-  <div class="overlay-screen hidden" id="modal-inventory" style="z-index: 15000;" role="dialog" aria-modal="true">
-    <div class="dossier-paper" style="max-width: 720px; width: min(94vw, 720px);">
-      <button class="modal-close-x" id="btn-close-inventory-x" aria-label="Close inventory">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </svg>
-      </button>
-      <div class="dossier-header">SANATORIUM APPARATUS // ACQUIRED ASSETS</div>
-      <h2 class="dossier-title" style="font-size: 20px;">Asset Manifest</h2>
-      <div id="inventory-list" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin: 24px 0; min-height: 100px;">
-        <!-- Dynamically populated by UIManager -->
-      </div>
-      <button class="pill-btn" id="btn-close-inventory" style="margin: 0 auto; display: block;">Return to Chamber</button>
-    </div>
-  </div>
+  <!-- Modal: Inventory (Asset Manifest Ledger) -->
+  <div class="overlay-screen hidden" id="modal-inventory" style="z-index: 15000;" role="dialog" aria-modal="true"></div>
 
   <!-- Modal: System Settings -->
   <div class="overlay-screen hidden" id="modal-settings" style="z-index: 15000;" role="dialog" aria-modal="true">

@@ -266,23 +266,29 @@ export class Room04_AudiologyVault implements RoomScenario {
     workstationGroup.add(deskTop);
 
     // Gooseneck Inspection Lamp with Warm Glow
+    const deskLamp = new THREE.Group();
+    deskLamp.position.set(-3.6, 0, 3.0);
+    deskLamp.name = 'prop_technician_lamp';
+    deskLamp.userData.isSubPart = true;
+
     const lampArm = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.45, 12), matBrass);
     lampArm.position.set(-0.55, 1.0, -0.25);
     lampArm.rotation.z = -0.25;
-    workstationGroup.add(lampArm);
+    deskLamp.add(lampArm);
 
     const lampShade = new THREE.Mesh(new THREE.ConeGeometry(0.09, 0.12, 16), matAmp);
     lampShade.position.set(-0.48, 1.18, -0.25);
     lampShade.rotation.z = 0.5;
-    workstationGroup.add(lampShade);
+    deskLamp.add(lampShade);
 
     const deskLight = new THREE.PointLight(0xfef08a, 1.2, 4);
     deskLight.position.set(-0.45, 1.15, -0.25);
-    workstationGroup.add(deskLight);
+    deskLamp.add(deskLight);
+    this.group.add(deskLamp);
 
-    // Open Laboratory Spiral Logbook (Diegetic Clue Item)
+    // Open Laboratory Spiral Logbook (Diegetic Clue Item, resting on workstation desktop)
     const journalGroup = new THREE.Group();
-    journalGroup.position.set(0.1, 0.82, 0.05);
+    journalGroup.position.set(-3.5, 0.82, 3.05);
     journalGroup.name = 'prop_audiology_journal';
     journalGroup.userData.interactionPrompt = '[READ: AUDIOLOGY LAB JOURNAL]';
 
@@ -308,8 +314,8 @@ export class Room04_AudiologyVault implements RoomScenario {
       journalGroup.add(ring);
     }
 
-    workstationGroup.add(journalGroup);
     this.group.add(workstationGroup);
+    this.group.add(journalGroup);
 
     // Directional Acoustic Horn Assemblies (45 deg Left, 135 deg Right)
     const hornLeft = this.createAcousticHorn(

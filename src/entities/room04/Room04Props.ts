@@ -5,7 +5,7 @@ import { Room04MaterialPalette } from './Room04Materials';
 export interface Room04PropsEntities {
   smallBellJar: THREE.Mesh;
   cipherKey: THREE.Group;
-  crimsonEnvelope: THREE.Mesh;
+  crimsonEnvelope: THREE.Group | THREE.Mesh;
   telephone: THREE.Group;
   brassShunt: THREE.Mesh;
   facilityDirectory: THREE.Group;
@@ -24,7 +24,7 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
 
   const cipherKey = new THREE.Group();
   cipherKey.name = 'prop_key';
-  cipherKey.position.set(0.75, 0.88, -0.25);
+  cipherKey.position.set(0.75, 0.868, -0.25);
   cipherKey.renderOrder = 0;
 
   const keyBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 0.15, 16), mat.brassGold);
@@ -33,6 +33,7 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
 
   const keyRing = new THREE.Mesh(new THREE.TorusGeometry(0.035, 0.009, 12, 20), mat.brassGold);
   keyRing.position.x = -0.08;
+  keyRing.rotation.x = Math.PI / 2;
   cipherKey.add(keyRing);
 
   const pin1 = new THREE.Mesh(new THREE.BoxGeometry(0.015, 0.025, 0.015), mat.brassGold);
@@ -45,14 +46,57 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
   pin2.name = 'key_pin';
   cipherKey.add(pin2);
 
-  // 2. Crimson Envelope (Front-Left of desk)
-  const crimsonEnvelope = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.012, 0.32), mat.crimsonEnvelope);
-  crimsonEnvelope.position.set(-0.75, 0.856, 0.22);
-  crimsonEnvelope.rotation.y = 0.25;
-  crimsonEnvelope.castShadow = true;
-  crimsonEnvelope.receiveShadow = true;
+  // 2. Clinical Intake Dossier Folder (Front-Left of desk, Form 104-ALPHA)
+  const crimsonEnvelope = new THREE.Group();
   crimsonEnvelope.name = 'prop_envelope';
-  crimsonEnvelope.userData.flavorText = 'A heavy crimson envelope. Department of Cognitive Alignment embossed on the front.';
+  crimsonEnvelope.userData.flavorText = 'A heavy classified clinical dossier folder. "FORM 104-ALPHA // DEPT. OF COGNITIVE ALIGNMENT" is embossed on the front cover.';
+  crimsonEnvelope.userData.interactionPrompt = '[UNSEAL: CLINICAL DOSSIER]';
+  crimsonEnvelope.position.set(-0.78, 0.865, 0.22);
+  crimsonEnvelope.rotation.y = 0.22;
+
+  // Manila / Crimson heavy paper portfolio cover
+  const folderBase = new THREE.Mesh(
+    new THREE.BoxGeometry(0.26, 0.024, 0.35),
+    mat.crimsonEnvelope
+  );
+  folderBase.castShadow = true;
+  folderBase.receiveShadow = true;
+  crimsonEnvelope.add(folderBase);
+
+  // Top Manila Classification Tab
+  const folderTab = new THREE.Mesh(
+    new THREE.BoxGeometry(0.10, 0.016, 0.04),
+    mat.vintageCream
+  );
+  folderTab.position.set(-0.06, 0.005, -0.185);
+  folderTab.castShadow = true;
+  crimsonEnvelope.add(folderTab);
+
+  // Aged Clinical Paper Edge insert
+  const paperTrim = new THREE.Mesh(
+    new THREE.BoxGeometry(0.24, 0.018, 0.33),
+    new THREE.MeshStandardMaterial({ color: 0xf4eee1, roughness: 0.9 })
+  );
+  paperTrim.position.set(0.005, 0, 0);
+  crimsonEnvelope.add(paperTrim);
+
+  // Heavy Brass Fastener Clip
+  const clipMesh = new THREE.Mesh(
+    new THREE.BoxGeometry(0.04, 0.032, 0.08),
+    mat.brassGold
+  );
+  clipMesh.position.set(-0.10, 0.006, 0.12);
+  clipMesh.castShadow = true;
+  crimsonEnvelope.add(clipMesh);
+
+  // Red Wax Seal / Stamp Medallion
+  const waxSeal = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.035, 0.035, 0.01, 16),
+    new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.4 })
+  );
+  waxSeal.position.set(0.04, 0.015, -0.02);
+  waxSeal.castShadow = true;
+  crimsonEnvelope.add(waxSeal);
 
   // 3. Vintage Cream Rotary Phone (Front-Right of desk)
   const telephone = new THREE.Group();
@@ -96,7 +140,7 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
 
   // 4. Machined Brass Shunt (Center-Right of desk)
   const brassShunt = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.12, 20), mat.brassGold);
-  brassShunt.position.set(0.35, 0.86, 0.15);
+  brassShunt.position.set(0.35, 0.874, 0.15);
   brassShunt.rotation.z = Math.PI / 2;
   brassShunt.castShadow = true;
   brassShunt.name = 'prop_brass_shunt';

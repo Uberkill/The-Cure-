@@ -196,20 +196,21 @@ export class Room08_VelvetLounge implements RoomScenario {
       barGroup.add(bracket);
     });
 
-    // Lowball Glass with Amber Whiskey & Ice
+    // Lowball Glass with Amber Whiskey & Ice (resting flush on bar counter top y=1.10)
     const glassGroup = new THREE.Group();
-    glassGroup.position.set(0.4, 1.14, 0.1);
+    glassGroup.position.set(-1.4, 1.10, 0.1);
     glassGroup.name = 'prop_whiskey_glass';
 
     const tumbler = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.07, 0.14, 16), matGlass);
+    tumbler.position.y = 0.07;
     glassGroup.add(tumbler);
 
     const whiskey = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.065, 0.08, 16), matAmberLiquor);
-    whiskey.position.y = -0.02;
+    whiskey.position.y = 0.05;
     glassGroup.add(whiskey);
-    barGroup.add(glassGroup);
 
     this.group.add(barGroup);
+    this.group.add(glassGroup);
 
     // Two Tufted Burgundy Leather Bar Stools
     [-2.8, -1.2].forEach((sx, idx) => {
@@ -311,9 +312,9 @@ export class Room08_VelvetLounge implements RoomScenario {
     tableTop.receiveShadow = true;
     tableGroup.add(tableTop);
 
-    // The Faceted Crystal Decanter (Key puzzle prop)
+    // The Faceted Crystal Decanter (Key puzzle prop, resting flush on marble cocktail table y=0.895)
     this.decanterMesh = new THREE.Group();
-    this.decanterMesh.position.set(0, 0.90, 0);
+    this.decanterMesh.position.set(-1.4, 0.895, -4.5);
     this.decanterMesh.name = 'prop_crystal_decanter';
 
     const decanterBody = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.32, 0.22), matGlass);
@@ -334,9 +335,9 @@ export class Room08_VelvetLounge implements RoomScenario {
     this.decanterMesh.add(decanterStopper);
 
     this.decanterMesh.userData.interactionPrompt = '[EXAMINE: CUT-CRYSTAL DECANTER]';
-    tableGroup.add(this.decanterMesh);
 
     this.group.add(tableGroup);
+    this.group.add(this.decanterMesh);
 
     // Articulated Vintage Operator PBX Switchboard
     const switchboardGroup = new THREE.Group();
