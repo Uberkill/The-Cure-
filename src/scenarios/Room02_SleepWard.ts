@@ -68,6 +68,17 @@ export class Room02_SleepWard implements RoomScenario {
         position: new THREE.Vector3(-1.2, 1.6, 5.2),
         target: new THREE.Vector3(-2.8, 1.1, 3.8)
       }
+    },
+    door_portal_hydrotherapy: {
+      id: 'door_portal_hydrotherapy',
+      name: 'VI. Hydrotherapy Archway',
+      position: new THREE.Vector3(0, 1.8, -7.0),
+      interactionPrompt: '[ENTER: HYDROTHERAPY SUITE (SL4-03)]',
+      cameraPreset: {
+        name: 'door_portal_hydrotherapy',
+        position: new THREE.Vector3(0, 1.8, -5.2),
+        target: new THREE.Vector3(0, 1.8, -7.9)
+      }
     }
   };
 
@@ -203,6 +214,28 @@ export class Room02_SleepWard implements RoomScenario {
     returnDoor.position.set(0, 1.5, 7.9);
     returnDoor.name = 'door_return_hub';
     this.group.add(returnDoor);
+
+    // Connecting Door to Hydrotherapy Suite (En-suite Archway)
+    const hydroDoorGroup = new THREE.Group();
+    hydroDoorGroup.position.set(0, 0, -7.9);
+    hydroDoorGroup.name = 'group_door_portal_hydrotherapy';
+
+    const hydroDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.2, 0.24), matTiles);
+    hydroDoorFrame.position.set(0, 1.6, 0);
+    hydroDoorGroup.add(hydroDoorFrame);
+
+    const hydroDoorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.9, 0.1), matMetal);
+    hydroDoorPanel.position.set(0, 1.45, 0.05);
+    hydroDoorPanel.name = 'door_portal_hydrotherapy';
+    hydroDoorGroup.add(hydroDoorPanel);
+
+    const hydroPlaque = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.16, 0.04), matBrass);
+    hydroPlaque.position.set(0, 3.15, 0.1);
+    hydroPlaque.name = 'plaque_hydrotherapy_suite';
+    hydroPlaque.userData.isSubPart = true;
+    hydroDoorGroup.add(hydroPlaque);
+
+    this.group.add(hydroDoorGroup);
 
     const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.2, 16), matWall);
     wallLeft.position.set(-6, 2.1, 0);
@@ -526,6 +559,38 @@ export class Room02_SleepWard implements RoomScenario {
       this.group!.add(valveGauge);
     });
 
+    // Dr. Thorne's Somnology Duty Roster & Clipboard (Physician Station)
+    const thorneStationGroup = new THREE.Group();
+    thorneStationGroup.position.set(5.88, 1.65, -1.8);
+    thorneStationGroup.rotation.y = -Math.PI / 2;
+    thorneStationGroup.name = 'prop_thorne_clipboard';
+
+    const thorneBoard = new THREE.Mesh(
+      new THREE.BoxGeometry(0.38, 0.54, 0.03),
+      new THREE.MeshStandardMaterial({ color: 0x5a3d28, roughness: 0.7 })
+    );
+    thorneBoard.castShadow = true;
+    thorneBoard.userData.isSubPart = true;
+    thorneStationGroup.add(thorneBoard);
+
+    const thornePaper = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.32, 0.46),
+      new THREE.MeshStandardMaterial({ color: 0xf5f0e1, roughness: 0.85 })
+    );
+    thornePaper.position.z = 0.018;
+    thornePaper.userData.isSubPart = true;
+    thorneStationGroup.add(thornePaper);
+
+    const thorneClip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.16, 0.04, 0.04),
+      matBrass
+    );
+    thorneClip.position.set(0, 0.23, 0.025);
+    thorneClip.userData.isSubPart = true;
+    thorneStationGroup.add(thorneClip);
+
+    this.group.add(thorneStationGroup);
+
     // Overhead Clinical Fluorescent Lights
     const light1 = new THREE.PointLight(0xf4f9f4, 1.2, 12);
     light1.position.set(0, 3.8, -3);
@@ -610,6 +675,32 @@ export class Room02_SleepWard implements RoomScenario {
 
     if (objectId === 'door_return_hub') {
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_sleep_ward' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_hydrotherapy') {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_01_quartz')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Hydrotherapy Suite airlock is locked. Recover and collect Memory Crystal 01 from the dispensary cart first.'
+        });
+        return true;
+      }
+      audio.playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Traversing en-suite corridor to Hydrotherapy Suite (SL4-03-HYD).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'hydrotherapy', doorThresholdId: 'door_portal_hydrotherapy' });
+      return true;
+    }
+
+    if (objectId === 'prop_thorne_clipboard') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'trolley' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'Form 108-STAFF [Dr. A. Thorne]: Chief Somnologist shift log & chemical titration protocols.'
+      });
+      bus.emit('ui:open_staff_roster', { staffId: 'thorne' });
       return true;
     }
 

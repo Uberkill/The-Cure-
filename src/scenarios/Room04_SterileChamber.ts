@@ -14,7 +14,7 @@ export class Room04_SterileChamber implements RoomScenario {
   public id = 'room_04';
   public title = 'The Sterile Chamber';
   public actTitle = 'ACT I • THE RECEPTION';
-  public roomCode = 'Room 04 • Sanatorium of Cognitive Alignment';
+  public roomCode = 'Room 01 • The Sterile Concourse';
   public defaultHotspot = 'overview';
 
   public hotspots: Record<string, HotspotAnchor> = {
@@ -87,12 +87,12 @@ export class Room04_SterileChamber implements RoomScenario {
     door_portal_sleep_ward: {
       id: 'door_portal_sleep_ward',
       name: 'VII. Sleep Ward Portal',
-      position: new THREE.Vector3(-4.2, 1.8, -6.74),
+      position: new THREE.Vector3(0, 1.8, -6.74),
       interactionPrompt: '[ENTER: SLEEP WARD (SL4-02)]',
       cameraPreset: {
         name: 'door_portal_sleep_ward',
-        position: new THREE.Vector3(-3.4, 1.9, -4.8),
-        target: new THREE.Vector3(0, 1.0, 0)
+        position: new THREE.Vector3(0, 1.9, -4.8),
+        target: new THREE.Vector3(0, 1.8, -6.74)
       }
     },
     door_portal_hydrotherapy: {
@@ -103,40 +103,40 @@ export class Room04_SterileChamber implements RoomScenario {
       cameraPreset: {
         name: 'door_portal_hydrotherapy',
         position: new THREE.Vector3(0, 1.9, -4.6),
-        target: new THREE.Vector3(0, 1.0, 0)
+        target: new THREE.Vector3(0, 1.8, -6.72)
       }
     },
     door_portal_audiology: {
       id: 'door_portal_audiology',
       name: 'VIII. Audiology Vault Portal',
-      position: new THREE.Vector3(4.2, 1.8, -6.74),
+      position: new THREE.Vector3(6.74, 1.8, 0),
       interactionPrompt: '[ENTER: AUDIOLOGY VAULT (SL4-04B)]',
       cameraPreset: {
         name: 'door_portal_audiology',
-        position: new THREE.Vector3(3.4, 1.9, -4.8),
-        target: new THREE.Vector3(0, 1.0, 0)
+        position: new THREE.Vector3(4.8, 1.9, 0),
+        target: new THREE.Vector3(6.74, 1.8, 0)
       }
     },
     door_portal_archive: {
       id: 'door_portal_archive',
       name: 'IX. Archive & Records Portal',
-      position: new THREE.Vector3(6.74, 1.8, -3.2),
+      position: new THREE.Vector3(6.74, 1.8, 0),
       interactionPrompt: '[ENTER: ARCHIVE & RECORDS (SL4-05)]',
       cameraPreset: {
         name: 'door_portal_archive',
-        position: new THREE.Vector3(4.8, 1.9, -2.5),
-        target: new THREE.Vector3(0, 1.0, 0)
+        position: new THREE.Vector3(4.8, 1.9, 0),
+        target: new THREE.Vector3(6.74, 1.8, 0)
       }
     },
     door_portal_directors_office: {
       id: 'door_portal_directors_office',
       name: "X. Director's Suite Portal",
-      position: new THREE.Vector3(6.74, 1.8, 3.6),
+      position: new THREE.Vector3(3.8, 1.8, 6.74),
       interactionPrompt: "[ENTER: DIRECTOR'S OFFICE (SL4-06)]",
       cameraPreset: {
         name: 'door_portal_directors_office',
-        position: new THREE.Vector3(4.8, 1.9, 2.8),
-        target: new THREE.Vector3(0, 1.0, 0)
+        position: new THREE.Vector3(2.8, 1.9, 4.8),
+        target: new THREE.Vector3(3.8, 1.8, 6.74)
       }
     },
     door_portal_synthesis: {
@@ -903,9 +903,7 @@ export class Room04_SterileChamber implements RoomScenario {
     if (objectId === 'prop_facility_directory') {
       this.audioElement.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'corridor' });
-      bus.emit('ui:subtitle_changed', {
-        text: 'Sanatorium Departmental Directory: Wing A (Clinical Care & Hydrotherapy) // Wing B (Diagnostic Acoustics & Records) // Sector C (Administrative & Sub-Core).'
-      });
+      bus.emit('ui:open_staff_roster', { staffId: 'rostova' });
       return true;
     }
 

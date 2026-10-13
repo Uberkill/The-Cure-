@@ -1,5 +1,9 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
+libs/
+
+# Legacy prototypes and diagnostics
+archive/
 
 # Production build outputs
 dist/

@@ -165,11 +165,35 @@ export class Room05_Archive implements RoomScenario {
     gantry.raycast = () => {};
     this.group.add(gantry);
 
-    // Return Door
-    const returnDoor = new THREE.Mesh(new THREE.BoxGeometry(1.6, 3.0, 0.22), new THREE.MeshStandardMaterial({ color: 0x223025 }));
-    returnDoor.position.set(0, 1.5, 9.85);
+    // Return Door to Concourse / Audiology Vault
+    const returnDoorGroup = new THREE.Group();
+    returnDoorGroup.position.set(0, 0, 9.85);
+
+    const returnDoorFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(1.8, 3.2, 0.24),
+      new THREE.MeshStandardMaterial({ color: 0x18241d, roughness: 0.6 })
+    );
+    returnDoorFrame.position.set(0, 1.6, 0);
+    returnDoorGroup.add(returnDoorFrame);
+
+    const returnDoor = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 2.9, 0.1),
+      new THREE.MeshStandardMaterial({ color: 0x223025, metalness: 0.5, roughness: 0.4 })
+    );
+    returnDoor.position.set(0, 1.45, -0.05);
     returnDoor.name = 'door_return_hub';
-    this.group.add(returnDoor);
+    returnDoorGroup.add(returnDoor);
+
+    const returnPlaque = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.16, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 })
+    );
+    returnPlaque.position.set(0, 3.15, -0.1);
+    returnPlaque.name = 'plaque_audiology_concourse';
+    returnPlaque.userData.isSubPart = true;
+    returnDoorGroup.add(returnPlaque);
+
+    this.group.add(returnDoorGroup);
 
     // Oak Card Catalog Bank (Mid-century institutional record index)
     const catalogGroup = new THREE.Group();
@@ -554,6 +578,38 @@ export class Room05_Archive implements RoomScenario {
 
     this.group.add(readerDesk);
 
+    // Archivist Evelyn Cross's Retention Ledger & Duty Register
+    const ledgerGroup = new THREE.Group();
+    ledgerGroup.position.set(2.05, 0.90, -1.25);
+    ledgerGroup.name = 'prop_cross_ledger';
+
+    const ledgerBinder = new THREE.Mesh(
+      new THREE.BoxGeometry(0.36, 0.04, 0.48),
+      new THREE.MeshStandardMaterial({ color: 0x24352b, roughness: 0.75 })
+    );
+    ledgerBinder.castShadow = true;
+    ledgerBinder.userData.isSubPart = true;
+    ledgerGroup.add(ledgerBinder);
+
+    const ledgerPages = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.32, 0.44),
+      new THREE.MeshStandardMaterial({ color: 0xf5eedb, roughness: 0.85 })
+    );
+    ledgerPages.rotation.x = -Math.PI / 2;
+    ledgerPages.position.y = 0.022;
+    ledgerPages.userData.isSubPart = true;
+    ledgerGroup.add(ledgerPages);
+
+    const ledgerTag = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.01, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 })
+    );
+    ledgerTag.position.set(0, 0.024, -0.18);
+    ledgerTag.userData.isSubPart = true;
+    ledgerGroup.add(ledgerTag);
+
+    this.group.add(ledgerGroup);
+
     // Industrial Utility Shelving Racks & Cardboard Transfer Boxes
     const matShelfSteel = new THREE.MeshStandardMaterial({ color: 0x1e2722, metalness: 0.6, roughness: 0.5 });
     const matBoxKraft = new THREE.MeshStandardMaterial({ color: 0x856e52, roughness: 0.85 });
@@ -736,12 +792,27 @@ export class Room05_Archive implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'door_portal_audiology') {
+      bus.emit('scenario:switch_room', { targetRoomId: 'audiology', doorThresholdId: 'door_portal_audiology' });
+      return true;
+    }
+
     if (objectId === 'prop_card_catalog') {
       audio.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'catalog' });
       bus.emit('ui:subtitle_changed', {
         text: 'OAK CARD CATALOG // SUBJECT 104 INDEX CARD: "Pneumatic Dispatch Destination: Sector GAMMA-07. Optical Reader Condenser Focus: 0.85. Master dossier stored in Cabinet 7 (Drawer 104)."'
       });
+      return true;
+    }
+
+    if (objectId === 'prop_cross_ledger') {
+      audio.playTumblerClick();
+      bus.emit('camera:move_to_hotspot', { hotspotId: 'microfiche' });
+      bus.emit('ui:subtitle_changed', {
+        text: 'Form 108-STAFF [Archivist E. Cross]: Retention custody register & microfilm security indices.'
+      });
+      bus.emit('ui:open_staff_roster', { staffId: 'cross' });
       return true;
     }
 

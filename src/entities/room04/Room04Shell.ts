@@ -113,14 +113,6 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   floor.receiveShadow = true;
   floor.name = 'shell_floor';
 
-  const wayfindingDecal = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), mat.wayfindingFloor);
-  wayfindingDecal.position.set(0, 0, 0.002);
-  wayfindingDecal.name = 'floor_wayfinding_inlay';
-  wayfindingDecal.receiveShadow = false;
-  wayfindingDecal.castShadow = false;
-  wayfindingDecal.userData.isSubPart = true;
-  floor.add(wayfindingDecal);
-
   // 2. Back Wall with Split Wainscot and Architectural Forward Corridor Portal
   const backWallGroup = new THREE.Group();
   backWallGroup.name = 'group_wall_back';
@@ -266,23 +258,16 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   brassArchLintel.name = 'corridor_arch_lintel';
   backWallGroup.add(brassArchLintel);
 
-  const hydroPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.14, 0.03), mat.brassGold);
-  hydroPlaque.position.set(0, 3.42, -6.74);
-  hydroPlaque.name = 'plaque_door_portal_hydrotherapy';
-  hydroPlaque.userData.isSubPart = true;
-  backWallGroup.add(hydroPlaque);
+  const sleepPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.14, 0.03), mat.brassGold);
+  sleepPlaque.position.set(0, 3.42, -6.74);
+  sleepPlaque.name = 'plaque_door_portal_sleep_ward';
+  sleepPlaque.userData.isSubPart = true;
+  backWallGroup.add(sleepPlaque);
+
+  portalLeds['door_portal_sleep_ward'] = corridorLed;
+  spokeDoors['door_portal_sleep_ward'] = corridorDoor;
   portalLeds['door_portal_hydrotherapy'] = corridorLed;
   spokeDoors['door_portal_hydrotherapy'] = corridorDoor;
-
-  const sleepPortal = createSpokePortal('door_portal_sleep_ward', 'SL4-02-SLP', 'SLEEP WARD', [-4.2, 0, -6.62], 0, mat);
-  backWallGroup.add(sleepPortal.group);
-  portalLeds['door_portal_sleep_ward'] = sleepPortal.ledMesh;
-  spokeDoors['door_portal_sleep_ward'] = sleepPortal.doorMesh;
-
-  const audiologyPortal = createSpokePortal('door_portal_audiology', 'SL4-04B-AUD', 'AUDIOLOGY VAULT', [4.2, 0, -6.62], 0, mat);
-  backWallGroup.add(audiologyPortal.group);
-  portalLeds['door_portal_audiology'] = audiologyPortal.ledMesh;
-  spokeDoors['door_portal_audiology'] = audiologyPortal.doorMesh;
 
   // 3. Left Wall with Split Tile Wainscot & Exit Blastdoor Architectural Portal
   const leftWallGroup = new THREE.Group();
@@ -414,10 +399,8 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   doorLed.name = 'door_led';
   leftWallGroup.add(doorLed);
 
-  const velvetPortal = createSpokePortal('door_portal_velvet_lounge', 'SL4-08-VEL', 'VELVET LOUNGE', [-6.62, 0, 2.8], Math.PI / 2, mat);
-  leftWallGroup.add(velvetPortal.group);
-  portalLeds['door_portal_velvet_lounge'] = velvetPortal.ledMesh;
-  spokeDoors['door_portal_velvet_lounge'] = velvetPortal.doorMesh;
+  portalLeds['door_portal_velvet_lounge'] = doorLed;
+  spokeDoors['door_portal_velvet_lounge'] = exitDoorPanel;
 
   const exitPlaque = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.14, 0.03), mat.brassGold);
   exitPlaque.position.set(-6.73, 3.42, -3.0);
@@ -446,13 +429,13 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   rightWallGroup.add(rightDado);
 
   const ventFrame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 2.0), mat.smokedTeak);
-  ventFrame.position.set(6.68, 3.85, 0);
+  ventFrame.position.set(6.68, 3.85, -3.5);
   rightWallGroup.add(ventFrame);
 
   const slatGeos: THREE.BufferGeometry[] = [];
   for (let s = -0.4; s <= 0.4; s += 0.2) {
     const geo = new THREE.BoxGeometry(0.10, 0.03, 1.8);
-    geo.translate(6.67, 3.85 + s, 0);
+    geo.translate(6.67, 3.85 + s, -3.5);
     slatGeos.push(geo);
   }
   const mergedSlatsGeo = mergeGeometries(slatGeos);
@@ -460,10 +443,10 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   slatsMesh.userData.isSubPart = true;
   rightWallGroup.add(slatsMesh);
 
-  // Clinical Blueprint / Gallery Painting on Right Wall (Centered between sector portals)
+  // Clinical Blueprint / Gallery Painting on Right Wall
   const paintingGroup = new THREE.Group();
   paintingGroup.name = 'prop_painting';
-  paintingGroup.position.set(6.67, 2.3, 0);
+  paintingGroup.position.set(6.67, 2.3, 3.5);
 
   const paintingFrame = new THREE.Mesh(new THREE.BoxGeometry(0.04, 1.4, 1.8), mat.smokedTeak);
   paintingFrame.castShadow = true;
@@ -476,15 +459,12 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
 
   rightWallGroup.add(paintingGroup);
 
-  const archivePortal = createSpokePortal('door_portal_archive', 'SL4-05-ARC', 'ARCHIVE & RECORDS', [6.62, 0, -3.2], -Math.PI / 2, mat);
-  rightWallGroup.add(archivePortal.group);
-  portalLeds['door_portal_archive'] = archivePortal.ledMesh;
-  spokeDoors['door_portal_archive'] = archivePortal.doorMesh;
-
-  const dirPortal = createSpokePortal('door_portal_directors_office', 'SL4-06-DIR', "DIRECTOR'S OFFICE", [6.62, 0, 3.6], -Math.PI / 2, mat);
-  rightWallGroup.add(dirPortal.group);
-  portalLeds['door_portal_directors_office'] = dirPortal.ledMesh;
-  spokeDoors['door_portal_directors_office'] = dirPortal.doorMesh;
+  const audiologyPortal = createSpokePortal('door_portal_audiology', 'SL4-04B-AUD', 'AUDIOLOGY VAULT', [6.62, 0, 0], -Math.PI / 2, mat);
+  rightWallGroup.add(audiologyPortal.group);
+  portalLeds['door_portal_audiology'] = audiologyPortal.ledMesh;
+  spokeDoors['door_portal_audiology'] = audiologyPortal.doorMesh;
+  portalLeds['door_portal_archive'] = audiologyPortal.ledMesh;
+  spokeDoors['door_portal_archive'] = audiologyPortal.doorMesh;
 
   // 5. Front Wall with Tile Wainscot & Intake Observation Window
   const frontWallGroup = new THREE.Group();
@@ -515,10 +495,12 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   obsGlass.name = 'obs_glass';
   frontWallGroup.add(obsGlass);
 
-  const synthPortal = createSpokePortal('door_portal_synthesis', 'SL4-07-SYN', 'SYNTHESIS CORE', [3.8, 0, 6.62], Math.PI, mat, true);
-  frontWallGroup.add(synthPortal.group);
-  portalLeds['door_portal_synthesis'] = synthPortal.ledMesh;
-  spokeDoors['door_portal_synthesis'] = synthPortal.doorMesh;
+  const dirPortal = createSpokePortal('door_portal_directors_office', 'SL4-06-DIR', "DIRECTOR'S OFFICE", [3.8, 0, 6.62], Math.PI, mat);
+  frontWallGroup.add(dirPortal.group);
+  portalLeds['door_portal_directors_office'] = dirPortal.ledMesh;
+  spokeDoors['door_portal_directors_office'] = dirPortal.doorMesh;
+  portalLeds['door_portal_synthesis'] = dirPortal.ledMesh;
+  spokeDoors['door_portal_synthesis'] = dirPortal.doorMesh;
 
   // 6. Architectural Ceiling & Cove Frame (y = 5.5)
   const ceilingGroup = new THREE.Group();

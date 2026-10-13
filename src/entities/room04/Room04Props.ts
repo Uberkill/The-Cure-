@@ -101,12 +101,12 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
   brassShunt.castShadow = true;
   brassShunt.name = 'prop_brass_shunt';
 
-  // 5. Institutional Facility Department Directory Board (Left Wall)
+  // 5. Institutional Clinical Staff Duty Roster & Inspection Clipboard (Left Wall)
   const facilityDirectory = new THREE.Group();
   facilityDirectory.name = 'prop_facility_directory';
   facilityDirectory.position.set(-6.62, 2.3, 0);
   facilityDirectory.rotation.y = Math.PI / 2;
-  facilityDirectory.userData.flavorText = "An engraved departmental directory felt board. 'WING A: SOMNAMBULIST CARE & HYDRAULIC IMMERSION • WING B: AUDIOMETRIC RESONANCE & MICROFILM ARCHIVES • SECTOR C: RESTRICTED MECHANICAL CORE • VISITING PROTOCOL: PERMANENTLY SUSPENDED'.";
+  facilityDirectory.userData.flavorText = "Institutional Clinical Personnel Ledger and Shift Roster. A hardboard clipboard mounted to the smoked teak board holds the shift schedules, inspection walkthrough logs, and confidential field notes for the 5 sanatorium duty staff.";
 
   const dirFrameGeo = new THREE.BoxGeometry(1.4, 1.8, 0.05);
   const dirFrame = new THREE.Mesh(dirFrameGeo, mat.smokedTeak);
@@ -129,6 +129,31 @@ export function buildRoom04Props(mat: Room04MaterialPalette): Room04PropsEntitie
   const railsMesh = new THREE.Mesh(mergedRails, mat.brassGold);
   railsMesh.userData.isSubPart = true;
   facilityDirectory.add(railsMesh);
+
+  // Mounted Inspection Clipboard (Center of Board)
+  const clipBoardBack = new THREE.Mesh(
+    new THREE.BoxGeometry(0.48, 0.72, 0.016),
+    mat.smokedTeak
+  );
+  clipBoardBack.position.set(0, 0, 0.042);
+  clipBoardBack.userData.isSubPart = true;
+  facilityDirectory.add(clipBoardBack);
+
+  const clipPaper = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.44, 0.66),
+    new THREE.MeshStandardMaterial({ color: 0xf8f7f2, roughness: 0.9 })
+  );
+  clipPaper.position.set(0, -0.01, 0.052);
+  clipPaper.userData.isSubPart = true;
+  facilityDirectory.add(clipPaper);
+
+  const clipHead = new THREE.Mesh(
+    new THREE.BoxGeometry(0.20, 0.05, 0.025),
+    mat.brassGold
+  );
+  clipHead.position.set(0, 0.32, 0.06);
+  clipHead.userData.isSubPart = true;
+  facilityDirectory.add(clipHead);
 
   // 6. Pneumatic Dossier Dispatch Terminal (Right Wall)
   const pneumaticTerminal = new THREE.Group();

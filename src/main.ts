@@ -14,6 +14,7 @@ import { ScreenManager } from './ui/ScreenManager';
 import { UIManager } from './ui/UIManager';
 import { CRTNodePatcher } from './entities/CRTNodePatcher';
 import { FacilityMapScreen } from './ui/screens/FacilityMapScreen';
+import { StaffRosterScreen } from './ui/screens/StaffRosterScreen';
 import { SaveManager } from './core/SaveManager';
 import { exportObjectToGLB, downloadGLB } from './utils/exportToGLB';
 import { DevTransformGizmo } from './interaction/DevTransformGizmo';
@@ -41,6 +42,7 @@ class VaultApp {
   public scenarioRegistry: ScenarioRegistry;
   public crtNodePatcher: CRTNodePatcher;
   public facilityMapScreen: FacilityMapScreen;
+  public staffRosterScreen: StaffRosterScreen;
 
   public screenManager: ScreenManager;
   public uiManager: UIManager;
@@ -122,6 +124,7 @@ class VaultApp {
     this.scenarioRegistry = ScenarioRegistry.getInstance();
     this.crtNodePatcher = CRTNodePatcher.getInstance();
     this.facilityMapScreen = FacilityMapScreen.getInstance();
+    this.staffRosterScreen = StaffRosterScreen.getInstance();
 
     this.screenManager = new ScreenManager();
     this.uiManager = new UIManager();

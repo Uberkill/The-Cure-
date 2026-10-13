@@ -67,6 +67,17 @@ export class Room04_AudiologyVault implements RoomScenario {
         position: new THREE.Vector3(-2.2, 1.6, 3.8),
         target: new THREE.Vector3(-3.4, 0.9, 3.0)
       }
+    },
+    door_portal_archive: {
+      id: 'door_portal_archive',
+      name: 'VI. Records Archive Gate',
+      position: new THREE.Vector3(3.2, 1.8, -7.0),
+      interactionPrompt: '[ENTER: ARCHIVE & RECORDS (SL4-05)]',
+      cameraPreset: {
+        name: 'door_portal_archive',
+        position: new THREE.Vector3(3.2, 1.8, -5.2),
+        target: new THREE.Vector3(3.2, 1.8, -7.85)
+      }
     }
   };
 
@@ -167,8 +178,41 @@ export class Room04_AudiologyVault implements RoomScenario {
       new THREE.MeshStandardMaterial({ color: 0x3d4a41, metalness: 0.4, roughness: 0.4 })
     );
     returnDoor.position.set(0, 1.5, 7.85);
+    returnDoor.rotation.x = -0.05;
     returnDoor.name = 'door_return_hub';
     this.group.add(returnDoor);
+
+    // Connecting Door to Archive & Records (Security Gate on Rear Wall)
+    const archiveDoorGroup = new THREE.Group();
+    archiveDoorGroup.position.set(3.2, 0, -7.85);
+    archiveDoorGroup.rotation.x = 0.05;
+    archiveDoorGroup.name = 'group_door_portal_archive';
+
+    const archiveDoorFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(1.8, 3.2, 0.24),
+      new THREE.MeshStandardMaterial({ color: 0x242d2a, roughness: 0.6 })
+    );
+    archiveDoorFrame.position.set(0, 1.6, 0);
+    archiveDoorGroup.add(archiveDoorFrame);
+
+    const archiveDoorPanel = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 2.9, 0.1),
+      new THREE.MeshStandardMaterial({ color: 0x3d4a41, metalness: 0.6, roughness: 0.4 })
+    );
+    archiveDoorPanel.position.set(0, 1.45, 0.05);
+    archiveDoorPanel.name = 'door_portal_archive';
+    archiveDoorGroup.add(archiveDoorPanel);
+
+    const archivePlaque = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.16, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 })
+    );
+    archivePlaque.position.set(0, 3.15, 0.1);
+    archivePlaque.name = 'plaque_archive_gate';
+    archivePlaque.userData.isSubPart = true;
+    archiveDoorGroup.add(archivePlaque);
+
+    this.group.add(archiveDoorGroup);
 
     const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.6, 16), matWall);
     wallLeft.position.set(-5, 2.3, 0);
@@ -186,11 +230,13 @@ export class Room04_AudiologyVault implements RoomScenario {
     // Graphic Acoustic Notation Score on Rear Wall
     const paintingFrame = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.8, 0.04), new THREE.MeshStandardMaterial({ color: 0x141a21 }));
     paintingFrame.position.set(0, 2.4, -7.85);
+    paintingFrame.rotation.x = 0.05;
     const paintingCanvas = new THREE.Mesh(
       new THREE.BoxGeometry(2.2, 1.6, 0.06),
       new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.9 })
     );
     paintingCanvas.position.set(0, 2.4, -7.83);
+    paintingCanvas.rotation.x = 0.05;
     paintingCanvas.name = 'prop_audiology_score';
     this.group.add(paintingFrame);
     this.group.add(paintingCanvas);
@@ -750,12 +796,29 @@ export class Room04_AudiologyVault implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'door_portal_archive') {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_03_amethyst')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'monolith' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Records Archive pneumatic gate is sealed. Achieve acoustic null and retrieve Memory Crystal 03 first.'
+        });
+        return true;
+      }
+      audio.playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Traversing security corridor to Archive & Records (SL4-05-ARC).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'archive', doorThresholdId: 'door_portal_archive' });
+      return true;
+    }
+
     if (objectId === 'prop_audiology_journal' || objectId === 'prop_technician_desk') {
       audio.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'workstation' });
       bus.emit('ui:subtitle_changed', {
         text: 'DR. ARIS AUDIOLOGY PROTOCOL: "Standing waves require destructive cancellation. Orient Left Horn to 45 deg, Right Horn to 135 deg, Carrier to 600 Hz, and invert phase by 180 deg to achieve acoustic null. Alternatively, a manual 741 Hz sweep on the amplifier stack bypasses the clamp."'
       });
+      bus.emit('ui:open_staff_roster', { staffId: 'vance' });
       return true;
     }
 

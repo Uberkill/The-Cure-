@@ -205,7 +205,7 @@ export class UIManager {
     });
 
     // Initial persistent chapter display
-    this.displayChapterCard('ACT I • THE RECEPTION', 'The Sterile Chamber', 'Room 04', 30000);
+    this.displayChapterCard('ACT I • THE RECEPTION', 'The Sterile Concourse', 'Room 01', 30000);
   }
 
   private displayChapterCard(act: string, title: string, roomCode?: string, durationMs?: number): void {

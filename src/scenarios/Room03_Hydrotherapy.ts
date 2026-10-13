@@ -168,11 +168,26 @@ export class Room03_Hydrotherapy implements RoomScenario {
     wallFront.position.set(0, 2.25, 7);
     this.group.add(wallFront);
 
-    // Return Door
-    const returnDoor = new THREE.Mesh(new THREE.BoxGeometry(1.6, 3.0, 0.22), matChrome);
-    returnDoor.position.set(0, 1.5, 6.9);
+    // Return Door to Central Concourse / Sleep Ward
+    const returnDoorGroup = new THREE.Group();
+    returnDoorGroup.position.set(0, 0, 6.9);
+
+    const returnDoorFrame = new THREE.Mesh(new THREE.BoxGeometry(1.8, 3.2, 0.24), matHexTile);
+    returnDoorFrame.position.set(0, 1.6, 0);
+    returnDoorGroup.add(returnDoorFrame);
+
+    const returnDoor = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.9, 0.1), matChrome);
+    returnDoor.position.set(0, 1.45, -0.05);
     returnDoor.name = 'door_return_hub';
-    this.group.add(returnDoor);
+    returnDoorGroup.add(returnDoor);
+
+    const returnPlaque = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.16, 0.04), matBrass);
+    returnPlaque.position.set(0, 3.15, -0.1);
+    returnPlaque.name = 'plaque_sleep_ward_concourse';
+    returnPlaque.userData.isSubPart = true;
+    returnDoorGroup.add(returnPlaque);
+
+    this.group.add(returnDoorGroup);
 
     const wallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.5, 14), matWall);
     wallLeft.position.set(-7, 2.25, 0);
@@ -435,6 +450,11 @@ export class Room03_Hydrotherapy implements RoomScenario {
 
     if (objectId === 'door_return_hub') {
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_hydrotherapy' });
+      return true;
+    }
+
+    if (objectId === 'door_portal_sleep_ward') {
+      bus.emit('scenario:switch_room', { targetRoomId: 'sleep_ward', doorThresholdId: 'door_portal_sleep_ward' });
       return true;
     }
 

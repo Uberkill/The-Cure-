@@ -56,6 +56,17 @@ export class Room06_DirectorsOffice implements RoomScenario {
         position: new THREE.Vector3(-3.2, 1.8, 1.2),
         target: new THREE.Vector3(-5.0, 1.8, 0)
       }
+    },
+    door_portal_synthesis: {
+      id: 'door_portal_synthesis',
+      name: 'V. Sub-Core Conduit Hatch',
+      position: new THREE.Vector3(4.2, 1.8, -7.0),
+      interactionPrompt: '[ENTER: SYNTHESIS CORE (SL4-07)]',
+      cameraPreset: {
+        name: 'door_portal_synthesis',
+        position: new THREE.Vector3(4.2, 1.8, -5.2),
+        target: new THREE.Vector3(4.2, 1.8, -7.85)
+      }
     }
   };
 
@@ -172,6 +183,37 @@ export class Room06_DirectorsOffice implements RoomScenario {
     doorFrame.name = 'door_return_hub';
     this.group.add(doorFrame);
 
+    // Connecting Hatch to Synthesis Core (Rear Wall Maintenance Portal)
+    const synthDoorGroup = new THREE.Group();
+    synthDoorGroup.position.set(4.2, 0, -7.85);
+    synthDoorGroup.name = 'group_door_portal_synthesis';
+
+    const synthDoorFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(1.8, 3.2, 0.24),
+      new THREE.MeshStandardMaterial({ color: 0x1f2421, roughness: 0.6 })
+    );
+    synthDoorFrame.position.set(0, 1.6, 0);
+    synthDoorGroup.add(synthDoorFrame);
+
+    const synthDoorPanel = new THREE.Mesh(
+      new THREE.BoxGeometry(1.5, 2.9, 0.1),
+      new THREE.MeshStandardMaterial({ color: 0x2b3831, metalness: 0.7, roughness: 0.3 })
+    );
+    synthDoorPanel.position.set(0, 1.45, 0.05);
+    synthDoorPanel.name = 'door_portal_synthesis';
+    synthDoorGroup.add(synthDoorPanel);
+
+    const synthPlaque = new THREE.Mesh(
+      new THREE.BoxGeometry(1.2, 0.16, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.8, roughness: 0.3 })
+    );
+    synthPlaque.position.set(0, 3.15, 0.1);
+    synthPlaque.name = 'plaque_synthesis_hatch';
+    synthPlaque.userData.isSubPart = true;
+    synthDoorGroup.add(synthPlaque);
+
+    this.group.add(synthDoorGroup);
+
     // Floor-to-Ceiling Mahogany Bookcase
     const bookshelfGroup = new THREE.Group();
     bookshelfGroup.position.set(-6.5, 0, 0);
@@ -214,6 +256,29 @@ export class Room06_DirectorsOffice implements RoomScenario {
     credenza.name = 'prop_director_credenza';
     credenza.castShadow = true;
     this.group.add(credenza);
+
+    // Director's Confidential Leather Portfolio (Confession & Protocol Dossier)
+    const dossierGroup = new THREE.Group();
+    dossierGroup.position.set(1.2, 0.97, -7.4);
+    dossierGroup.name = 'prop_director_dossier';
+
+    const dossierBinder = new THREE.Mesh(
+      new THREE.BoxGeometry(0.38, 0.04, 0.48),
+      new THREE.MeshStandardMaterial({ color: 0x3d1d1d, roughness: 0.65 })
+    );
+    dossierBinder.castShadow = true;
+    dossierBinder.userData.isSubPart = true;
+    dossierGroup.add(dossierBinder);
+
+    const dossierSeal = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04, 0.04, 0.015, 16),
+      new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.4 })
+    );
+    dossierSeal.position.set(0, 0.025, 0);
+    dossierSeal.userData.isSubPart = true;
+    dossierGroup.add(dossierSeal);
+
+    this.group.add(dossierGroup);
 
     // Executive Desk Suite Group
     const deskGroup = new THREE.Group();
@@ -539,6 +604,22 @@ export class Room06_DirectorsOffice implements RoomScenario {
       return true;
     }
 
+    if (objectId === 'door_portal_synthesis') {
+      if (!this.crystalCollected && !GameState.getInstance().hasCrystal('crystal_05_celadon')) {
+        bus.emit('camera:move_to_hotspot', { hotspotId: 'desk' });
+        bus.emit('ui:subtitle_changed', {
+          text: 'The Sub-Core Synthesis conduit is locked. Calibrate wiretap telemetry and retrieve Memory Crystal 05 first.'
+        });
+        return true;
+      }
+      audio.playPneumaticHiss();
+      bus.emit('ui:subtitle_changed', {
+        text: 'Descending maintenance conduit to Synthesis Core (SL4-07-SYN).'
+      });
+      bus.emit('scenario:switch_room', { targetRoomId: 'synthesis_blackout', doorThresholdId: 'door_portal_synthesis' });
+      return true;
+    }
+
     if (objectId === 'prop_tape_deck' || objectId === 'prop_carriage_clock') {
       if (this.drawerUnlocked || GameState.getInstance().hasCrystal('crystal_05_celadon')) {
         bus.emit('camera:move_to_hotspot', { hotspotId: 'desk' });
@@ -567,12 +648,13 @@ export class Room06_DirectorsOffice implements RoomScenario {
       return true;
     }
 
-    if (objectId === 'prop_director_bookshelf') {
+    if (objectId === 'prop_director_bookshelf' || objectId === 'prop_director_dossier') {
       audio.playTumblerClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'bookshelf' });
       bus.emit('ui:subtitle_changed', {
         text: 'DIRECTOR\'S LOGBOOK // CONFIDENTIAL: "The wiretap carriage escapement must be synchronized at eleven-zero-three (11:03). Reduce playback speed to half-speed (0.5x) to reveal the voice beneath the tape hiss, then dial 1-1-0-3 on the rotary telephone exchange."'
       });
+      bus.emit('ui:open_staff_roster', { staffId: 'vandermeer' });
       return true;
     }
 

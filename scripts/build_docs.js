@@ -26,7 +26,10 @@ for (const rel of files) {
   doc += content + '\n\n---\n\n';
 }
 
-fs.writeFileSync(path.join(rootDir, 'THE_VAULT_DOCUMENTATION.md'), doc, 'utf8');
+const outDir = path.join(rootDir, 'dist', 'docs');
+fs.mkdirSync(outDir, { recursive: true });
+
+fs.writeFileSync(path.join(outDir, 'THE_VAULT_DOCUMENTATION.md'), doc, 'utf8');
 
 const htmlBody = marked.parse(doc);
 const fullHtml = `<!DOCTYPE html>
@@ -53,5 +56,5 @@ ${htmlBody}
 </html>
 `;
 
-fs.writeFileSync(path.join(rootDir, 'THE_VAULT_DOCUMENTATION.html'), fullHtml, 'utf8');
-console.log('Successfully compiled master documentation (MD & HTML).');
+fs.writeFileSync(path.join(outDir, 'THE_VAULT_DOCUMENTATION.html'), fullHtml, 'utf8');
+console.log('Successfully compiled master documentation (MD & HTML) into dist/docs/.');

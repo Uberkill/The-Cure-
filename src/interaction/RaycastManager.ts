@@ -187,7 +187,7 @@ export class RaycastManager {
       door_portal_velvet_lounge: '[ENTER: VELVET LOUNGE (SL4-08)]',
       door_return_hub: '[RETURN: CENTRAL HUB]',
       prop_facility_map: '[EXAMINE: SUB-LEVEL 04 FACILITY BLUEPRINT]',
-      prop_facility_directory: '[READ: DEPARTMENTAL ROSTER DIRECTORY]',
+      prop_facility_directory: '[INSPECT: CLINICAL STAFF ROSTER & SHIFT LOG]',
       prop_pneumatic_terminal: '[INSPECT: PNEUMATIC DOSSIER DISPATCH]',
       prop_waiting_bench: '[EXAMINE: INSTITUTIONAL WAITING BENCH]',
       prop_wall_clock: '[CHECK: SYNCHRONOUS SLAVE CLOCK]',
@@ -199,6 +199,7 @@ export class RaycastManager {
       prop_dial_0: '[ROTATE TUMBLER 1]',
       prop_dial_1: '[ROTATE TUMBLER 2]',
       prop_dial_2: '[ROTATE TUMBLER 3]',
+      prop_thorne_clipboard: "[READ: DR. THORNE'S SOMNOLOGY LOG]",
       prop_clipboard_101: '[READ: SUBJECT 101 MEDICAL CHART]',
       prop_clipboard_102: '[READ: SUBJECT 102 MEDICAL CHART]',
       prop_clipboard_103: '[READ: SUBJECT 103 MEDICAL CHART]',
@@ -220,6 +221,8 @@ export class RaycastManager {
 
       // Audiology
       prop_audiology_score: '[EXAMINE: ACOUSTIC NOTATION SCORE]',
+      prop_audiology_journal: "[EXAMINE: TECH VANCE'S ACOUSTIC LOGBOOK]",
+      prop_technician_desk: "[EXAMINE: TECH VANCE'S WORKSTATION]",
       prop_amplifier_monolith: '[INSPECT AMPLIFIER MONOLITH]',
       prop_amp_stack: '[TUNE AMPLIFIER HARMONIC FREQUENCY]',
       prop_speaker_cone: '[INSPECT 15-INCH SPEAKER CONE]',
@@ -229,6 +232,8 @@ export class RaycastManager {
       crystal_03_amethyst: '[COLLECT: AMETHYST CORE]',
 
       // Archive
+      prop_card_catalog: "[SEARCH: ARCHIVIST CROSS'S CARD CATALOG]",
+      prop_cross_ledger: "[INSPECT: ARCHIVIST CROSS'S RETENTION LEDGER]",
       prop_cabinet_0: '[SEARCH: PATIENT ARCHIVE 042]',
       prop_cabinet_1: '[SEARCH: PATIENT ARCHIVE 067]',
       prop_cabinet_2: '[SEARCH: PATIENT ARCHIVE 088]',
@@ -245,6 +250,9 @@ export class RaycastManager {
       prop_void_phone: '[LIFT: UNPLUGGED ROTARY RECEIVER]',
       prop_director_desk: '[INSPECT MAHOGANY EXECUTIVE DESK]',
       prop_director_drawer: '[SEARCH: SECRET DESK DRAWER]',
+      prop_director_bookshelf: "[READ: DIRECTOR VANDERMEER'S CONFIDENTIAL LOG]",
+      prop_director_dossier: "[READ: DIRECTOR VANDERMEER'S CONFESSION]",
+      prop_director_credenza: '[INSPECT: EXECUTIVE CREDENZA MEMORANDA]',
       prop_tape_deck: '[INSPECT: REEL-TO-REEL TAPE DECK]',
       prop_carriage_clock: '[INSPECT: BRASS CARRIAGE CLOCK]',
       prop_executive_chair: '[EXAMINE: EXECUTIVE LEATHER CHAIR]',
