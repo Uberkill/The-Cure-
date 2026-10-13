@@ -48,6 +48,8 @@ export class DevTransformGizmo {
   public onSelectionChange?: (objects: THREE.Object3D[]) => void;
   public onToggle?: (enabled: boolean) => void;
 
+  private authorized: boolean = false;
+
   private keyListener: (e: KeyboardEvent) => void;
   private pointerListener: (e: PointerEvent) => void;
   private pointerMoveListener: (e: PointerEvent) => void;
@@ -191,7 +193,25 @@ export class DevTransformGizmo {
     }
   }
 
+  public setAuthorized(authorized: boolean): void {
+    this.authorized = authorized;
+    if (!authorized && this.isEnabled) {
+      this.setEnabled(false);
+    }
+  }
+
+  public isAuthorized(): boolean {
+    return this.authorized;
+  }
+
+  public disable(): void {
+    if (this.isEnabled) {
+      this.setEnabled(false);
+    }
+  }
+
   public toggle(): boolean {
+    if (!this.authorized) return false;
     this.setEnabled(!this.isEnabled);
     return this.isEnabled;
   }
@@ -301,6 +321,7 @@ export class DevTransformGizmo {
     }
 
     if (e.key === 'g' || e.key === 'G') {
+      if (!this.authorized) return;
       this.toggle();
       return;
     }

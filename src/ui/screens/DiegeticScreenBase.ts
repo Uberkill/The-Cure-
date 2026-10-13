@@ -23,7 +23,7 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
   }
 
   public open(_initialData?: unknown): void {
-    if (this.isVisible) return;
+    if (this.isVisible && this.modalEl && !this.modalEl.classList.contains('hidden')) return;
     this.isVisible = true;
 
     if (!this.modalEl) {
@@ -38,7 +38,7 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
   }
 
   public close(): void {
-    if (!this.isVisible) return;
+    if (!this.isVisible && (!this.modalEl || this.modalEl.classList.contains('hidden'))) return;
     this.isVisible = false;
 
     if (this.modalEl) {

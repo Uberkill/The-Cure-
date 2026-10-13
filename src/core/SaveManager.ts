@@ -192,8 +192,8 @@ export class SaveManager {
 
     this.lastKnownRoomId = data.currentRoomId;
     if (data.settings) {
-      this.currentSettings = { ...data.settings };
-      this.eventBus.emit('settings:updated', data.settings);
+      this.currentSettings = { ...data.settings, subtitlesEnabled: true };
+      this.eventBus.emit('settings:updated', this.currentSettings);
     }
 
     this.gameState.loadFromSaveData(data);

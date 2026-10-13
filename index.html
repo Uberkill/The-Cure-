@@ -29,6 +29,22 @@
       </button>
     </div>
     
+    <!-- Top-Left: Camera Disengage / Step Back HUD Button (Contextual) -->
+    <div style="position: absolute; top: 32px; left: 32px; pointer-events: auto; z-index: 100;">
+      <button class="camera-disengage-btn hidden" id="btn-camera-disengage" title="Step Back to Room Overview [ESC]" aria-label="Return to room overview" aria-hidden="true">
+        <span class="btn-disengage-icon">
+          <!-- Tactical Retreat / Step Back Return Arrow SVG -->
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 14l-4-4 4-4"></path>
+            <path d="M5 10h11a4 4 0 1 1 0 8h-1"></path>
+          </svg>
+        </span>
+        <span class="key-badge">ESC</span>
+        <span class="nav-label">STEP BACK</span>
+        <span class="nav-target" id="nav-disengage-target">// OVERVIEW</span>
+      </button>
+    </div>
+    
     <!-- Top-Left: Cinematic Film Chapter Card (Fades after 4s) -->
     <div class="cinematic-header" id="cinematic-header">
       <div class="act-tag">
@@ -62,7 +78,7 @@
       </div>
 
       <div style="display: flex; gap: 8px; align-items: center;">
-        <button class="dev-3d-toggle-btn" id="btn-dev-3d-toggle" title="Toggle Developer Mode & Transform Gizmo">[DEV MODE]</button>
+        <button class="dev-3d-toggle-btn hidden" id="btn-dev-3d-toggle" title="Toggle Developer Mode & Transform Gizmo">[DEV MODE]</button>
         
         <!-- Faded Settings Gear (Bottom-Right) -->
         <button class="settings-gear-btn" id="btn-settings-toggle" title="System Settings &amp; Patient Record [ESC to Return]">
@@ -216,51 +232,71 @@ Alignment precedes release.</div>
             <span class="settings-val-badge" id="ambient-val">75%</span>
           </div>
         </label>
-
-        <div class="settings-toggle-row">
-          <div class="settings-toggle-desc">
-            <strong style="color: var(--ink-primary);">Continuous 45 Hz Drone</strong>
-            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Low-frequency acoustic foundation calibrated to sterile chamber.</span>
-          </div>
-          <button class="pill-btn settings-tone-btn" id="btn-drone">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/></svg>
-            Active Drone
-          </button>
-        </div>
       </div>
 
       <!-- Section: Visual & Observation -->
       <div class="settings-group">
         <div class="settings-group-header">Visual Immersion &amp; Optics</div>
 
-        <label class="settings-toggle-row">
+        <div class="settings-status-row">
           <div class="settings-toggle-desc">
             <strong style="color: var(--ink-primary);">Observation Subtitles</strong>
-            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Display clinical narrative transcripts and apparatus cues.</span>
+            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Clinical narrative transcripts and apparatus telemetry readout.</span>
           </div>
-          <input type="checkbox" id="setting-subtitles" checked class="settings-checkbox">
-        </label>
+          <span class="settings-val-badge" style="color: var(--color-sage-deep); font-weight: bold;">PERMANENT [ACTIVE]</span>
+        </div>
 
-        <label class="settings-toggle-row">
+        <div class="settings-status-row" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(20, 26, 33, 0.05);">
           <div class="settings-toggle-desc">
-            <strong style="color: var(--ink-primary);">CRT Scanline Overlay</strong>
-            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Analogue cathode raster mesh overlay across camera viewport.</span>
+            <strong style="color: var(--ink-primary);">Cathode Raster Mesh</strong>
+            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Analogue phosphor overlay calibrated to 60 Hz display matrix.</span>
           </div>
-          <input type="checkbox" id="setting-scanlines" checked class="settings-checkbox">
-        </label>
+          <span class="settings-val-badge" style="color: var(--color-sage-deep); font-weight: bold;">CALIBRATED [60 HZ]</span>
+        </div>
 
-        <label class="settings-toggle-row">
+        <label class="settings-toggle-row" style="margin-top: 8px;">
           <div class="settings-toggle-desc">
             <strong style="color: var(--ink-primary);">Mouse Parallax Drift</strong>
-            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Subtle cinematic perspective drift tracking cursor movement.</span>
+            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Perspective drift tracking cursor movement across chamber viewports.</span>
           </div>
           <input type="checkbox" id="setting-parallax" checked class="settings-checkbox">
         </label>
 
-        <div style="display: flex; justify-content: flex-end; margin-top: 8px;">
+        <div style="display: flex; justify-content: flex-end; margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(20, 26, 33, 0.05);">
           <button class="pill-btn" id="btn-recenter-camera" style="font-size: 11px; padding: 6px 14px;">
             Re-align Optics [Overview]
           </button>
+        </div>
+      </div>
+
+      <!-- Section: Engineering Clearance // Developer Mode -->
+      <div class="settings-group settings-dev-card" id="settings-dev-group">
+        <div class="settings-group-header">Sub-Level 04 Engineering Clearance // Developer Access</div>
+        <div class="settings-dev-content">
+          <div class="settings-status-row" style="margin-bottom: 10px;">
+            <div class="settings-toggle-desc">
+              <strong style="color: var(--ink-primary);">3D Spatial Editor &amp; Transform Gizmo</strong>
+              <span style="display: block; font-size: 10px; color: var(--ink-secondary);" id="dev-clearance-desc">
+                Restricted engineering diagnostic subsystem. Authorization cipher required.
+              </span>
+            </div>
+            <span class="settings-val-badge" id="dev-clearance-badge" style="color: var(--color-crimson-wax); font-weight: bold; border-color: rgba(139, 30, 35, 0.3);">LEVEL 0 // LOCKED</span>
+          </div>
+
+          <!-- When Locked: Code Entry Form -->
+          <div id="dev-auth-form" style="display: flex; gap: 8px; align-items: center; margin-top: 8px;">
+            <input type="password" id="input-dev-code" class="dev-code-input" placeholder="Enter clearance code..." maxlength="8" autocomplete="off">
+            <button class="pill-btn" id="btn-submit-dev-code" style="padding: 7px 16px; font-size: 11px;">Authorize</button>
+          </div>
+          <div id="dev-auth-feedback" class="hidden" style="margin-top: 6px; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em;"></div>
+
+          <!-- When Unlocked: Developer Mode Actions -->
+          <div id="dev-unlocked-controls" class="hidden" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(20, 26, 33, 0.08);">
+            <div style="display: flex; gap: 10px;">
+              <button class="pill-btn" id="btn-dev-toggle-from-settings" style="flex: 2; padding: 8px 12px; font-size: 11px; background: rgba(74, 222, 128, 0.08); border-color: rgba(74, 222, 128, 0.4); color: var(--color-sage-deep);">Launch 3D Dev Tools</button>
+              <button class="pill-btn pill-btn-danger" id="btn-dev-relock" style="flex: 1; padding: 8px 12px; font-size: 11px;">Revoke Clearance</button>
+            </div>
+          </div>
         </div>
       </div>
 

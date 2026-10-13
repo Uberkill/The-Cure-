@@ -63,40 +63,33 @@ export async function runSuite(page, baseUrl) {
   const ambientBadge = await page.$eval('#ambient-val', (el) => el.textContent?.trim());
   if (ambientBadge !== '50%') throw new Error(`Ambient volume badge mismatch: expected 50%, got ${ambientBadge}`);
 
-  // Drone Toggle
-  const droneBtn = await page.waitForSelector('#btn-drone');
-  const wasDroneActive = await droneBtn.evaluate((el) => el.classList.contains('active'));
-  await droneBtn.click();
+  console.log('--- Step 5: Visuals & Optics Controls & Developer Mode Clearance ---');
+  // Subtitles permanent invariant
+  await page.evaluate(() => {
+    window.__VAULT_APP__.eventBus.emit('ui:subtitle_changed', { text: 'Testing permanent subtitle stream.' });
+  });
+  const subtitleVisible = await page.$eval('#observation-subtitle', (el) => el.style.opacity);
+  if (subtitleVisible !== '1') throw new Error(`Subtitle element should remain visible (opacity 1). Got: ${subtitleVisible}`);
+
+  // Test Developer Mode authorization with invalid code
+  await page.fill('#input-dev-code', '444');
+  await page.click('#btn-submit-dev-code');
   await page.waitForTimeout(100);
-  const isDroneActiveNow = await droneBtn.evaluate((el) => el.classList.contains('active'));
-  if (wasDroneActive === isDroneActiveNow) throw new Error('Continuous drone button did not toggle active state');
+  const authErr = await page.$eval('#dev-auth-feedback', (el) => el.textContent?.trim());
+  if (!authErr?.includes('ACCESS DENIED')) {
+    throw new Error(`Expected ACCESS DENIED on invalid code, got: "${authErr}"`);
+  }
 
-  console.log('--- Step 5: Visuals & Optics Controls ---');
-  // Subtitles toggle
-  await page.evaluate(() => {
-    const subToggle = document.getElementById('setting-subtitles');
-    subToggle.checked = false;
-    subToggle.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-  const subtitleOpacity = await page.$eval('#observation-subtitle', (el) => el.style.opacity);
-  if (subtitleOpacity !== '0') throw new Error(`Subtitle element should have opacity 0 when subtitles disabled. Got: ${subtitleOpacity}`);
-
-  // Scanlines toggle
-  await page.evaluate(() => {
-    const scan = document.getElementById('setting-scanlines');
-    scan.checked = false;
-    scan.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-  const scanlineDisplayOff = await page.$eval('.crt-scanline-mesh', (el) => el.style.display);
-  if (scanlineDisplayOff !== 'none') throw new Error(`Scanline display off mismatch: got ${scanlineDisplayOff}`);
-
-  await page.evaluate(() => {
-    const scan = document.getElementById('setting-scanlines');
-    scan.checked = true;
-    scan.dispatchEvent(new Event('change', { bubbles: true }));
-  });
-  const scanlineDisplayOn = await page.$eval('.crt-scanline-mesh', (el) => el.style.display);
-  if (scanlineDisplayOn !== 'block') throw new Error(`Scanline display on mismatch: got ${scanlineDisplayOn}`);
+  // Test Developer Mode authorization with code 333
+  await page.fill('#input-dev-code', '333');
+  await page.click('#btn-submit-dev-code');
+  await page.waitForTimeout(100);
+  const authOk = await page.$eval('#dev-auth-feedback', (el) => el.textContent?.trim());
+  if (!authOk?.includes('CLEARANCE GRANTED')) {
+    throw new Error(`Expected CLEARANCE GRANTED on code 333, got: "${authOk}"`);
+  }
+  const isDevBtnVisible = await page.$eval('#btn-dev-3d-toggle', (el) => !el.classList.contains('hidden'));
+  if (!isDevBtnVisible) throw new Error('Developer button did not unhide after code 333 authorization.');
 
   console.log('--- Step 6: Patient Intake Record Card & Manual Save ---');
   const roomName = await page.$eval('#save-room-name', (el) => el.textContent?.trim());

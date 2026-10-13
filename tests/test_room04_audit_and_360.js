@@ -8,50 +8,69 @@ export async function runSuite(page, baseUrl) {
   await page.goto(`${baseUrl}/?test=true`);
   await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 5000 });
 
-  const btnDroneActive = await page.$eval('#btn-drone', (el) => el.classList.contains('active'));
-  console.log(`btn-drone active class on startup: ${btnDroneActive}`);
-  if (btnDroneActive) {
-    throw new Error('btn-drone should NOT have active class on startup.');
+  // Verify dev button is hidden by default for unauthorized users
+  const isDevBtnHidden = await page.$eval('#btn-dev-3d-toggle', (el) => el.classList.contains('hidden'));
+  console.log(`btn-dev-3d-toggle hidden on startup: ${isDevBtnHidden}`);
+  if (!isDevBtnHidden) {
+    throw new Error('btn-dev-3d-toggle must be hidden by default on startup.');
   }
 
   // Dismiss cognitive intake
   await page.click('#btn-menu-start');
   await page.waitForTimeout(200);
 
-  // Verify drone is NOT playing in AudioEngine
-  const isDronePlayingAtStart = await page.evaluate(() => {
+  // Verify AudioEngine startup
+  const isAudioInitialized = await page.evaluate(() => {
     const app = window.__VAULT_APP__;
-    return app.audioEngine['isDronePlaying'];
+    return !!app.audioEngine;
   });
-  console.log(`AudioEngine drone playing at start: ${isDronePlayingAtStart}`);
-  if (isDronePlayingAtStart) {
-    throw new Error('AudioEngine drone must NOT be playing automatically at start.');
+  console.log(`AudioEngine initialized at start: ${isAudioInitialized}`);
+  if (!isAudioInitialized) {
+    throw new Error('AudioEngine must be initialized at startup.');
   }
 
-  console.log('--- Step 2: Verifying Interactive Audio Pill Toggle in Settings ---');
+  console.log('--- Step 2: Verifying Clean Audio Sliders & Developer Mode Authorization (Code 333) ---');
   await page.click('#btn-settings-toggle');
   await page.waitForTimeout(200);
 
-  // Click btn-drone to turn ON
-  await page.click('#btn-drone');
-  await page.waitForTimeout(200);
-  const droneNowActive = await page.$eval('#btn-drone', (el) => el.classList.contains('active'));
-  const isDronePlayingNow = await page.evaluate(() => {
-    const app = window.__VAULT_APP__;
-    return app.audioEngine['isDronePlaying'];
+  // Verify volume sliders are present
+  const hasSliders = await page.evaluate(() => {
+    return !!document.getElementById('setting-volume') &&
+      !!document.getElementById('setting-sfx-volume') &&
+      !!document.getElementById('setting-ambient-volume');
   });
-  console.log(`After click - button active: ${droneNowActive}, drone playing: ${isDronePlayingNow}`);
-  if (!droneNowActive || !isDronePlayingNow) {
-    throw new Error('Clicking btn-drone failed to activate drone synth.');
+  if (!hasSliders) throw new Error('Volume sliders missing from settings.');
+
+  // Verify drone button is removed from settings
+  const hasDroneBtn = await page.evaluate(() => !!document.getElementById('btn-drone'));
+  if (hasDroneBtn) throw new Error('btn-drone should be removed from settings.');
+
+  // Test developer authorization with invalid code
+  await page.fill('#input-dev-code', '999');
+  await page.click('#btn-submit-dev-code');
+  await page.waitForTimeout(100);
+  const rejectFeedback = await page.$eval('#dev-auth-feedback', (el) => el.textContent?.trim());
+  if (!rejectFeedback?.includes('ACCESS DENIED')) {
+    throw new Error(`Expected ACCESS DENIED feedback on invalid code, got: "${rejectFeedback}"`);
   }
 
-  // Click btn-drone to turn OFF
-  await page.click('#btn-drone');
+  // Test developer authorization with code 333
+  await page.fill('#input-dev-code', '333');
+  await page.click('#btn-submit-dev-code');
   await page.waitForTimeout(100);
-  const droneOffAgain = await page.$eval('#btn-drone', (el) => !el.classList.contains('active'));
-  console.log(`After second click - button toggled OFF: ${droneOffAgain}`);
-  if (!droneOffAgain) {
-    throw new Error('Clicking btn-drone failed to deactivate drone synth.');
+  const authFeedback = await page.$eval('#dev-auth-feedback', (el) => el.textContent?.trim());
+  if (!authFeedback?.includes('CLEARANCE GRANTED')) {
+    throw new Error(`Expected CLEARANCE GRANTED feedback on code 333, got: "${authFeedback}"`);
+  }
+  const badgeText = await page.$eval('#dev-clearance-badge', (el) => el.textContent?.trim());
+  if (!badgeText?.includes('LEVEL 3')) {
+    throw new Error(`Expected LEVEL 3 badge after code 333, got: "${badgeText}"`);
+  }
+
+  // Verify dev button is now unhidden
+  const isDevBtnNowVisible = await page.$eval('#btn-dev-3d-toggle', (el) => !el.classList.contains('hidden'));
+  if (!isDevBtnNowVisible) {
+    throw new Error('btn-dev-3d-toggle failed to unhide after code 333 authorization.');
   }
 
   // Close settings modal

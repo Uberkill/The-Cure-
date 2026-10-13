@@ -12,6 +12,7 @@ export class CameraDirector {
   private isTransitioning: boolean = false;
   private isUserOrbiting: boolean = false;
   private mouseNorm: THREE.Vector2 = new THREE.Vector2(0, 0);
+  private currentHotspotId: string = 'overview';
 
 
 
@@ -101,6 +102,7 @@ export class CameraDirector {
   public resetForScenario(preset: CameraPreset): void {
     this.isTransitioning = false;
     this.controls.enabled = true;
+    this.currentHotspotId = 'overview';
 
 
     this.camera.position.copy(preset.position);
@@ -217,6 +219,7 @@ export class CameraDirector {
     if (!targetPreset) {
       targetPreset = presets[hotspotId] || presets.overview;
     }
+    this.currentHotspotId = hotspotId;
     this.moveToPreset(targetPreset, durationMs);
   }
 
@@ -253,5 +256,13 @@ export class CameraDirector {
 
   public enable(): void {
     this.controls.enabled = true;
+  }
+
+  public getCurrentHotspotId(): string {
+    return this.currentHotspotId;
+  }
+
+  public isBusyTransitioning(): boolean {
+    return this.isTransitioning;
   }
 }

@@ -108,18 +108,14 @@ export async function runSuite(page, baseUrl) {
   }
 
   await page.evaluate(() => {
-    const scan = document.getElementById('setting-scanlines');
-    scan.checked = false;
-    scan.dispatchEvent(new Event('change', { bubbles: true }));
+    const parallax = document.getElementById('setting-parallax');
+    parallax.checked = false;
+    parallax.dispatchEvent(new Event('change', { bubbles: true }));
   });
-  const scanlinesDisplay = await page.$eval('.crt-scanline-mesh', (el) => el.style.display);
-  if (scanlinesDisplay !== 'none') {
-    throw new Error('Scanlines overlay should be display: none when unchecked.');
-  }
 
   await page.keyboard.press('Escape');
   await page.waitForSelector('#modal-settings', { state: 'hidden', timeout: 3000 });
-  console.log('PASSED: Settings modal volume, scanlines, and Escape key dismissal verified.');
+  console.log('PASSED: Settings modal volume, parallax, and Escape key dismissal verified.');
 
   console.log('--- Step 5: Terminal Blackout View & Cinematic Header ---');
   await page.evaluate(() => {

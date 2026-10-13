@@ -47,7 +47,7 @@ class VaultApp {
   public assetManifestScreen: AssetManifestScreen;
 
   public screenManager: ScreenManager;
-  public uiManager: UIManager;
+  public uiManager!: UIManager;
 
   private lastTimestamp: number = performance.now();
   private isRunning: boolean = true;
@@ -86,9 +86,33 @@ class VaultApp {
       this.devGizmo,
       this.sceneManager.renderer
     );
+
+    this.screenManager = new ScreenManager();
+    this.uiManager = new UIManager();
+
     const devBtn = document.getElementById('btn-dev-3d-toggle');
     devBtn?.addEventListener('click', () => {
-      this.devGizmo.toggle();
+      if (this.uiManager.isDevAuthorized()) {
+        this.devGizmo.toggle();
+      }
+    });
+
+    this.devGizmo.setAuthorized(this.uiManager.isDevAuthorized());
+
+    this.eventBus.on('dev:authorized', ({ authorized }: { authorized: boolean }) => {
+      this.devGizmo.setAuthorized(authorized);
+      if (!authorized) {
+        this.devGizmo.disable();
+        this.devEditorPanel.hide();
+        if (this.editorVisualizers) this.editorVisualizers.disable();
+        devBtn?.classList.remove('active');
+      }
+    });
+
+    this.eventBus.on('dev:toggle_gizmo', () => {
+      if (this.uiManager.isDevAuthorized()) {
+        this.devGizmo.toggle();
+      }
     });
 
     this.devGizmo.onToggle = (enabled) => {
@@ -128,9 +152,6 @@ class VaultApp {
     this.facilityMapScreen = FacilityMapScreen.getInstance();
     this.staffRosterScreen = StaffRosterScreen.getInstance();
     this.assetManifestScreen = AssetManifestScreen.getInstance();
-
-    this.screenManager = new ScreenManager();
-    this.uiManager = new UIManager();
 
     this.setupScenarioRouting();
     this.init();

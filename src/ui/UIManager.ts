@@ -2,6 +2,8 @@ import { EventBus } from '../core/EventBus';
 import { SaveManager } from '../core/SaveManager';
 import { AudioEngine } from '../audio/AudioEngine';
 import { SaveGameData } from '../types';
+import { FacilityMapScreen } from './screens/FacilityMapScreen';
+import { CRTNodePatcher } from '../entities/CRTNodePatcher';
 
 export class UIManager {
   private eventBus: EventBus;
@@ -18,18 +20,33 @@ export class UIManager {
   private chapterFadeTimeout: number | null = null;
   private subtitleTimer: number | null = null;
   private subtitlesEnabled: boolean = true;
+  private devAuthorized: boolean = false;
 
   private modalSettingsEl!: HTMLElement;
   private settingVolume!: HTMLInputElement;
   private settingSfxVolume!: HTMLInputElement;
   private settingAmbientVolume!: HTMLInputElement;
-  private settingSubtitles!: HTMLInputElement;
   private settingParallax!: HTMLInputElement;
-  private settingScanlines!: HTMLInputElement;
+
+  private inputDevCode!: HTMLInputElement | null;
+  private btnSubmitDevCode!: HTMLElement | null;
+  private devAuthFeedback!: HTMLElement | null;
+  private devClearanceBadge!: HTMLElement | null;
+  private devAuthForm!: HTMLElement | null;
+  private devUnlockedControls!: HTMLElement | null;
+  private btnDevToggleFromSettings!: HTMLElement | null;
+  private btnDevRelock!: HTMLElement | null;
+  private btnDev3dToggle!: HTMLElement | null;
 
   private volumeValEl!: HTMLElement;
   private sfxValEl!: HTMLElement;
   private ambientValEl!: HTMLElement;
+  private btnCameraDisengage!: HTMLElement | null;
+  private navDisengageTarget!: HTMLElement | null;
+  private currentHotspotId: string = 'overview';
+  private unsubscribers: Array<() => void> = [];
+  private keydownHandler: ((e: KeyboardEvent) => void) | null = null;
+  private mousemoveHandler: ((e: MouseEvent) => void) | null = null;
 
   private saveRoomNameEl!: HTMLElement;
   private saveStageNameEl!: HTMLElement;
@@ -80,9 +97,17 @@ export class UIManager {
     this.settingVolume = document.getElementById('setting-volume') as HTMLInputElement;
     this.settingSfxVolume = document.getElementById('setting-sfx-volume') as HTMLInputElement;
     this.settingAmbientVolume = document.getElementById('setting-ambient-volume') as HTMLInputElement;
-    this.settingSubtitles = document.getElementById('setting-subtitles') as HTMLInputElement;
     this.settingParallax = document.getElementById('setting-parallax') as HTMLInputElement;
-    this.settingScanlines = document.getElementById('setting-scanlines') as HTMLInputElement;
+
+    this.inputDevCode = document.getElementById('input-dev-code') as HTMLInputElement | null;
+    this.btnSubmitDevCode = document.getElementById('btn-submit-dev-code');
+    this.devAuthFeedback = document.getElementById('dev-auth-feedback');
+    this.devClearanceBadge = document.getElementById('dev-clearance-badge');
+    this.devAuthForm = document.getElementById('dev-auth-form');
+    this.devUnlockedControls = document.getElementById('dev-unlocked-controls');
+    this.btnDevToggleFromSettings = document.getElementById('btn-dev-toggle-from-settings');
+    this.btnDevRelock = document.getElementById('btn-dev-relock');
+    this.btnDev3dToggle = document.getElementById('btn-dev-3d-toggle');
 
     this.volumeValEl = document.getElementById('volume-val')!;
     this.sfxValEl = document.getElementById('sfx-val')!;
@@ -99,68 +124,85 @@ export class UIManager {
     this.btnResetSave = document.getElementById('btn-reset-save')!;
     this.btnRecenterCamera = document.getElementById('btn-recenter-camera')!;
     this.settingsTelemetryEl = document.getElementById('settings-telemetry')!;
+    this.btnCameraDisengage = document.getElementById('btn-camera-disengage');
+    this.navDisengageTarget = document.getElementById('nav-disengage-target');
   }
 
   private setupListeners(): void {
-    window.addEventListener('mousemove', (e) => {
+    this.mousemoveHandler = (e: MouseEvent) => {
       if (this.reticleWrapEl) {
         this.reticleWrapEl.style.left = `${e.clientX}px`;
         this.reticleWrapEl.style.top = `${e.clientY}px`;
       }
-    });
+    };
+    window.addEventListener('mousemove', this.mousemoveHandler);
 
-    this.eventBus.on('ui:subtitle_changed', ({ text }) => {
-      if (!this.subtitlesEnabled) {
-        this.subtitleEl.style.opacity = '0';
-        return;
-      }
-      this.subtitleEl.textContent = text;
-      this.subtitleEl.style.opacity = '1';
-      if (this.subtitleTimer !== null) {
-        window.clearTimeout(this.subtitleTimer);
-        this.subtitleTimer = null;
-      }
-      this.subtitleTimer = window.setTimeout(() => {
-        this.subtitleEl.style.opacity = '0';
-        this.subtitleTimer = null;
-      }, 5000);
-    });
-
-    this.eventBus.on('save:updated', ({ save }) => {
-      this.updateSaveCard(save);
-    });
-
-    this.eventBus.on('save:cleared', () => {
-      this.updateSaveCard();
-    });
-
-    this.eventBus.on('input:object_hovered', ({ label }) => {
-      if (label) {
-        this.reticlePromptEl.textContent = label;
-        this.reticlePromptEl.style.opacity = '1';
-      } else {
-        this.reticlePromptEl.style.opacity = '0';
-      }
-    });
-
-    this.eventBus.on('ui:chapter_display', (payload) => {
-        this.displayChapterCard(payload.act, payload.title, payload.roomCode, payload.durationMs);
-    });
-
-    this.eventBus.on('telemetry:log', ({ level, message }) => {
-      if (this.telemetryEl) {
-        this.telemetryEl.textContent = `DIAGNOSTIC: ${message.slice(0, 40)}`;
-        if (level === 'error') {
-          this.telemetryEl.style.color = 'var(--color-crimson-wax)';
-        } else {
-          this.telemetryEl.style.color = 'var(--ink-muted)';
+    this.unsubscribers.push(
+      this.eventBus.on('ui:subtitle_changed', ({ text }) => {
+        if (!this.subtitlesEnabled) {
+          this.subtitleEl.style.opacity = '0';
+          return;
         }
-      }
-    });
+        this.subtitleEl.textContent = text;
+        this.subtitleEl.style.opacity = '1';
+        if (this.subtitleTimer !== null) {
+          window.clearTimeout(this.subtitleTimer);
+          this.subtitleTimer = null;
+        }
+        this.subtitleTimer = window.setTimeout(() => {
+          this.subtitleEl.style.opacity = '0';
+          this.subtitleTimer = null;
+        }, 5000);
+      }),
+
+      this.eventBus.on('save:updated', ({ save }) => {
+        this.updateSaveCard(save);
+      }),
+
+      this.eventBus.on('save:cleared', () => {
+        this.updateSaveCard();
+      }),
+
+      this.eventBus.on('input:object_hovered', ({ label }) => {
+        if (label) {
+          this.reticlePromptEl.textContent = label;
+          this.reticlePromptEl.style.opacity = '1';
+        } else {
+          this.reticlePromptEl.style.opacity = '0';
+        }
+      }),
+
+      this.eventBus.on('ui:chapter_display', (payload) => {
+        this.displayChapterCard(payload.act, payload.title, payload.roomCode, payload.durationMs);
+      }),
+
+      this.eventBus.on('telemetry:log', ({ level, message }) => {
+        if (this.telemetryEl) {
+          this.telemetryEl.textContent = `DIAGNOSTIC: ${message.slice(0, 40)}`;
+          if (level === 'error') {
+            this.telemetryEl.style.color = 'var(--color-crimson-wax)';
+          } else {
+            this.telemetryEl.style.color = 'var(--ink-muted)';
+          }
+        }
+      }),
+
+      this.eventBus.on('camera:move_to_hotspot', ({ hotspotId }) => {
+        this.setCameraHotspot(hotspotId);
+      }),
+
+      this.eventBus.on('scenario:switch_room', () => {
+        this.setCameraHotspot('overview');
+      })
+    );
 
     const btnFacilityMap = document.getElementById('btn-facility-map-toggle');
     btnFacilityMap?.addEventListener('click', () => {
       this.eventBus.emit('ui:open_facility_map', {});
+    });
+
+    this.btnCameraDisengage?.addEventListener('click', () => {
+      this.triggerCameraDisengage();
     });
 
     // Initial persistent chapter display
@@ -250,7 +292,7 @@ export class UIManager {
       }
     });
 
-    window.addEventListener('keydown', (e) => {
+    this.keydownHandler = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         let handled = false;
         if (!this.modalSettingsEl.classList.contains('hidden')) {
@@ -277,26 +319,25 @@ export class UIManager {
 
         const crtPatcherEl = document.getElementById('modal-crt-patcher');
         if (crtPatcherEl && !crtPatcherEl.classList.contains('hidden')) {
-          crtPatcherEl.classList.add('hidden');
-          this.eventBus.emit('ui:modal_closed', {});
+          CRTNodePatcher.getInstance().close();
           handled = true;
         }
 
         const facilityMapEl = document.getElementById('screen-facility-map');
         if (facilityMapEl && !facilityMapEl.classList.contains('hidden')) {
-          facilityMapEl.classList.add('hidden');
-          this.eventBus.emit('ui:modal_closed', {});
+          FacilityMapScreen.getInstance().close();
           handled = true;
         }
 
         if (handled) {
-          e.stopPropagation();
+          e.stopImmediatePropagation();
         } else {
           // If no modal was open, back out of cinematic views
-          this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview' });
+          this.triggerCameraDisengage();
         }
       }
-    });
+    };
+    window.addEventListener('keydown', this.keydownHandler);
 
     // Volume sliders
     this.settingVolume?.addEventListener('input', () => {
@@ -323,26 +364,63 @@ export class UIManager {
       this.eventBus.emit('settings:updated', { ambientVolume: vol });
     });
 
-    // Subtitles toggle
-    this.settingSubtitles?.addEventListener('change', () => {
-      this.subtitlesEnabled = this.settingSubtitles.checked;
-      if (!this.subtitlesEnabled) {
-        this.subtitleEl.style.opacity = '0';
-      }
-      this.eventBus.emit('settings:updated', { subtitlesEnabled: this.subtitlesEnabled });
-    });
+    // Subtitles are permanent clinical transcripts and cannot be disabled
+    this.subtitlesEnabled = true;
 
-    // Parallax & scanlines
+    // Parallax
     this.settingParallax?.addEventListener('change', () => {
       this.eventBus.emit('settings:updated', { mouseParallax: this.settingParallax.checked });
     });
 
-    this.settingScanlines?.addEventListener('change', () => {
-      const scanlines = document.querySelector('.crt-scanline-mesh') as HTMLElement;
-      if (scanlines) {
-        scanlines.style.display = this.settingScanlines.checked ? 'block' : 'none';
+    // Developer Mode Clearance Authentication
+    this.initDevClearance();
+
+    const handleAuthSubmit = () => {
+      const code = this.inputDevCode?.value.trim();
+      if (code === '333') {
+        this.setDevAuthorized(true, true);
+        if (this.devAuthFeedback) {
+          this.devAuthFeedback.textContent = '[CLEARANCE GRANTED: LEVEL 3 AUTHORIZED]';
+          this.devAuthFeedback.style.color = '#15803d';
+          this.devAuthFeedback.classList.remove('hidden');
+        }
+        AudioEngine.getInstance().playTumblerClick();
+      } else {
+        if (this.devAuthFeedback) {
+          this.devAuthFeedback.textContent = '[ACCESS DENIED: INVALID CLEARANCE CIPHER]';
+          this.devAuthFeedback.style.color = 'var(--color-crimson-wax)';
+          this.devAuthFeedback.classList.remove('hidden');
+        }
+        if (this.inputDevCode) {
+          this.inputDevCode.style.borderColor = 'var(--color-crimson-wax)';
+          setTimeout(() => {
+            if (this.inputDevCode) this.inputDevCode.style.borderColor = '';
+          }, 1500);
+        }
       }
-      this.eventBus.emit('settings:updated', { crtScanlines: this.settingScanlines.checked });
+    };
+
+    this.btnSubmitDevCode?.addEventListener('click', handleAuthSubmit);
+    this.inputDevCode?.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleAuthSubmit();
+      }
+    });
+
+    this.btnDevRelock?.addEventListener('click', () => {
+      this.setDevAuthorized(false, true);
+      if (this.devAuthFeedback) {
+        this.devAuthFeedback.textContent = '[CLEARANCE REVOKED: LOCKDOWN ENGAGED]';
+        this.devAuthFeedback.style.color = 'var(--ink-secondary)';
+        this.devAuthFeedback.classList.remove('hidden');
+      }
+      if (this.inputDevCode) this.inputDevCode.value = '';
+    });
+
+    this.btnDevToggleFromSettings?.addEventListener('click', () => {
+      closeSettings();
+      this.eventBus.emit('dev:toggle_gizmo', {});
     });
 
     // Re-center camera
@@ -419,4 +497,113 @@ export class UIManager {
     });
   }
 
+  public isDevAuthorized(): boolean {
+    return this.devAuthorized;
+  }
+
+  public setDevAuthorized(authorized: boolean, persist: boolean = true): void {
+    this.devAuthorized = authorized;
+    if (persist) {
+      try {
+        sessionStorage.setItem('vault_dev_authorized', authorized ? 'true' : 'false');
+      } catch {}
+    }
+
+    if (this.btnDev3dToggle) {
+      this.btnDev3dToggle.classList.toggle('hidden', !authorized);
+    }
+
+    if (this.devClearanceBadge) {
+      if (authorized) {
+        this.devClearanceBadge.textContent = 'LEVEL 3 // AUTHORIZED';
+        this.devClearanceBadge.style.color = '#15803d';
+        this.devClearanceBadge.style.borderColor = 'rgba(21, 128, 61, 0.4)';
+      } else {
+        this.devClearanceBadge.textContent = 'LEVEL 0 // LOCKED';
+        this.devClearanceBadge.style.color = 'var(--color-crimson-wax)';
+        this.devClearanceBadge.style.borderColor = 'rgba(139, 30, 35, 0.3)';
+      }
+    }
+
+    if (this.devAuthForm) {
+      this.devAuthForm.classList.toggle('hidden', authorized);
+    }
+    if (this.devUnlockedControls) {
+      this.devUnlockedControls.classList.toggle('hidden', !authorized);
+    }
+
+    this.eventBus.emit('dev:authorized', { authorized });
+  }
+
+  private initDevClearance(): void {
+    const params = new URLSearchParams(window.location.search);
+    const urlAuthorized = params.get('dev') === 'true' || params.get('editor') === 'true';
+    let sessionAuthorized = false;
+    try {
+      sessionAuthorized = sessionStorage.getItem('vault_dev_authorized') === 'true';
+    } catch {}
+
+    this.setDevAuthorized(urlAuthorized || sessionAuthorized, false);
+  }
+
+  private triggerCameraDisengage(): void {
+    if (this.btnCameraDisengage) {
+      this.btnCameraDisengage.classList.add('pressed');
+      window.setTimeout(() => {
+        this.btnCameraDisengage?.classList.remove('pressed');
+      }, 150);
+    }
+
+    try {
+      AudioEngine.getInstance().playTumblerClick();
+    } catch (err: unknown) {
+      void err;
+    }
+
+    this.eventBus.emit('camera:move_to_hotspot', { hotspotId: 'overview' });
+  }
+
+  private setCameraHotspot(hotspotId: string): void {
+    this.currentHotspotId = hotspotId;
+    if (!this.btnCameraDisengage) return;
+
+    if (hotspotId !== 'overview') {
+      this.btnCameraDisengage.classList.remove('hidden');
+      this.btnCameraDisengage.setAttribute('aria-hidden', 'false');
+      if (this.navDisengageTarget) {
+        const cleanName = hotspotId.toUpperCase().replace(/^DOOR_PORTAL_/, 'TO ');
+        this.navDisengageTarget.textContent = `// ${cleanName}`;
+      }
+    } else {
+      this.btnCameraDisengage.classList.add('hidden');
+      this.btnCameraDisengage.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  public getCurrentHotspot(): string {
+    return this.currentHotspotId;
+  }
+
+  public destroy(): void {
+    if (this.keydownHandler) {
+      window.removeEventListener('keydown', this.keydownHandler);
+      this.keydownHandler = null;
+    }
+    if (this.mousemoveHandler) {
+      window.removeEventListener('mousemove', this.mousemoveHandler);
+      this.mousemoveHandler = null;
+    }
+    for (const unsub of this.unsubscribers) {
+      unsub();
+    }
+    this.unsubscribers = [];
+    if (this.chapterFadeTimeout !== null) {
+      window.clearTimeout(this.chapterFadeTimeout);
+      this.chapterFadeTimeout = null;
+    }
+    if (this.subtitleTimer !== null) {
+      window.clearTimeout(this.subtitleTimer);
+      this.subtitleTimer = null;
+    }
+  }
 }

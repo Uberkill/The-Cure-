@@ -142,6 +142,8 @@ export interface EventPayloadMap {
   'editor:rebuild_visualizers': Record<string, never>;
   'editor:toggle_visualizers': { visible: boolean };
   'editor:selection_changed': { selected: THREE.Object3D[] };
+  'dev:authorized': { authorized: boolean };
+  'dev:toggle_gizmo': Record<string, never>;
 }
 
 export type EventKey = keyof EventPayloadMap;
