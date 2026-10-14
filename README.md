@@ -91,7 +91,6 @@ Detailed technical documents are available in the `docs/` directory:
 - [Master Story & Design Bible](docs/THE_CURE_DESIGN_BIBLE.md)
 - [Puzzle Design Bible](docs/DIEGETIC_PUZZLE_BIBLE.md)
 - [Psychological Framework](docs/PSYCHOLOGICAL_FRAMEWORK.md)
-- [Phased Implementation Plan](docs/PHASED_IMPLEMENTATION_PLAN.md)
 - [Technical Onboarding Guide](docs/ONBOARDING.md)
 - [Contributing & Code Style](CONTRIBUTING.md)
 

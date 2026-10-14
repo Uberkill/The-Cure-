@@ -14,8 +14,7 @@ const files = [
   'docs/ARCHITECTURE.md',
   'docs/DIEGETIC_PUZZLE_BIBLE.md',
   'docs/THE_CURE_DESIGN_BIBLE.md',
-  'docs/PSYCHOLOGICAL_FRAMEWORK.md',
-  'docs/PHASED_IMPLEMENTATION_PLAN.md'
+  'docs/PSYCHOLOGICAL_FRAMEWORK.md'
 ];
 
 let doc = '# THE CURE: MASTER DOCUMENTATION\n\n*This document is an automated compilation of all technical, architectural, and design documentation for The Cure: Sub-Level 04.*\n\n---\n\n';
