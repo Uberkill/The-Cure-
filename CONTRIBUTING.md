@@ -33,7 +33,7 @@ Code should be self-documenting through clear, intent-revealing identifier and f
 ## 2. Development Workflow
 
 ### Prerequisites
-- Node.js 18 or higher
+- Node.js 22 or higher
 - npm 9 or higher
 
 ### Local Setup

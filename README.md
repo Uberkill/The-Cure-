@@ -9,7 +9,7 @@ Built in TypeScript using Three.js, Vite, and the Web Audio API.
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18 or higher
+- Node.js 22 or higher
 - npm 9 or higher
 
 ### Installation
