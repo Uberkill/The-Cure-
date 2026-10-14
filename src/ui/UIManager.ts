@@ -350,7 +350,7 @@ export class UIManager {
         if (fps < 30) {
           this.telemetryEl.style.color = 'var(--color-crimson-wax)';
         } else if (fps < 50) {
-          this.telemetryEl.style.color = '#f59e0b';
+          this.telemetryEl.style.color = 'var(--color-crt-amber, #fbbf24)';
         } else {
           this.telemetryEl.style.color = 'var(--color-crt-phosphor, #4ade80)';
         }
@@ -363,7 +363,7 @@ export class UIManager {
       if (this.lastDiagnosticLevel === 'error') {
         this.telemetryEl.style.color = 'var(--color-crimson-wax)';
       } else if (this.lastDiagnosticLevel === 'warn') {
-        this.telemetryEl.style.color = '#f59e0b';
+        this.telemetryEl.style.color = 'var(--color-crt-amber, #fbbf24)';
       } else {
         this.telemetryEl.style.color = 'var(--ink-muted)';
       }

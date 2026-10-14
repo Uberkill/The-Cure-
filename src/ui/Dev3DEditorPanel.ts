@@ -7,6 +7,7 @@ import { EventBus } from '../core/EventBus';
 import { EditorVisualizers } from '../editor/EditorVisualizers';
 import { Telemetry } from '../core/Telemetry';
 import { LightRigManager } from '../rendering/LightRigManager';
+import './dev_telemetry.css';
 
 
 export class Dev3DEditorPanel {
@@ -71,36 +72,31 @@ export class Dev3DEditorPanel {
 
     const panel = document.createElement('div');
     panel.id = 'dev-3d-editor-panel';
-    panel.style.cssText = `
-      position: fixed; top: 80px; right: 80px; width: 460px; max-height: calc(100vh - 120px); overflow-y: auto;
-      background: rgba(16, 22, 18, 0.94); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 6px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55); font-family: 'JetBrains Mono', monospace;
-      font-size: 11px; color: #e2e6e0; padding: 16px; z-index: 10000; display: none; box-sizing: border-box; user-select: none;
-    `;
+    panel.style.display = 'none';
 
     panel.innerHTML = `
-      <div id="dev-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; cursor: grab;">
-        <div style="display: flex; align-items: center; gap: 8px;">
-          <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80;"></span>
-          <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">The Cure • Developer Telemetry</span>
+      <div id="dev-panel-header" class="dev-rack-header">
+        <div class="dev-rack-title-row">
+          <span class="telem-filament-pip"></span>
+          <span class="dev-rack-title">The Cure // Diagnostic Telemetry Unit 04</span>
         </div>
-        <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer; font-family: monospace; font-size: 11px;">[X]</button>
+        <button id="dev-btn-close" class="dev-rack-close-btn" title="Disengage Diagnostic Panel">[DISENGAGE]</button>
       </div>
-      <div style="margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-        <input type="checkbox" id="dev-chk-visualizers" checked style="accent-color: var(--color-crt-phosphor, #4ade80); cursor: pointer;">
-        <label for="dev-chk-visualizers" style="cursor: pointer;">Show Bounding Boxes</label>
+      <div class="dev-rack-subbar">
+        <input type="checkbox" id="dev-chk-visualizers" checked>
+        <label for="dev-chk-visualizers" style="cursor: pointer;">Bounding Volumes & Proxies</label>
       </div>
 
       <!-- TABS -->
-      <div style="display: flex; gap: 4px; margin-bottom: 12px; font-size: 11px;">
-        <button class="editor-tab active" data-tab="transforms" style="flex:1; padding: 4px; background: #3b4c42; border: 1px solid #5a7566; color: #fff; cursor: pointer; border-radius: 3px;">Trans</button>
-        <button class="editor-tab" data-tab="anim" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Anim</button>
-        <button class="editor-tab" data-tab="spawner" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Spawn</button>
-        <button class="editor-tab" data-tab="lore" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Lore</button>
-        <button class="editor-tab" data-tab="env" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Env</button>
-        <button class="editor-tab" data-tab="scenarios" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Scen</button>
-        <button class="editor-tab" data-tab="lights" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Lights</button>
-        <button class="editor-tab" data-tab="telemetry" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Telem</button>
+      <div class="dev-rack-tab-strip">
+        <button class="editor-tab active" data-tab="transforms">Trans</button>
+        <button class="editor-tab" data-tab="anim">Anim</button>
+        <button class="editor-tab" data-tab="spawner">Spawn</button>
+        <button class="editor-tab" data-tab="lore">Lore</button>
+        <button class="editor-tab" data-tab="env">Env</button>
+        <button class="editor-tab" data-tab="scenarios">Scen</button>
+        <button class="editor-tab" data-tab="lights">Lights</button>
+        <button class="editor-tab" data-tab="telemetry">Telem</button>
       </div>
 
       <!-- TAB CONTENT: TRANSFORMS -->
@@ -135,17 +131,17 @@ export class Dev3DEditorPanel {
             <label style="display: block; margin-bottom: 6px; color: #88928b;">Rotation (Degrees)</label>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">X</span>
-            <input type="range" id="dev-rot-x" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
+            <input type="range" id="dev-rot-x" min="-180" max="180" value="0" style="flex:1; accent-color: var(--color-crt-phosphor, #4ade80); margin: 0 8px;">
             <span id="dev-rot-x-val" style="width: 35px; text-align: right;">0°</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">Y</span>
-            <input type="range" id="dev-rot-y" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
+            <input type="range" id="dev-rot-y" min="-180" max="180" value="0" style="flex:1; accent-color: var(--color-crt-phosphor, #4ade80); margin: 0 8px;">
             <span id="dev-rot-y-val" style="width: 35px; text-align: right;">0°</span>
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
             <span style="width: 20px;">Z</span>
-            <input type="range" id="dev-rot-z" min="-180" max="180" value="0" style="flex:1; accent-color: #00ff88; margin: 0 8px;">
+            <input type="range" id="dev-rot-z" min="-180" max="180" value="0" style="flex:1; accent-color: var(--color-crt-phosphor, #4ade80); margin: 0 8px;">
             <span id="dev-rot-z-val" style="width: 35px; text-align: right;">0°</span>
           </div>
         </div>
@@ -153,7 +149,7 @@ export class Dev3DEditorPanel {
         <button id="dev-btn-export" style="width: 100%; padding: 8px; background: rgba(255,255,255,0.05); color: #bad2c8; border: 1px solid rgba(255,255,255,0.15); border-radius: 4px; cursor: pointer;">Export Clipboard</button>
         <button id="dev-btn-delete" style="width: 100%; padding: 8px; background: rgba(220,50,50,0.1); color: #ff8888; border: 1px solid rgba(220,50,50,0.3); border-radius: 4px; cursor: pointer; margin-top: 8px;">Delete Selected</button>
         <div style="display: flex; align-items: center; gap: 8px; margin-top: 8px;">
-          <input type="checkbox" id="dev-chk-snap" style="accent-color: #00ff88;">
+          <input type="checkbox" id="dev-chk-snap" style="accent-color: var(--color-crt-phosphor, #4ade80);">
           <label for="dev-chk-snap" style="font-size: 11px; color: #bad2c8; cursor: pointer;">Grid Snap (0.5m / 15°)</label>
         </div>
       </div>
@@ -208,42 +204,42 @@ export class Dev3DEditorPanel {
             <input type="number" id="dev-anim-duration" step="100" value="800" style="width:80px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
           </div>
           
-          <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; margin-bottom: 12px;">
-            <label style="display: block; margin-bottom: 6px; color: #00ff88; font-weight: bold;">Scrub Animation Time</label>
-            <input type="range" id="dev-anim-scrub" min="0" max="100" value="0" style="width:100%; accent-color: #00ff88;">
-            <div style="display: flex; justify-content: space-between; font-size: 9px; color: #88928b;">
+          <div style="border-top: 1px solid var(--telem-chassis-border-subtle); padding-top: 8px; margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 6px; color: var(--color-crt-phosphor, #4ade80); font-weight: bold;">Scrub Animation Time</label>
+            <input type="range" id="dev-anim-scrub" min="0" max="100" value="0" style="width:100%; accent-color: var(--color-crt-phosphor, #4ade80);">
+            <div style="display: flex; justify-content: space-between; font-size: 9px; color: var(--telem-text-muted);">
               <span>0% (Start)</span>
               <span>100% (End)</span>
             </div>
           </div>
           
-          <button id="dev-btn-anim-save" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer;">Save Animation to Server</button>
+          <button id="dev-btn-anim-save" class="dev-rack-btn dev-rack-btn-primary" style="width: 100%;">Save Animation to Server</button>
         </div>
       </div>
 
       <!-- TAB CONTENT: SPAWNER -->
       <div id="tab-spawner" class="editor-tab-content" style="display: none;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <label style="color: #88928b; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Prefab Component Library</label>
-          <span style="color: #64748b; font-size: 9px;">13 System Components</span>
+          <label class="dev-section-label">Prefab Component Library</label>
+          <span style="color: var(--telem-text-muted); font-size: 9px;">13 System Components</span>
         </div>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px;">
+        <div class="dev-spawner-grid">
           ${this.prefabCatalog.map(p => `
-            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between;">
+            <div class="dev-spawner-card">
               <div>
-                <div style="font-weight: 600; color: #bad2c8; font-size: 11px;">${p.name}</div>
-                <div style="color: #64748b; font-size: 9px; margin-top: 2px;">${p.dims}</div>
+                <div class="dev-spawner-card-name">${p.name}</div>
+                <div class="dev-spawner-card-dims">${p.dims}</div>
               </div>
-              <button class="dev-btn-spawn-card" data-prefab="${p.id}" style="margin-top: 6px; padding: 4px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; font-size: 10px; cursor: pointer; width: 100%;">+ SPAWN</button>
+              <button class="dev-btn-spawn-card" data-prefab="${p.id}">+ SPAWN</button>
             </div>
           `).join('')}
         </div>
 
-        <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px; margin-top: 8px;">
-          <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase;">Standard Spawner Dropdown</label>
+        <div style="border-top: 1px solid var(--telem-chassis-border-subtle); padding-top: 8px; margin-top: 8px;">
+          <label class="dev-section-label">Standard Spawner Dropdown</label>
           <div style="display: flex; gap: 6px;">
-            <select id="dev-prefab-select" style="flex: 1; padding: 6px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 3px;">
+            <select id="dev-prefab-select" class="dev-rack-select" style="flex: 1;">
               <optgroup label="Main Props">
                 <option value="BauhausDesk">Bauhaus Desk</option>
                 <option value="OfficeChair">Office Chair</option>
@@ -264,7 +260,7 @@ export class Dev3DEditorPanel {
                 <option value="Rug">Crimson Rug</option>
               </optgroup>
             </select>
-            <button id="dev-btn-spawn" style="padding: 6px 12px; background: #3b4c42; color: #fff; border: 1px solid #5a7566; border-radius: 3px; cursor: pointer;">Spawn</button>
+            <button id="dev-btn-spawn" class="dev-rack-btn dev-rack-btn-primary">Spawn</button>
           </div>
         </div>
       </div>
@@ -300,7 +296,7 @@ export class Dev3DEditorPanel {
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span>Density</span>
-            <input type="range" id="dev-env-fog-density" min="0" max="0.1" step="0.001" value="0.02" style="flex:1; margin-left:8px; accent-color: #00ff88;">
+            <input type="range" id="dev-env-fog-density" min="0" max="0.1" step="0.001" value="0.02" style="flex:1; margin-left:8px; accent-color: var(--color-crt-phosphor, #4ade80);">
           </div>
         </div>
         
@@ -312,7 +308,7 @@ export class Dev3DEditorPanel {
           </div>
           <div style="display: flex; justify-content: space-between; align-items: center;">
             <span>Intensity</span>
-            <input type="range" id="dev-env-amb-intensity" min="0" max="2" step="0.5" value="0.5" style="flex:1; margin-left:8px; accent-color: #00ff88;">
+            <input type="range" id="dev-env-amb-intensity" min="0" max="2" step="0.5" value="0.5" style="flex:1; margin-left:8px; accent-color: var(--color-crt-phosphor, #4ade80);">
           </div>
         </div>
         <button id="dev-btn-env-save" style="width: 100%; padding: 6px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; cursor: pointer;">Apply & Save Environment</button>
@@ -337,102 +333,104 @@ export class Dev3DEditorPanel {
       </div>
 
       <!-- TAB CONTENT: TELEMETRY -->
-      <div id="tab-telemetry" class="editor-tab-content" style="display: none; font-family: monospace; font-size: 11px;">
-        <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Engine Telemetry & GPU Budgets</label>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px;">
-          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
-            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Framerate</div>
-            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
-              <span id="dev-telem-fps" style="color: #4ade80; font-size: 16px; font-weight: bold;">0</span>
-              <span style="color: #64748b; font-size: 9px;">FPS</span>
+      <div id="tab-telemetry" class="editor-tab-content" style="display: none;">
+        <label class="dev-section-label">Engine Telemetry & Hardware Budgets</label>
+        <div class="telem-cathode-grid">
+          <div class="telem-cathode-well">
+            <div class="telem-cathode-label">Framerate</div>
+            <div class="telem-cathode-val-row">
+              <span id="dev-telem-fps" class="telem-val-green">0</span>
+              <span class="telem-unit">FPS</span>
             </div>
-            <div id="dev-telem-fps-badge" style="font-size: 9px; color: #4ade80; margin-top: 2px;">TARGET: 60 FPS</div>
+            <div id="dev-telem-fps-badge" class="telem-status-badge badge-nominal">TARGET: 60 FPS</div>
           </div>
-          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
-            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Frame Delta</div>
-            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
-              <span id="dev-telem-delta" style="color: #60a5fa; font-size: 16px; font-weight: bold;">0.0</span>
-              <span style="color: #64748b; font-size: 9px;">ms</span>
+          <div class="telem-cathode-well">
+            <div class="telem-cathode-label">Frame Delta</div>
+            <div class="telem-cathode-val-row">
+              <span id="dev-telem-delta" class="telem-val-amber">0.0</span>
+              <span class="telem-unit">ms</span>
             </div>
-            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">BUDGET: 16.6ms</div>
+            <div class="telem-status-badge badge-nominal">BUDGET: 16.6ms</div>
           </div>
-          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
-            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Draw Calls</div>
-            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
-              <span id="dev-telem-draws" style="color: #fbbf24; font-size: 16px; font-weight: bold;">0</span>
-              <span style="color: #64748b; font-size: 9px;">/ 60</span>
+          <div class="telem-cathode-well">
+            <div class="telem-cathode-label">Draw Calls</div>
+            <div class="telem-cathode-val-row">
+              <span id="dev-telem-draws" class="telem-val-amber">0</span>
+              <span class="telem-unit">/ 60</span>
             </div>
-            <div id="dev-telem-draws-status" style="font-size: 9px; color: #4ade80; margin-top: 2px;">BUDGET OK</div>
+            <div id="dev-telem-draws-status" class="telem-status-badge badge-nominal">BUDGET OK</div>
           </div>
-          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
-            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Triangles</div>
-            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
-              <span id="dev-telem-tris" style="color: #a78bfa; font-size: 15px; font-weight: bold;">0</span>
+          <div class="telem-cathode-well">
+            <div class="telem-cathode-label">Triangles</div>
+            <div class="telem-cathode-val-row">
+              <span id="dev-telem-tris" class="telem-val-green">0</span>
             </div>
-            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">BUDGET: 120k</div>
+            <div class="telem-status-badge badge-nominal">BUDGET: 120k</div>
           </div>
-          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
-            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Geometries</div>
-            <div id="dev-telem-geom" style="color: #38bdf8; font-size: 15px; font-weight: bold; margin-top: 2px;">0</div>
-            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">ACTIVE BUFFERS</div>
-          </div>
-          <div style="background: rgba(0,0,0,0.3); padding: 6px; border: 1px solid rgba(255,255,255,0.08); border-radius: 3px;">
-            <div style="color: #88928b; font-size: 9px; text-transform: uppercase;">Textures / Shd</div>
-            <div style="display: flex; align-items: baseline; gap: 4px; margin-top: 2px;">
-              <span id="dev-telem-tex" style="color: #f472b6; font-size: 15px; font-weight: bold;">0</span>
-              <span style="color: #64748b; font-size: 9px;">/</span>
-              <span id="dev-telem-prog" style="color: #e2e6e0; font-size: 13px;">0</span>
+          <div class="telem-cathode-well">
+            <div class="telem-cathode-label">Geometries</div>
+            <div class="telem-cathode-val-row">
+              <span id="dev-telem-geom" class="telem-val-green">0</span>
             </div>
-            <div style="font-size: 9px; color: #64748b; margin-top: 2px;">GPU ALLOCATED</div>
+            <div class="telem-status-badge badge-nominal">ACTIVE BUFFERS</div>
+          </div>
+          <div class="telem-cathode-well">
+            <div class="telem-cathode-label">Textures / Shd</div>
+            <div class="telem-cathode-val-row">
+              <span id="dev-telem-tex" class="telem-val-amber">0</span>
+              <span class="telem-unit">/</span>
+              <span id="dev-telem-prog" class="telem-val-green" style="font-size: 13px;">0</span>
+            </div>
+            <div class="telem-status-badge badge-nominal">GPU ALLOCATED</div>
           </div>
         </div>
 
         <!-- SELECTED OBJECT SPATIAL TELEMETRY -->
-        <div id="dev-telem-spatial-card" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 8px; margin-bottom: 10px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;">
-            <span style="font-weight: 600; color: #bad2c8; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px;">Active Spatial Matrix</span>
-            <span id="dev-spatial-name" style="color: #4ade80; font-size: 10px;">[No Selection]</span>
+        <div id="dev-telem-spatial-card" class="telem-matrix-card">
+          <div class="telem-matrix-header">
+            <span class="telem-matrix-title">Active Spatial Matrix</span>
+            <span id="dev-spatial-name" class="telem-matrix-name">[No Selection]</span>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px; font-size: 10px;">
+          <div class="telem-matrix-grid">
             <div>
-              <div style="color: #88928b;">BOUNDS (WxHxD)</div>
-              <div id="dev-spatial-bounds" style="color: #fbbf24; margin-top: 2px;">--</div>
+              <div class="telem-matrix-cell-label">BOUNDS (WxHxD)</div>
+              <div id="dev-spatial-bounds" class="telem-matrix-cell-val" style="color: var(--telem-amber);">--</div>
             </div>
             <div>
-              <div style="color: #88928b;">WORLD POS</div>
-              <div id="dev-spatial-pos" style="color: #60a5fa; margin-top: 2px;">--</div>
+              <div class="telem-matrix-cell-label">WORLD POS</div>
+              <div id="dev-spatial-pos" class="telem-matrix-cell-val" style="color: var(--telem-p1-green);">--</div>
             </div>
             <div>
-              <div style="color: #88928b;">PIVOT OFFSET</div>
-              <div id="dev-spatial-pivot" style="color: #a78bfa; margin-top: 2px;">--</div>
+              <div class="telem-matrix-cell-label">PIVOT OFFSET</div>
+              <div id="dev-spatial-pivot" class="telem-matrix-cell-val" style="color: var(--telem-amber);">--</div>
             </div>
             <div>
-              <div style="color: #88928b;">GROUND STATUS</div>
-              <div id="dev-spatial-ground" style="color: #e2e6e0; margin-top: 2px;">--</div>
+              <div class="telem-matrix-cell-label">GROUND STATUS</div>
+              <div id="dev-spatial-ground" class="telem-matrix-cell-val" style="color: var(--telem-text-main);">--</div>
             </div>
           </div>
-          <div style="display: flex; gap: 4px; margin-top: 8px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
-            <button id="dev-btn-snap-floor" style="flex: 1; padding: 4px; background: rgba(74, 222, 128, 0.15); border: 1px solid #4ade80; color: #4ade80; border-radius: 3px; font-size: 10px; cursor: pointer;">SNAP FLOOR (Y=0)</button>
-            <button id="dev-btn-reset-rot" style="flex: 1; padding: 4px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bad2c8; border-radius: 3px; font-size: 10px; cursor: pointer;">RESET ROTATION</button>
-            <button id="dev-btn-duplicate" style="flex: 1; padding: 4px; background: rgba(96, 165, 250, 0.15); border: 1px solid #60a5fa; color: #93c5fd; border-radius: 3px; font-size: 10px; cursor: pointer;">DUPLICATE</button>
+          <div class="telem-matrix-actions">
+            <button id="dev-btn-snap-floor" class="telem-matrix-btn telem-matrix-btn-green">SNAP FLOOR (Y=0)</button>
+            <button id="dev-btn-reset-rot" class="telem-matrix-btn telem-matrix-btn-neutral">RESET ROTATION</button>
+            <button id="dev-btn-duplicate" class="telem-matrix-btn telem-matrix-btn-amber">DUPLICATE</button>
           </div>
         </div>
 
         <!-- RECENT LOGS / OPERATIONAL CONSOLE -->
-        <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 8px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-            <div style="display: flex; gap: 3px;">
-              <button class="dev-log-filter active" data-filter="all" style="padding: 2px 6px; background: #3b4c42; border: 1px solid #5a7566; color: #fff; border-radius: 2px; font-size: 9px; cursor: pointer;">ALL</button>
-              <button class="dev-log-filter" data-filter="error" style="padding: 2px 6px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #ef4444; border-radius: 2px; font-size: 9px; cursor: pointer;">ERR</button>
-              <button class="dev-log-filter" data-filter="warn" style="padding: 2px 6px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #fbbf24; border-radius: 2px; font-size: 9px; cursor: pointer;">WRN</button>
-              <button class="dev-log-filter" data-filter="info" style="padding: 2px 6px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #38bdf8; border-radius: 2px; font-size: 9px; cursor: pointer;">INF</button>
+        <div class="telem-log-housing">
+          <div class="telem-log-toolbar">
+            <div class="telem-log-filters">
+              <button class="dev-log-filter active" data-filter="all">ALL</button>
+              <button class="dev-log-filter" data-filter="error">ERR</button>
+              <button class="dev-log-filter" data-filter="warn">WRN</button>
+              <button class="dev-log-filter" data-filter="info">INF</button>
             </div>
-            <div style="display: flex; gap: 4px;">
-              <button id="dev-btn-log-copy" style="padding: 2px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bad2c8; border-radius: 2px; font-size: 9px; cursor: pointer;">COPY</button>
-              <button id="dev-btn-log-clear" style="padding: 2px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #88928b; border-radius: 2px; font-size: 9px; cursor: pointer;">CLEAR</button>
+            <div class="telem-log-actions">
+              <button id="dev-btn-log-copy" class="telem-log-action-btn">COPY</button>
+              <button id="dev-btn-log-clear" class="telem-log-action-btn">CLEAR</button>
             </div>
           </div>
-          <div id="dev-telem-logs" style="width: 100%; height: 130px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 2px; padding: 6px; font-size: 10px; font-family: monospace; overflow-y: auto; white-space: pre-wrap; word-break: break-all; box-sizing: border-box; line-height: 1.4;"></div>
+          <div id="dev-telem-logs"></div>
         </div>
       </div>
 
@@ -512,10 +510,10 @@ export class Dev3DEditorPanel {
 
         <div style="display: flex; flex-direction: column; gap: 6px;">
           <div style="display: flex; gap: 4px;">
-            <button id="dev-btn-light-gizmo" style="flex: 1; padding: 6px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; font-size: 10px; cursor: pointer;">ATTACH GIZMO</button>
-            <button id="dev-btn-light-helper" style="flex: 1; padding: 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bad2c8; border-radius: 3px; font-size: 10px; cursor: pointer;">TOGGLE HELPER</button>
+            <button id="dev-btn-light-gizmo" class="dev-rack-btn dev-rack-btn-primary" style="flex: 1;">ATTACH GIZMO</button>
+            <button id="dev-btn-light-helper" class="dev-rack-btn dev-rack-btn-secondary" style="flex: 1;">TOGGLE HELPER</button>
           </div>
-          <button id="dev-btn-light-copy-json" style="width: 100%; padding: 6px; background: rgba(96, 165, 250, 0.15); border: 1px solid #60a5fa; color: #93c5fd; border-radius: 3px; font-size: 10px; cursor: pointer;">COPY CONFIG (JSON)</button>
+          <button id="dev-btn-light-copy-json" class="dev-rack-btn dev-rack-btn-secondary" style="width: 100%;">COPY CONFIG (JSON)</button>
         </div>
       </div>
     `;
@@ -619,12 +617,12 @@ export class Dev3DEditorPanel {
     document.querySelectorAll('.editor-tab').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.editor-tab').forEach(b => {
-          (b as HTMLElement).style.background = 'transparent';
-          (b as HTMLElement).style.color = '#88928b';
+          b.classList.remove('active');
+          (b as HTMLElement).style.background = '';
+          (b as HTMLElement).style.color = '';
         });
         const target = e.currentTarget as HTMLElement;
-        target.style.background = '#3b4c42';
-        target.style.color = '#fff';
+        target.classList.add('active');
         
         document.querySelectorAll('.editor-tab-content').forEach(c => (c as HTMLElement).style.display = 'none');
         document.getElementById(`tab-${target.dataset.tab}`)!.style.display = 'block';
@@ -1411,12 +1409,12 @@ export class Dev3DEditorPanel {
       const fpsEl = document.getElementById('dev-telem-fps');
       if (fpsEl) {
         fpsEl.textContent = fps.toString();
-        fpsEl.style.color = fps >= 55 ? '#4ade80' : fps >= 30 ? '#fbbf24' : '#ef4444';
+        fpsEl.style.color = fps >= 55 ? 'var(--telem-p1-green, #4ade80)' : fps >= 30 ? 'var(--telem-amber, #fbbf24)' : 'var(--telem-alert-red, #ef4444)';
       }
       const fpsBadge = document.getElementById('dev-telem-fps-badge');
       if (fpsBadge) {
         fpsBadge.textContent = fps >= 55 ? 'TARGET: 60 FPS' : fps >= 30 ? 'DEGRADED: 30-54 FPS' : 'CRITICAL: <30 FPS';
-        fpsBadge.style.color = fps >= 55 ? '#4ade80' : fps >= 30 ? '#fbbf24' : '#ef4444';
+        fpsBadge.style.color = fps >= 55 ? 'var(--telem-p1-green, #4ade80)' : fps >= 30 ? 'var(--telem-amber, #fbbf24)' : 'var(--telem-alert-red, #ef4444)';
       }
 
       const deltaEl = document.getElementById('dev-telem-delta');
@@ -1425,18 +1423,18 @@ export class Dev3DEditorPanel {
       const drawsEl = document.getElementById('dev-telem-draws');
       if (drawsEl) {
         drawsEl.textContent = draws.toString();
-        drawsEl.style.color = draws <= 60 ? '#fbbf24' : '#ef4444';
+        drawsEl.style.color = draws <= 60 ? 'var(--telem-amber, #fbbf24)' : 'var(--telem-alert-red, #ef4444)';
       }
       const drawsStatus = document.getElementById('dev-telem-draws-status');
       if (drawsStatus) {
         drawsStatus.textContent = draws <= 60 ? 'BUDGET OK' : 'OVER BUDGET';
-        drawsStatus.style.color = draws <= 60 ? '#4ade80' : '#ef4444';
+        drawsStatus.style.color = draws <= 60 ? 'var(--telem-p1-green, #4ade80)' : 'var(--telem-alert-red, #ef4444)';
       }
 
       const trisEl = document.getElementById('dev-telem-tris');
       if (trisEl) {
         trisEl.textContent = `${(tris / 1000).toFixed(1)}k`;
-        trisEl.style.color = tris <= 120000 ? '#a78bfa' : '#ef4444';
+        trisEl.style.color = tris <= 120000 ? 'var(--telem-p1-green, #4ade80)' : 'var(--telem-alert-red, #ef4444)';
       }
 
       const geomEl = document.getElementById('dev-telem-geom');
@@ -1463,10 +1461,10 @@ export class Dev3DEditorPanel {
     });
     const recent = filtered.slice(-15);
     if (recent.length === 0) {
-      logsEl.innerHTML = '<div style="color: #64748b; font-style: italic;">No log records matching filter.</div>';
+      logsEl.innerHTML = '<div style="color: var(--telem-text-muted, #6f7d75); font-style: italic;">No log records matching filter.</div>';
     } else {
       logsEl.innerHTML = recent.map(r => {
-        const color = r.level === 'error' ? '#f87171' : r.level === 'warn' ? '#fbbf24' : '#38bdf8';
+        const color = r.level === 'error' ? 'var(--telem-alert-red, #ef4444)' : r.level === 'warn' ? 'var(--telem-amber, #fbbf24)' : 'var(--telem-p1-green, #4ade80)';
         const time = new Date(r.timestamp).toLocaleTimeString();
         const tag = r.level.toUpperCase();
         return `<div style="color: ${color}; margin-bottom: 2px;">[${time}] ${tag}: ${r.message}${r.context ? ` (${r.context})` : ''}</div>`;
@@ -1577,11 +1575,11 @@ export class Dev3DEditorPanel {
       if (groundEl) {
         const minY = worldBox.min.y;
         if (Math.abs(minY) < 0.02) {
-          groundEl.innerHTML = `<span style="color: #4ade80;">ON FLOOR (0.00m)</span>`;
+          groundEl.innerHTML = `<span style="color: var(--telem-p1-green, #4ade80);">ON FLOOR (0.00m)</span>`;
         } else if (minY < 0) {
-          groundEl.innerHTML = `<span style="color: #f87171;">BELOW FLOOR (${minY.toFixed(2)}m)</span>`;
+          groundEl.innerHTML = `<span style="color: var(--telem-alert-red, #ef4444);">BELOW FLOOR (${minY.toFixed(2)}m)</span>`;
         } else {
-          groundEl.innerHTML = `<span style="color: #fbbf24;">ABOVE FLOOR (+${minY.toFixed(2)}m)</span>`;
+          groundEl.innerHTML = `<span style="color: var(--telem-amber, #fbbf24);">ABOVE FLOOR (+${minY.toFixed(2)}m)</span>`;
         }
       }
     } else {

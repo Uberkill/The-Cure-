@@ -184,7 +184,7 @@ export class EditorVisualizers {
         canvas.height = 64;
         const ctx = canvas.getContext('2d');
         if (ctx) {
-          ctx.fillStyle = '#00ff88';
+          ctx.fillStyle = '#4ade80';
           ctx.font = 'bold 24px monospace';
           ctx.textAlign = 'center';
           ctx.fillText(child.name, 128, 40);

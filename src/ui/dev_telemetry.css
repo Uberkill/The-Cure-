@@ -1,0 +1,634 @@
+/* ==========================================================================
+   THE CURE: SUB-LEVEL 04 - DEVELOPER TELEMETRY & DIAGNOSTIC CONSOLE
+   Aesthetic: 1970s Tektronix / Hewlett-Packard Laboratory Rack Instrument
+   Dual-Phosphor: P1 CRT Phosphor (#4ADE80) + CRT Amber (#FBBF24)
+   ========================================================================== */
+
+:root {
+  --telem-chassis-bg: rgba(18, 22, 20, 0.96);
+  --telem-chassis-border: #323d37;
+  --telem-chassis-border-subtle: #242c28;
+  --telem-crt-well: #080c0a;
+  --telem-crt-well-border: #1a221e;
+  --telem-p1-green: #4ade80;
+  --telem-amber: #fbbf24;
+  --telem-alert-red: #b8282e;
+  --telem-text-main: #dce2de;
+  --telem-text-muted: #6f7d75;
+  --telem-tab-idle: #161c19;
+  --telem-tab-idle-border: #2a332e;
+  --telem-tab-active: #293830;
+  --telem-tab-active-border: #44594c;
+}
+
+/* --- Diagnostic Rack Cabinet Housing --- */
+#dev-3d-editor-panel {
+  position: fixed;
+  top: 80px;
+  right: 80px;
+  width: 480px;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  background: var(--telem-chassis-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 2px solid var(--telem-chassis-border);
+  border-radius: 4px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--telem-text-main);
+  padding: 16px;
+  z-index: 10000;
+  display: none;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+/* Custom Chassis Scrollbar */
+#dev-3d-editor-panel::-webkit-scrollbar {
+  width: 6px;
+}
+#dev-3d-editor-panel::-webkit-scrollbar-track {
+  background: var(--telem-crt-well);
+}
+#dev-3d-editor-panel::-webkit-scrollbar-thumb {
+  background: var(--telem-chassis-border);
+  border-radius: 2px;
+}
+
+/* --- Panel Header & Knurled Escutcheon --- */
+.dev-rack-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--telem-chassis-border);
+  padding-bottom: 8px;
+  cursor: grab;
+}
+
+.dev-rack-header:active {
+  cursor: grabbing;
+}
+
+.dev-rack-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.telem-filament-pip {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--telem-amber);
+  box-shadow: 0 0 6px rgba(251, 191, 36, 0.8);
+  animation: filament-pulse 3s infinite ease-in-out;
+}
+
+@keyframes filament-pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 0.55; }
+}
+
+.dev-rack-title {
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  color: var(--telem-text-main);
+  text-transform: uppercase;
+  font-size: 10.5px;
+}
+
+.dev-rack-close-btn {
+  background: transparent;
+  border: 1px solid var(--telem-tab-idle-border);
+  color: var(--telem-text-muted);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 2px 6px;
+  border-radius: 2px;
+  transition: all 0.15s ease;
+}
+
+.dev-rack-close-btn:hover {
+  background: rgba(184, 40, 46, 0.2);
+  border-color: var(--telem-alert-red);
+  color: #ff8888;
+}
+
+/* --- Quick Options Bar --- */
+.dev-rack-subbar {
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--telem-text-muted);
+}
+
+.dev-rack-subbar input[type="checkbox"] {
+  accent-color: var(--telem-p1-green);
+  cursor: pointer;
+}
+
+/* --- Industrial Push Tab Strip --- */
+.dev-rack-tab-strip {
+  display: flex;
+  gap: 3px;
+  margin-bottom: 14px;
+  font-size: 11px;
+}
+
+.editor-tab {
+  flex: 1;
+  padding: 5px 2px;
+  background: var(--telem-tab-idle);
+  border: 1px solid var(--telem-tab-idle-border);
+  color: var(--telem-text-muted);
+  cursor: pointer;
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+}
+
+.editor-tab:hover {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--telem-text-main);
+  border-color: var(--telem-chassis-border);
+}
+
+.editor-tab.active {
+  background: var(--telem-tab-active) !important;
+  border-color: var(--telem-tab-active-border) !important;
+  color: #ffffff !important;
+  box-shadow: inset 0 1px 0 rgba(74, 222, 128, 0.3);
+}
+
+/* --- Common Rack Controls & Labels --- */
+.dev-section-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--telem-text-muted);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dev-rack-input,
+.dev-rack-select {
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--telem-chassis-border-subtle);
+  color: #ffffff;
+  padding: 4px 6px;
+  border-radius: 2px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  box-sizing: border-box;
+}
+
+.dev-rack-input:focus,
+.dev-rack-select:focus {
+  outline: none;
+  border-color: var(--telem-p1-green);
+}
+
+.dev-rack-btn {
+  padding: 6px 10px;
+  border-radius: 3px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+
+.dev-rack-btn-primary {
+  background: #24352b;
+  color: #a3e6be;
+  border: 1px solid #3c5e4b;
+}
+
+.dev-rack-btn-primary:hover {
+  background: #2f4538;
+  border-color: var(--telem-p1-green);
+  color: #ffffff;
+}
+
+.dev-rack-btn-secondary {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--telem-text-main);
+  border: 1px solid var(--telem-chassis-border);
+}
+
+.dev-rack-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #55635b;
+}
+
+.dev-rack-btn-danger {
+  background: rgba(184, 40, 46, 0.15);
+  color: #ff9494;
+  border: 1px solid rgba(184, 40, 46, 0.35);
+}
+
+.dev-rack-btn-danger:hover {
+  background: rgba(184, 40, 46, 0.28);
+  border-color: var(--telem-alert-red);
+  color: #ffffff;
+}
+
+/* Sliders */
+#dev-3d-editor-panel input[type="range"] {
+  accent-color: var(--telem-p1-green);
+  cursor: pointer;
+}
+
+/* --- Dual-Phosphor Cathode Telemetry Cluster --- */
+.telem-cathode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.telem-cathode-well {
+  background: var(--telem-crt-well);
+  border: 1px solid var(--telem-crt-well-border);
+  border-radius: 3px;
+  padding: 7px 8px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.65);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Cathode Well Phosphor Glow Line */
+.telem-cathode-well::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(74, 222, 128, 0.15), transparent);
+  pointer-events: none;
+}
+
+.telem-cathode-label {
+  color: var(--telem-text-muted);
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+
+.telem-cathode-val-row {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.telem-val-green {
+  color: var(--telem-p1-green);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(74, 222, 128, 0.35);
+}
+
+.telem-val-amber {
+  color: var(--telem-amber);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 0 8px rgba(251, 191, 36, 0.35);
+}
+
+.telem-val-alert {
+  color: var(--telem-alert-red) !important;
+  text-shadow: 0 0 8px rgba(184, 40, 46, 0.45) !important;
+}
+
+.telem-unit {
+  color: var(--telem-text-muted);
+  font-size: 8.5px;
+  font-weight: 500;
+}
+
+.telem-status-badge {
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+  line-height: 1;
+}
+
+.badge-nominal {
+  color: var(--telem-p1-green);
+}
+
+.badge-warning {
+  color: var(--telem-amber);
+}
+
+.badge-critical {
+  color: var(--telem-alert-red);
+}
+
+/* --- Active Spatial Matrix Card --- */
+.telem-matrix-card {
+  background: var(--telem-crt-well);
+  border: 1px solid var(--telem-chassis-border);
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 12px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.telem-matrix-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--telem-chassis-border-subtle);
+  padding-bottom: 5px;
+}
+
+.telem-matrix-title {
+  font-weight: 600;
+  color: var(--telem-text-main);
+  text-transform: uppercase;
+  font-size: 9.5px;
+  letter-spacing: 0.08em;
+}
+
+.telem-matrix-name {
+  color: var(--telem-p1-green);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.telem-matrix-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  font-size: 10px;
+}
+
+.telem-matrix-cell-label {
+  color: var(--telem-text-muted);
+  font-size: 8.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.telem-matrix-cell-val {
+  margin-top: 2px;
+  font-weight: 600;
+}
+
+.telem-matrix-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+  border-top: 1px solid var(--telem-chassis-border-subtle);
+  padding-top: 7px;
+}
+
+.telem-matrix-btn {
+  flex: 1;
+  padding: 4px 6px;
+  border-radius: 2px;
+  font-size: 9.5px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s ease;
+}
+
+.telem-matrix-btn-green {
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  color: var(--telem-p1-green);
+}
+.telem-matrix-btn-green:hover {
+  background: rgba(74, 222, 128, 0.22);
+  border-color: var(--telem-p1-green);
+  color: #ffffff;
+}
+
+.telem-matrix-btn-amber {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: var(--telem-amber);
+}
+.telem-matrix-btn-amber:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: var(--telem-amber);
+  color: #ffffff;
+}
+
+.telem-matrix-btn-neutral {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--telem-chassis-border);
+  color: var(--telem-text-main);
+}
+.telem-matrix-btn-neutral:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: #55635b;
+}
+
+/* --- Diagnostic Log Console --- */
+.telem-log-housing {
+  background: var(--telem-crt-well);
+  border: 1px solid var(--telem-chassis-border);
+  border-radius: 3px;
+  padding: 8px 10px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.telem-log-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.telem-log-filters {
+  display: flex;
+  gap: 3px;
+}
+
+.dev-log-filter {
+  padding: 2px 7px;
+  background: var(--telem-tab-idle);
+  border: 1px solid var(--telem-tab-idle-border);
+  color: var(--telem-text-muted);
+  border-radius: 2px;
+  font-size: 8.5px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s ease;
+}
+
+.dev-log-filter:hover {
+  color: var(--telem-text-main);
+  border-color: var(--telem-chassis-border);
+}
+
+.dev-log-filter.active {
+  background: var(--telem-tab-active) !important;
+  border-color: var(--telem-tab-active-border) !important;
+  color: #ffffff !important;
+}
+
+.dev-log-filter[data-filter="error"].active {
+  border-color: var(--telem-alert-red) !important;
+  color: #ff9494 !important;
+}
+
+.dev-log-filter[data-filter="warn"].active {
+  border-color: var(--telem-amber) !important;
+  color: var(--telem-amber) !important;
+}
+
+.dev-log-filter[data-filter="info"].active {
+  border-color: var(--telem-p1-green) !important;
+  color: var(--telem-p1-green) !important;
+}
+
+.telem-log-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.telem-log-action-btn {
+  padding: 2px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--telem-chassis-border-subtle);
+  color: var(--telem-text-muted);
+  border-radius: 2px;
+  font-size: 8.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s ease;
+}
+
+.telem-log-action-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--telem-text-main);
+  border-color: var(--telem-chassis-border);
+}
+
+#dev-telem-logs {
+  width: 100%;
+  height: 130px;
+  background: #050806;
+  border: 1px solid var(--telem-crt-well-border);
+  border-radius: 2px;
+  padding: 6px 8px;
+  font-size: 9.5px;
+  font-family: 'JetBrains Mono', monospace;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  box-sizing: border-box;
+  line-height: 1.45;
+  color: var(--telem-text-main);
+  background-image: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+  background-size: 100% 4px;
+}
+
+#dev-telem-logs::-webkit-scrollbar {
+  width: 4px;
+}
+#dev-telem-logs::-webkit-scrollbar-track {
+  background: #050806;
+}
+#dev-telem-logs::-webkit-scrollbar-thumb {
+  background: var(--telem-chassis-border);
+}
+
+/* Prefab Spawner Cards in Spawner Tab */
+.dev-spawner-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.dev-spawner-card {
+  background: var(--telem-crt-well);
+  border: 1px solid var(--telem-crt-well-border);
+  border-radius: 3px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.dev-spawner-card-name {
+  font-weight: 600;
+  color: var(--telem-text-main);
+  font-size: 10.5px;
+}
+
+.dev-spawner-card-dims {
+  color: var(--telem-text-muted);
+  font-size: 8.5px;
+  margin-top: 2px;
+}
+
+.dev-btn-spawn-card {
+  margin-top: 6px;
+  padding: 4px;
+  background: #24352b;
+  color: #a3e6be;
+  border: 1px solid #3c5e4b;
+  border-radius: 2px;
+  font-size: 9.5px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  font-family: 'JetBrains Mono', monospace;
+  transition: all 0.15s ease;
+}
+
+.dev-btn-spawn-card:hover {
+  background: #2f4538;
+  border-color: var(--telem-p1-green);
+  color: #ffffff;
+}
+
+/* Mobile & Narrow Viewport Adaptation */
+@media (max-width: 580px) {
+  #dev-3d-editor-panel {
+    top: 70px;
+    right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100vh - 90px);
+    padding: 12px;
+  }
+
+  .telem-cathode-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dev-spawner-grid {
+    grid-template-columns: 1fr;
+  }
+}
