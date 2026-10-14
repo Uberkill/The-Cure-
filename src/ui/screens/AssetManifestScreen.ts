@@ -134,7 +134,7 @@ export const CRYSTAL_ORDER: CrystalId[] = [
 ];
 
 export interface AssetManifestState {
-  activeTray: 'hardware' | 'crystals' | 'records';
+  activeTray: 'all' | 'hardware' | 'crystals' | 'records';
   selectedItemId: string | null;
 }
 
@@ -142,11 +142,12 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
   private static instance: AssetManifestScreen | null = null;
   public readonly id = 'asset_manifest';
 
-  private activeTray: 'hardware' | 'crystals' | 'records' = 'hardware';
+  private activeTray: 'all' | 'hardware' | 'crystals' | 'records' = 'all';
   private selectedItemId: string | null = null;
 
   // DOM Elements
   private tabButtons: Map<string, HTMLButtonElement> = new Map();
+  private countBadgeAll: HTMLElement | null = null;
   private countBadgeHardware: HTMLElement | null = null;
   private countBadgeCrystals: HTMLElement | null = null;
   private countBadgeRecords: HTMLElement | null = null;
@@ -180,6 +181,18 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
   }
 
   private setupEventSubscriptions(): void {
+    const unsubInvAdd = this.eventBus.on('inventory:add', ({ itemId }) => {
+      if (itemId) {
+        this.selectedItemId = itemId;
+      }
+      this.updateBadges();
+      if (this.isVisible) {
+        this.renderActiveTray();
+        this.renderDetailPane();
+      }
+    });
+    this.unsubscribers.push(unsubInvAdd);
+
     const unsubInv = this.eventBus.on('ui:inventory_updated', () => {
       this.updateBadges();
       if (this.isVisible) {
@@ -189,7 +202,10 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
     });
     this.unsubscribers.push(unsubInv);
 
-    const unsubCrystal = this.eventBus.on('puzzle:crystal_collected', () => {
+    const unsubCrystal = this.eventBus.on('puzzle:crystal_collected', ({ crystalId }) => {
+      if (crystalId) {
+        this.selectedItemId = crystalId;
+      }
       this.updateBadges();
       if (this.isVisible) {
         this.renderActiveTray();
@@ -261,7 +277,11 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
           <!-- Left Pane: Tray Tabs and Item List -->
           <div class="manifest-left-pane">
             <div class="manifest-tray-nav" role="tablist">
-              <button class="manifest-tray-tab active" data-tray="hardware" id="tab-tray-hardware" role="tab" aria-selected="true">
+              <button class="manifest-tray-tab active" data-tray="all" id="tab-tray-all" role="tab" aria-selected="true">
+                <span class="tray-tab-label">ALL ASSETS</span>
+                <span class="tray-tab-badge" id="badge-count-all">0</span>
+              </button>
+              <button class="manifest-tray-tab" data-tray="hardware" id="tab-tray-hardware" role="tab" aria-selected="false">
                 <span class="tray-tab-label">TRAY 01: HARDWARE &amp; TOOLS</span>
                 <span class="tray-tab-badge" id="badge-count-hardware">0</span>
               </button>
@@ -342,7 +362,7 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
     // Wire Tabs
     const tabs = el.querySelectorAll<HTMLButtonElement>('.manifest-tray-tab');
     tabs.forEach((tab) => {
-      const tray = tab.getAttribute('data-tray') as 'hardware' | 'crystals' | 'records';
+      const tray = tab.getAttribute('data-tray') as 'all' | 'hardware' | 'crystals' | 'records';
       if (tray) {
         this.tabButtons.set(tray, tab);
         tab.addEventListener('click', () => {
@@ -353,6 +373,7 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
     });
 
     // Cache element references
+    this.countBadgeAll = el.querySelector('#badge-count-all');
     this.countBadgeHardware = el.querySelector('#badge-count-hardware');
     this.countBadgeCrystals = el.querySelector('#badge-count-crystals');
     this.countBadgeRecords = el.querySelector('#badge-count-records');
@@ -378,11 +399,11 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
   }
 
   protected onClosed(): void {
-    // No-op
+    AudioEngine.getInstance().playDoorLatch();
   }
 
   protected handleKeyDown(e: KeyboardEvent): void {
-    const trays: Array<'hardware' | 'crystals' | 'records'> = ['hardware', 'crystals', 'records'];
+    const trays: Array<'all' | 'hardware' | 'crystals' | 'records'> = ['all', 'hardware', 'crystals', 'records'];
     const idx = trays.indexOf(this.activeTray);
     if (e.key === 'Tab') {
       e.preventDefault();
@@ -392,7 +413,7 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
     }
   }
 
-  public selectTray(tray: 'hardware' | 'crystals' | 'records'): void {
+  public selectTray(tray: 'all' | 'hardware' | 'crystals' | 'records'): void {
     this.activeTray = tray;
     this.ensureValidSelection();
     this.renderActiveTray();
@@ -400,6 +421,15 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
   }
 
   public selectItem(itemId: string): void {
+    if (this.selectedItemId !== itemId) {
+      if (itemId.startsWith('CR-') || itemId.startsWith('crystal')) {
+        AudioEngine.getInstance().playGlassClink();
+      } else if (itemId.includes('envelope') || itemId.includes('dossier') || itemId.includes('ledger') || itemId.includes('slip') || itemId.startsWith('DOC-') || itemId.startsWith('MEMO-')) {
+        AudioEngine.getInstance().playPaperRustle();
+      } else {
+        AudioEngine.getInstance().playTumblerClick();
+      }
+    }
     this.selectedItemId = itemId;
     this.renderActiveTray();
     this.renderDetailPane();
@@ -409,6 +439,8 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
     const gs = GameState.getInstance();
     const inventory = gs.getInventory();
     const collected = gs.getCollectedCrystals();
+    const patched = gs.getPatchedCrystals();
+    const securedCrystals = CRYSTAL_ORDER.filter(id => collected.includes(id) || patched.includes(id));
 
     // Hardware count
     const hwCount = inventory.filter(id => {
@@ -422,18 +454,29 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
       return def && def.tray === 'records';
     }).length;
 
+    const totalCount = hwCount + recCount + securedCrystals.length;
+
+    if (this.countBadgeAll) this.countBadgeAll.textContent = `${totalCount}`;
     if (this.countBadgeHardware) this.countBadgeHardware.textContent = `${hwCount}`;
-    if (this.countBadgeCrystals) this.countBadgeCrystals.textContent = `${collected.length}/5`;
+    if (this.countBadgeCrystals) this.countBadgeCrystals.textContent = `${securedCrystals.length}/5`;
     if (this.countBadgeRecords) this.countBadgeRecords.textContent = `${recCount}`;
   }
 
-  private getItemsForTray(tray: 'hardware' | 'crystals' | 'records'): string[] {
+  private getItemsForTray(tray: 'all' | 'hardware' | 'crystals' | 'records'): string[] {
     const gs = GameState.getInstance();
-    if (tray === 'crystals') {
-      return [...CRYSTAL_ORDER];
+    const inventory = gs.getInventory();
+    const collected = gs.getCollectedCrystals();
+    const patched = gs.getPatchedCrystals();
+    const securedCrystals = CRYSTAL_ORDER.filter(id => collected.includes(id) || patched.includes(id));
+
+    if (tray === 'all') {
+      return [...inventory, ...securedCrystals];
     }
 
-    const inventory = gs.getInventory();
+    if (tray === 'crystals') {
+      return securedCrystals;
+    }
+
     if (tray === 'hardware') {
       return inventory.filter(id => {
         const def = MANIFEST_CATALOG[id];
@@ -479,9 +522,15 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
     if (items.length === 0) {
       const emptyCard = document.createElement('div');
       emptyCard.className = 'manifest-empty-slot';
-      emptyCard.textContent = this.activeTray === 'hardware'
-        ? '[ SPECIMEN POD VACANT // AWAITING TOOL REQUISITION ]'
-        : '[ SPECIMEN POD VACANT // NO ARCHIVAL RECORDS RECOVERED ]';
+      if (this.activeTray === 'all') {
+        emptyCard.textContent = '[ SPECIMEN VAULT VACANT // NO ASSETS ACQUIRED ]';
+      } else if (this.activeTray === 'crystals') {
+        emptyCard.textContent = '[ SPECIMEN PODS VACANT // NO MEMORY CRYSTALS SECURED ]';
+      } else if (this.activeTray === 'hardware') {
+        emptyCard.textContent = '[ SPECIMEN POD VACANT // AWAITING TOOL REQUISITION ]';
+      } else {
+        emptyCard.textContent = '[ SPECIMEN POD VACANT // NO ARCHIVAL RECORDS RECOVERED ]';
+      }
       this.inventoryListEl.appendChild(emptyCard);
       return;
     }
@@ -504,7 +553,7 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
       card.className = `manifest-item-card ${this.selectedItemId === itemId ? 'selected' : ''}`;
       card.setAttribute('data-item-id', itemId);
 
-      if (this.activeTray === 'crystals') {
+      if (def.tray === 'crystals') {
         const hasCrystal = gs.hasCrystal(itemId as CrystalId);
         const isPatched = gs.isCrystalPatched(itemId as CrystalId);
         const ledColor = def.ledColor || '#38bdf8';
@@ -547,7 +596,6 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
       }
 
       card.addEventListener('click', () => {
-        AudioEngine.getInstance().playTumblerClick();
         this.selectItem(itemId);
       });
 
@@ -773,7 +821,7 @@ export class AssetManifestScreen extends DiegeticScreenBase<AssetManifestState> 
   }
 
   public reset(): void {
-    this.activeTray = 'hardware';
+    this.activeTray = 'all';
     this.selectedItemId = null;
     if (this.isVisible) {
       this.renderActiveTray();

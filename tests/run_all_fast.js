@@ -28,6 +28,7 @@ import { runSuite as runBlueprintTransit } from './test_blueprint_non_linear_tra
 import { runSuite as runSaveSystemAudio } from './test_save_system_and_audio_settings.js';
 import { runSuite as runAppE2E } from './test_app_e2e.js';
 import { runSuite as runRaycastCameraAudit } from './test_raycasting_and_camera_audit.js';
+import { runSuite as runResponsiveModes } from './test_responsive_modes.js';
 
 const SUITES = [
   { name: 'Pair 1 E2E (Acts I & II)', run: runPair1 },
@@ -56,7 +57,8 @@ const SUITES = [
   { name: 'Blueprint Non-Linear Transit', run: runBlueprintTransit },
   { name: 'Save System & Audio Settings', run: runSaveSystemAudio },
   { name: 'App E2E Core Verification', run: runAppE2E },
-  { name: 'Raycast & Camera Orbit Audit', run: runRaycastCameraAudit }
+  { name: 'Raycast & Camera Orbit Audit', run: runRaycastCameraAudit },
+  { name: 'Responsive Modes & Touch Ergonomics', run: runResponsiveModes }
 ];
 
 const WATCHDOG_TIMEOUT_MS = 35000;

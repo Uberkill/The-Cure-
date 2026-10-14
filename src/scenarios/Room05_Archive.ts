@@ -4,6 +4,7 @@ import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
 import { MicroficheViewerScreen } from '../ui/screens/MicroficheViewerScreen';
 import { GameState } from '../core/GameState';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 export class Room05_Archive implements RoomScenario {
   public id = 'archive';
@@ -215,6 +216,16 @@ export class Room05_Archive implements RoomScenario {
     catalogLegs.position.y = 0.1;
     catalogGroup.add(catalogLegs);
 
+    // Contact shadow plane under catalog bank
+    const catalogAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.6, 0.8),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.32, depthWrite: false })
+    );
+    catalogAO.rotation.x = -Math.PI / 2;
+    catalogAO.position.set(0, 0.003, 0);
+    catalogAO.raycast = () => {};
+    catalogGroup.add(catalogAO);
+
     for (let cr = 0; cr < 4; cr++) {
       for (let cc = 0; cc < 4; cc++) {
         const dx = -0.48 + cc * 0.32;
@@ -403,6 +414,16 @@ export class Room05_Archive implements RoomScenario {
     stand.castShadow = true;
     readerDesk.add(stand);
 
+    // Contact shadow plane under reader desk
+    const readerDeskAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.4, 1.0),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.32, depthWrite: false })
+    );
+    readerDeskAO.rotation.x = -Math.PI / 2;
+    readerDeskAO.position.set(0, 0.003, 0);
+    readerDeskAO.raycast = () => {};
+    readerDesk.add(readerDeskAO);
+
     // Beveled desktop trim
     const trimMat = new THREE.MeshStandardMaterial({ color: 0x334139, roughness: 0.4, metalness: 0.6 });
     const deskTrim = new THREE.Mesh(new THREE.BoxGeometry(1.24, 0.04, 0.84), trimMat);
@@ -570,6 +591,15 @@ export class Room05_Archive implements RoomScenario {
     lampLight.position.set(-0.35, 1.14, -0.05);
     readerDesk.add(lampLight);
 
+    LightRigManager.getInstance().register({
+      id: 'room05_microfiche_desk_lamp',
+      name: 'Microfiche Reader Task Lamp',
+      room: 'archive',
+      type: 'point',
+      light: lampLight,
+      initialPosition: lampLight.position.clone()
+    });
+
     // Archivist Index Card Box
     const cardBox = new THREE.Mesh(
       new THREE.BoxGeometry(0.22, 0.12, 0.30),
@@ -699,7 +729,7 @@ export class Room05_Archive implements RoomScenario {
       roughness: 0.2
     });
 
-    for (const lz of [-2.5, 2.5]) {
+    for (const lz of [-6.0, -2.0, 2.0, 6.0]) {
       const fixture = new THREE.Group();
       fixture.position.set(0, 4.1, lz);
 
@@ -728,10 +758,21 @@ export class Room05_Archive implements RoomScenario {
       this.group.add(fixture);
     }
 
-    // Sickly Chemical Green Overhead Lighting
-    const greenLight = new THREE.PointLight(0x4ade80, 1.4, 12);
-    greenLight.position.set(0, 4.0, 0);
-    this.group.add(greenLight);
+    // Sickly Chemical Green Overhead Lighting across full archive aisles
+    [-3.0, 3.0].forEach((gz, idx) => {
+      const greenLight = new THREE.PointLight(0x4ade80, 1.1, 12);
+      greenLight.position.set(0, 4.0, gz);
+      this.group!.add(greenLight);
+
+      LightRigManager.getInstance().register({
+        id: `room05_aisle_light_${idx + 1}`,
+        name: `Archive Aisle Green Luminaire ${idx + 1}`,
+        room: 'archive',
+        type: 'point',
+        light: greenLight,
+        initialPosition: greenLight.position.clone()
+      });
+    });
 
     // Re-entry state restoration
     if (this.drawerOpen) {
@@ -748,6 +789,7 @@ export class Room05_Archive implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    LightRigManager.getInstance().clear('archive');
     this.unsubscribers.forEach(u => u());
     this.unsubscribers = [];
     this.microficheScreen.teardown();
@@ -791,17 +833,19 @@ export class Room05_Archive implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
+      audio.playDoorHeavy();
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_archive' });
       return true;
     }
 
     if (objectId === 'door_portal_audiology') {
+      audio.playDoorHeavy();
       bus.emit('scenario:switch_room', { targetRoomId: 'audiology', doorThresholdId: 'door_portal_audiology' });
       return true;
     }
 
     if (objectId === 'prop_card_catalog') {
-      audio.playTumblerClick();
+      audio.playDrawerWood();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'catalog' });
       bus.emit('ui:subtitle_changed', {
         text: 'OAK CARD CATALOG // SUBJECT 104 INDEX CARD: "Pneumatic Dispatch Destination: Sector GAMMA-07. Optical Reader Condenser Focus: 0.85. Master dossier stored in Cabinet 7 (Drawer 104)."'
@@ -810,7 +854,7 @@ export class Room05_Archive implements RoomScenario {
     }
 
     if (objectId === 'prop_cross_ledger') {
-      audio.playTumblerClick();
+      audio.playPaperRustle();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'microfiche' });
       bus.emit('ui:subtitle_changed', {
         text: 'Form 108-STAFF [Archivist E. Cross]: Retention custody register & microfilm security indices.'
@@ -842,7 +886,7 @@ export class Room05_Archive implements RoomScenario {
     }
 
     if (objectId in this.cabinetLore) {
-      audio.playTumblerClick();
+      audio.playDrawerWood();
       bus.emit('ui:subtitle_changed', {
         text: this.cabinetLore[objectId]
       });
@@ -850,7 +894,7 @@ export class Room05_Archive implements RoomScenario {
     }
 
     if (objectId === 'prop_cabinet_7' || objectId === 'prop_drawer_104') {
-      audio.playTumblerClick();
+      audio.playDrawerWood();
 
       if (!this.microficheScreen.isCanisterDelivered() && !this.drawerOpen) {
         bus.emit('ui:subtitle_changed', {
@@ -892,7 +936,7 @@ export class Room05_Archive implements RoomScenario {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         if (this.crystalLight) this.crystalLight.visible = false;
-        audio.playTumblerClick();
+        audio.playGlassClink();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_04_obsidian' as CrystalId,
           label: 'Pitch-Black Obsidian'

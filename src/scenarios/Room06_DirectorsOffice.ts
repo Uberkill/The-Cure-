@@ -4,6 +4,7 @@ import { EventBus } from '../core/EventBus';
 import { AudioEngine } from '../audio/AudioEngine';
 import { WiretapTapeDeckScreen } from '../ui/screens/WiretapTapeDeckScreen';
 import { GameState } from '../core/GameState';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 export class Room06_DirectorsOffice implements RoomScenario {
   public id = 'directors_office';
@@ -229,6 +230,48 @@ export class Room06_DirectorsOffice implements RoomScenario {
     shelfFrame.receiveShadow = true;
     bookshelfGroup.add(shelfFrame);
 
+    // Contact shadow plane under bookcase
+    const bookshelfAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.0, 5.0),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.35, depthWrite: false })
+    );
+    bookshelfAO.rotation.x = -Math.PI / 2;
+    bookshelfAO.position.set(0, 0.003, 0);
+    bookshelfAO.raycast = () => {};
+    bookshelfGroup.add(bookshelfAO);
+
+    // Brass Library/Picture Light Fixture atop Bookcase Frame
+    const picLightGroup = new THREE.Group();
+    picLightGroup.position.set(0.35, 4.45, 0);
+    picLightGroup.raycast = () => {};
+
+    [-1.4, 1.4].forEach((bz) => {
+      const arm = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.025, 0.025), matBrass);
+      arm.position.set(0.12, 0, bz);
+      arm.raycast = () => {};
+      picLightGroup.add(arm);
+    });
+
+    const picReflector = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.04, 0.04, 3.6, 16),
+      matBrass
+    );
+    picReflector.rotation.x = Math.PI / 2;
+    picReflector.position.set(0.30, 0, 0);
+    picReflector.raycast = () => {};
+    picLightGroup.add(picReflector);
+
+    const picLens = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.4, 0.04),
+      new THREE.MeshBasicMaterial({ color: 0xfef08a })
+    );
+    picLens.rotation.x = -Math.PI / 2;
+    picLens.position.set(0.30, -0.04, 0);
+    picLens.raycast = () => {};
+    picLightGroup.add(picLens);
+
+    bookshelfGroup.add(picLightGroup);
+
     const matBookLeather = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.7 });
     for (let s = 0; s < 5; s++) {
       const shelfY = 0.6 + s * 0.8;
@@ -257,8 +300,22 @@ export class Room06_DirectorsOffice implements RoomScenario {
     );
     credenza.position.set(0, 0.475, -7.4);
     credenza.name = 'prop_director_credenza';
+    credenza.userData.flavorText = [
+      'Executive Credenza: Stamped clinical memoranda detailing Subject 104\'s scheduled extraction and memory calibration.',
+      'A handwritten margin note reads: "The resonance frequency 528 Hz did not purge the subject\'s motor memory. Further somnology sessions required."',
+      'The bottom drawer contains requisition forms for archival microfiche reels. Every document bears Dr. Corvo\'s crimson seal.'
+    ];
     credenza.castShadow = true;
     this.group.add(credenza);
+
+    const credenzaAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(4.4, 1.0),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.35, depthWrite: false })
+    );
+    credenzaAO.rotation.x = -Math.PI / 2;
+    credenzaAO.position.set(0, 0.003, -7.4);
+    credenzaAO.raycast = () => {};
+    this.group.add(credenzaAO);
 
     // Director's Confidential Leather Portfolio (Confession & Protocol Dossier)
     const dossierGroup = new THREE.Group();
@@ -337,6 +394,63 @@ export class Room06_DirectorsOffice implements RoomScenario {
     ashtray.castShadow = true;
     ashtray.raycast = () => {};
     deskAccessories.add(ashtray);
+
+    // Mid-Century Emerald Green Banker's Desk Lamp
+    const bankersGroup = new THREE.Group();
+    bankersGroup.position.set(1.15, 1.02, -0.32);
+    bankersGroup.name = 'prop_bankers_lamp';
+    bankersGroup.userData.isSubPart = true;
+
+    const bBase = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.10, 0.02, 16), matBrass);
+    bBase.position.y = 0.01;
+    bBase.castShadow = true;
+    bBase.raycast = () => {};
+    bankersGroup.add(bBase);
+
+    const bStem = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.32, 12), matBrass);
+    bStem.position.y = 0.17;
+    bStem.castShadow = true;
+    bStem.raycast = () => {};
+    bankersGroup.add(bStem);
+
+    const bPivot = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.24, 12), matBrass);
+    bPivot.rotation.z = Math.PI / 2;
+    bPivot.position.set(0, 0.32, 0);
+    bPivot.raycast = () => {};
+    bankersGroup.add(bPivot);
+
+    const matEmeraldGlass = new THREE.MeshPhysicalMaterial({
+      color: 0x064e3b,
+      roughness: 0.15,
+      transmission: 0.35,
+      emissive: 0x047857,
+      emissiveIntensity: 0.45
+    });
+    const bShade = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.09, 0.12), matEmeraldGlass);
+    bShade.position.set(0, 0.32, 0.03);
+    bShade.castShadow = true;
+    bShade.raycast = () => {};
+    bankersGroup.add(bShade);
+
+    const bBulb = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.018, 0.018, 0.16, 12),
+      new THREE.MeshBasicMaterial({ color: 0xfef08a })
+    );
+    bBulb.rotation.z = Math.PI / 2;
+    bBulb.position.set(0, 0.30, 0.03);
+    bBulb.raycast = () => {};
+    bankersGroup.add(bBulb);
+
+    const bPullChain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 6), matBrass);
+    bPullChain.position.set(0.06, 0.24, 0.04);
+    bPullChain.raycast = () => {};
+    bankersGroup.add(bPullChain);
+
+    const bankersLight = new THREE.PointLight(0xfef08a, 0.65, 3.2);
+    bankersLight.position.set(0, 0.28, 0.05);
+    bankersGroup.add(bankersLight);
+
+    deskAccessories.add(bankersGroup);
     this.group.add(deskAccessories);
 
     // Unplugged Cream Bakelite Rotary Telephone
@@ -514,11 +628,25 @@ export class Room06_DirectorsOffice implements RoomScenario {
 
     this.group.add(deskGroup);
 
+    // Contact shadow plane under executive desk
+    const deskAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.4, 1.8),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.38, depthWrite: false })
+    );
+    deskAO.rotation.x = -Math.PI / 2;
+    deskAO.position.set(0, 0.003, 0);
+    deskAO.raycast = () => {};
+    this.group.add(deskAO);
+
     // High-Backed Tufted Leather Executive Chair Behind Desk
     const chairGroup = new THREE.Group();
     chairGroup.position.set(0, 0, -1.05);
     chairGroup.name = 'prop_executive_chair';
-    chairGroup.userData.flavorText = 'A high-backed executive chair upholstered in tufted black leather. It is cold to the touch.';
+    chairGroup.userData.flavorText = [
+      'A high-backed executive chair upholstered in tufted black leather. It is cold to the touch.',
+      'Running a finger along the seam beneath the armrest reveals a hairline crease. Someone sat here listening to the wiretap tapes for hours.',
+      'A faint scent of burnt paper and stale tobacco clings to the leather. The Director vacated this seat in haste.'
+    ];
 
     const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.38, 0.05, 16), matCastIron);
     chairBase.position.y = 0.025;
@@ -541,35 +669,87 @@ export class Room06_DirectorsOffice implements RoomScenario {
 
     this.group.add(chairGroup);
 
-    // Suspended Downward Task Pendant Light Fixture
+    const chairAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.85, 0.85),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.35, depthWrite: false })
+    );
+    chairAO.rotation.x = -Math.PI / 2;
+    chairAO.position.set(0, 0.003, -1.05);
+    chairAO.raycast = () => {};
+    this.group.add(chairAO);
+
+    // Suspended Downward Task Pendant Light Fixture (Lowered into camera framing at Y=2.85m)
+    const lampGroup = new THREE.Group();
+    lampGroup.position.set(0, 2.85, 0);
+    lampGroup.raycast = () => {};
+
     const lampShade = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.38, 0.24, 24),
+      new THREE.CylinderGeometry(0.12, 0.42, 0.26, 24),
       new THREE.MeshStandardMaterial({ color: 0x18241e, metalness: 0.8, roughness: 0.25 })
     );
-    lampShade.position.set(0, 4.6, 0);
     lampShade.raycast = () => {};
-    this.group.add(lampShade);
+    lampGroup.add(lampShade);
 
-    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 1.2, 8), matCastIron);
-    cord.position.set(0, 5.2, 0);
+    const lampBulb = new THREE.Mesh(
+      new THREE.SphereGeometry(0.08, 16, 16),
+      new THREE.MeshBasicMaterial({ color: 0xfffaed })
+    );
+    lampBulb.position.set(0, -0.08, 0);
+    lampBulb.raycast = () => {};
+    lampGroup.add(lampBulb);
+
+    this.group.add(lampGroup);
+
+    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 1.82, 8), matCastIron);
+    cord.position.set(0, 3.89, 0);
     cord.raycast = () => {};
     this.group.add(cord);
 
-    // Single Harsh Surgical Downward Spotlight Focused on Desk
-    const spot = new THREE.SpotLight(0xffffff, 3.4, 12, Math.PI / 6, 0.25);
-    spot.position.set(0, 4.5, 0);
+    // Single Harsh Downward Spotlight Focused on Desk from Pendant
+    const spot = new THREE.SpotLight(0xfffaed, 3.8, 8, Math.PI / 5, 0.3);
+    spot.position.set(0, 2.75, 0);
     spot.target = deskTop;
     spot.castShadow = true;
     this.group.add(spot);
 
+    LightRigManager.getInstance().register({
+      id: 'room06_desk_spot',
+      name: "Director's Office Task Pendant Spot",
+      room: 'directors_office',
+      type: 'spot',
+      light: spot,
+      target: spot.target,
+      initialPosition: spot.position.clone(),
+      initialTarget: deskTop.position.clone()
+    });
+
     // Warm executive office fill illumination
-    const officeCeilingLight = new THREE.PointLight(0xfffaed, 1.2, 16);
-    officeCeilingLight.position.set(0, 4.2, 0);
+    const officeCeilingLight = new THREE.PointLight(0xfffaed, 1.0, 16);
+    officeCeilingLight.position.set(0, 4.4, 0);
     this.group.add(officeCeilingLight);
 
-    const bookcaseLight = new THREE.PointLight(0xffeed1, 1.0, 10);
-    bookcaseLight.position.set(-3.5, 2.5, 0);
+    LightRigManager.getInstance().register({
+      id: 'room06_ceiling_fill',
+      name: "Director's Office Ambient Fill",
+      room: 'directors_office',
+      type: 'point',
+      light: officeCeilingLight,
+      initialPosition: officeCeilingLight.position.clone()
+    });
+
+    // Library Picture Light on Bookcase
+    const bookcaseLight = new THREE.PointLight(0xfef08a, 1.3, 7);
+    bookcaseLight.position.set(-6.0, 4.3, 0);
     this.group.add(bookcaseLight);
+
+    LightRigManager.getInstance().register({
+      id: 'room06_bookcase_light',
+      name: "Director's Office Bookcase Light",
+      room: 'directors_office',
+      type: 'point',
+      light: bookcaseLight,
+      initialPosition: bookcaseLight.position.clone()
+    });
 
     // Re-entry state restoration
     if (this.drawerUnlocked) {
@@ -589,6 +769,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    LightRigManager.getInstance().clear('directors_office');
     this.unsubscribers.forEach((u) => u());
     this.unsubscribers = [];
     this.wiretapScreen.teardown();
@@ -609,6 +790,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
+      audio.playDoorHeavy();
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_directors_office' });
       return true;
     }
@@ -637,14 +819,14 @@ export class Room06_DirectorsOffice implements RoomScenario {
         });
         return true;
       }
-      audio.playTumblerClick();
+      audio.playClockTick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'desk' });
       this.wiretapScreen.open();
       return true;
     }
 
     if (objectId === 'prop_director_desk' || objectId === 'prop_director_drawer') {
-      audio.playTumblerClick();
+      audio.playDrawerWood();
       if (!this.drawerUnlocked) {
         bus.emit('ui:subtitle_changed', {
           text: 'The heavy mahogany executive desk is locked with a magnetic relay. An unplugged rotary telephone and wiretap tape deck rest on the surface.'
@@ -658,7 +840,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
     }
 
     if (objectId === 'prop_director_bookshelf' || objectId === 'prop_director_dossier') {
-      audio.playTumblerClick();
+      audio.playPaperRustle();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'bookshelf' });
       bus.emit('ui:subtitle_changed', {
         text: 'DIRECTOR\'S LOGBOOK // CONFIDENTIAL: "The wiretap carriage escapement must be synchronized at eleven-zero-three (11:03). Reduce playback speed to half-speed (0.5x) to reveal the voice beneath the tape hiss, then dial 1-1-0-3 on the rotary telephone exchange."'
@@ -668,19 +850,13 @@ export class Room06_DirectorsOffice implements RoomScenario {
     }
 
     if (objectId === 'prop_director_credenza') {
-      audio.playTumblerClick();
-      bus.emit('ui:subtitle_changed', {
-        text: 'Executive Credenza: Stamped clinical memoranda detailing Subject 104\'s scheduled extraction and memory calibration.'
-      });
-      return true;
+      audio.playPaperRustle();
+      return false;
     }
 
     if (objectId === 'prop_executive_chair') {
       audio.playTumblerClick();
-      bus.emit('ui:subtitle_changed', {
-        text: 'A high-backed executive chair upholstered in tufted black leather. It is cold to the touch.'
-      });
-      return true;
+      return false;
     }
 
     if (objectId === 'prop_void_phone') {
@@ -725,7 +901,7 @@ export class Room06_DirectorsOffice implements RoomScenario {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         if (this.crystalLight) this.crystalLight.visible = false;
-        audio.playTumblerClick();
+        audio.playGlassClink();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_05_celadon' as CrystalId,
           label: 'Glowing Celadon Core'

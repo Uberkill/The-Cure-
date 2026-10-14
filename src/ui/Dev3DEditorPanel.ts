@@ -6,6 +6,7 @@ import { EditorPrefabs } from '../editor/EditorPrefabs';
 import { EventBus } from '../core/EventBus';
 import { EditorVisualizers } from '../editor/EditorVisualizers';
 import { Telemetry } from '../core/Telemetry';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 
 export class Dev3DEditorPanel {
@@ -28,6 +29,8 @@ export class Dev3DEditorPanel {
   private lastFrameDeltaMs: number = 16.6;
   private fpsLastFrameTime: number = performance.now();
   private activeLogFilter: 'all' | 'error' | 'warn' | 'info' = 'all';
+  private selectedLightId: string | null = null;
+  private lightHelper: THREE.SpotLightHelper | THREE.PointLightHelper | null = null;
 
   private readonly prefabCatalog = [
     { id: 'BauhausDesk', name: 'Bauhaus Desk', dims: '2.5m x 0.8m x 1.3m' },
@@ -79,7 +82,7 @@ export class Dev3DEditorPanel {
       <div id="dev-panel-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; cursor: grab;">
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #4ade80;"></span>
-          <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">The Vault • Developer Telemetry</span>
+          <span style="font-weight: 600; letter-spacing: 0.08em; color: #bad2c8; text-transform: uppercase;">The Cure • Developer Telemetry</span>
         </div>
         <button id="dev-btn-close" style="background: none; border: none; color: #88928b; cursor: pointer; font-family: monospace; font-size: 11px;">[X]</button>
       </div>
@@ -96,6 +99,7 @@ export class Dev3DEditorPanel {
         <button class="editor-tab" data-tab="lore" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Lore</button>
         <button class="editor-tab" data-tab="env" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Env</button>
         <button class="editor-tab" data-tab="scenarios" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Scen</button>
+        <button class="editor-tab" data-tab="lights" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Lights</button>
         <button class="editor-tab" data-tab="telemetry" style="flex:1; padding: 4px; background: transparent; border: 1px solid rgba(255,255,255,0.1); color: #88928b; cursor: pointer; border-radius: 3px;">Telem</button>
       </div>
 
@@ -267,18 +271,23 @@ export class Dev3DEditorPanel {
 
       <!-- TAB CONTENT: LORE -->
       <div id="tab-lore" class="editor-tab-content" style="display: none;">
-        <label style="display: block; margin-bottom: 6px; color: #88928b;">Interaction Properties</label>
+        <label style="display: block; margin-bottom: 6px; color: #88928b; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em;">Interaction Properties</label>
         <div style="margin-bottom: 12px;">
-          <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-            <span>Prompt (Hover)</span>
-            <input type="text" id="dev-lore-prompt" placeholder="[EXAMINE DESK]" style="width:180px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="font-size: 11px; color: #bad2c8;">Prompt (Hover)</span>
+            <input type="text" id="dev-lore-prompt" placeholder="[EXAMINE DESK]" style="width: 180px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.15); color: #fff; padding: 4px; font-size: 11px; border-radius: 3px;">
           </div>
-          <div style="display: flex; flex-direction: column; margin-bottom: 4px;">
-            <span style="margin-bottom: 4px;">Flavor Text (Click)</span>
-            <textarea id="dev-lore-flavor" rows="4" placeholder="An institutional heavy metal desk..." style="width:100%; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 4px; resize: vertical;"></textarea>
+          
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <span style="font-size: 11px; color: #bad2c8; font-weight: bold;">Multi-Stage Flavor Text</span>
+            <button id="dev-btn-lore-add-flavor" type="button" style="padding: 2px 8px; background: rgba(74, 222, 128, 0.15); color: #4ade80; border: 1px solid rgba(74, 222, 128, 0.4); border-radius: 3px; cursor: pointer; font-size: 10px; font-weight: bold;">+ ADD STAGE</button>
+          </div>
+
+          <div id="dev-lore-flavor-list" style="display: flex; flex-direction: column; gap: 8px; max-height: 280px; overflow-y: auto; padding-right: 4px; margin-bottom: 10px;">
+            <!-- Populated dynamically per selected object -->
           </div>
         </div>
-        <button id="dev-btn-lore-save" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Apply & Save Lore</button>
+        <button id="dev-btn-lore-save" style="width: 100%; padding: 8px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold; margin-bottom: 8px;">Apply & Save Lore</button>
       </div>
 
       <!-- TAB CONTENT: ENVIRONMENT -->
@@ -426,6 +435,89 @@ export class Dev3DEditorPanel {
           <div id="dev-telem-logs" style="width: 100%; height: 130px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.08); border-radius: 2px; padding: 6px; font-size: 10px; font-family: monospace; overflow-y: auto; white-space: pre-wrap; word-break: break-all; box-sizing: border-box; line-height: 1.4;"></div>
         </div>
       </div>
+
+      <!-- TAB CONTENT: LIGHTS -->
+      <div id="tab-lights" class="editor-tab-content" style="display: none;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <label style="color: #88928b; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Active Chamber Light Fixtures</label>
+          <button id="dev-btn-lights-refresh" style="padding: 2px 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bad2c8; border-radius: 2px; font-size: 9px; cursor: pointer;">REFRESH</button>
+        </div>
+
+        <div style="margin-bottom: 10px;">
+          <select id="dev-light-select" style="width: 100%; padding: 6px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #4ade80; border-radius: 3px; font-family: monospace; font-size: 11px;">
+            <option value="">-- Select Active Light --</option>
+          </select>
+        </div>
+
+        <div id="dev-light-controls" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 4px; padding: 10px; margin-bottom: 10px;">
+          <div style="margin-bottom: 8px;">
+            <label style="display: block; color: #88928b; font-size: 9px; margin-bottom: 4px;">LIGHT POSITION (X / Y / Z)</label>
+            <div style="display: flex; gap: 4px;">
+              <input type="number" id="dev-light-pos-x" step="0.1" placeholder="X" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px; font-size: 10px;">
+              <input type="number" id="dev-light-pos-y" step="0.1" placeholder="Y" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px; font-size: 10px;">
+              <input type="number" id="dev-light-pos-z" step="0.1" placeholder="Z" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px; font-size: 10px;">
+            </div>
+          </div>
+
+          <div id="dev-light-target-row" style="margin-bottom: 8px;">
+            <label style="display: block; color: #88928b; font-size: 9px; margin-bottom: 4px;">TARGET POSITION (X / Y / Z)</label>
+            <div style="display: flex; gap: 4px;">
+              <input type="number" id="dev-light-tar-x" step="0.1" placeholder="TX" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px; font-size: 10px;">
+              <input type="number" id="dev-light-tar-y" step="0.1" placeholder="TY" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px; font-size: 10px;">
+              <input type="number" id="dev-light-tar-z" step="0.1" placeholder="TZ" style="flex:1; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 3px; font-size: 10px;">
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="color: #88928b;">Color</span>
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <input type="color" id="dev-light-color-picker" style="background: none; border: none; width: 32px; height: 22px; cursor: pointer;">
+              <input type="text" id="dev-light-color-hex" style="width: 70px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 2px 4px; font-size: 10px;">
+            </div>
+          </div>
+
+          <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+              <span style="color: #88928b;">Intensity</span>
+              <span id="dev-light-intensity-val" style="color: #4ade80;">1.0</span>
+            </div>
+            <input type="range" id="dev-light-intensity" min="0" max="15" step="0.1" value="1" style="width: 100%; accent-color: #4ade80;">
+          </div>
+
+          <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+              <span style="color: #88928b;">Distance (Range)</span>
+              <span id="dev-light-distance-val" style="color: #4ade80;">10.0m</span>
+            </div>
+            <input type="range" id="dev-light-distance" min="0" max="40" step="0.5" value="10" style="width: 100%; accent-color: #4ade80;">
+          </div>
+
+          <div id="dev-light-spot-params" style="display: none; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 8px;">
+            <div style="margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                <span style="color: #88928b;">Spot Angle</span>
+                <span id="dev-light-angle-val" style="color: #4ade80;">0.6 rad</span>
+              </div>
+              <input type="range" id="dev-light-angle" min="0.05" max="1.5" step="0.02" value="0.6" style="width: 100%; accent-color: #4ade80;">
+            </div>
+            <div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+                <span style="color: #88928b;">Spot Penumbra</span>
+                <span id="dev-light-penumbra-val" style="color: #4ade80;">0.3</span>
+              </div>
+              <input type="range" id="dev-light-penumbra" min="0" max="1" step="0.05" value="0.3" style="width: 100%; accent-color: #4ade80;">
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; gap: 4px;">
+            <button id="dev-btn-light-gizmo" style="flex: 1; padding: 6px; background: #2f453a; color: #8fcead; border: 1px solid #4ade80; border-radius: 3px; font-size: 10px; cursor: pointer;">ATTACH GIZMO</button>
+            <button id="dev-btn-light-helper" style="flex: 1; padding: 6px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.15); color: #bad2c8; border-radius: 3px; font-size: 10px; cursor: pointer;">TOGGLE HELPER</button>
+          </div>
+          <button id="dev-btn-light-copy-json" style="width: 100%; padding: 6px; background: rgba(96, 165, 250, 0.15); border: 1px solid #60a5fa; color: #93c5fd; border-radius: 3px; font-size: 10px; cursor: pointer;">COPY CONFIG (JSON)</button>
+        </div>
+      </div>
     `;
 
     document.body.appendChild(panel);
@@ -536,6 +628,9 @@ export class Dev3DEditorPanel {
         
         document.querySelectorAll('.editor-tab-content').forEach(c => (c as HTMLElement).style.display = 'none');
         document.getElementById(`tab-${target.dataset.tab}`)!.style.display = 'block';
+        if (target.dataset.tab === 'lights') {
+          this.refreshLightsTab();
+        }
       });
     });
 
@@ -613,17 +708,56 @@ export class Dev3DEditorPanel {
       document.getElementById('dev-btn-save-server')?.click(); // trigger the main save logic
     });
 
-    // Lore / Flavor Text
+    // Lore / Flavor Text Multi-Stage Controls
+    document.getElementById('dev-btn-lore-add-flavor')?.addEventListener('click', () => {
+      const objs = this.devGizmo.getSelectedObjects();
+      if (objs.length !== 1) return;
+      const listContainer = document.getElementById('dev-lore-flavor-list');
+      if (!listContainer) return;
+
+      const currentCount = listContainer.querySelectorAll('.dev-lore-stage-card').length;
+      const newCard = this.createLoreStageCard(currentCount, '');
+      listContainer.appendChild(newCard);
+      this.reindexLoreStages();
+
+      const ta = newCard.querySelector<HTMLTextAreaElement>('.dev-lore-stage-input');
+      if (ta) ta.focus();
+    });
+
+    document.getElementById('dev-lore-flavor-list')?.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest('.dev-btn-lore-del-stage')) {
+        const card = target.closest('.dev-lore-stage-card');
+        if (card) {
+          card.remove();
+          this.reindexLoreStages();
+        }
+      }
+    });
+
     document.getElementById('dev-btn-lore-save')?.addEventListener('click', () => {
       const objs = this.devGizmo.getSelectedObjects();
       if (objs.length === 1) {
         const obj = objs[0];
-        obj.userData.interactionPrompt = (document.getElementById('dev-lore-prompt') as HTMLInputElement).value;
-        obj.userData.flavorText = (document.getElementById('dev-lore-flavor') as HTMLTextAreaElement).value;
+        const promptInput = document.getElementById('dev-lore-prompt') as HTMLInputElement | null;
+        if (promptInput) {
+          obj.userData.interactionPrompt = promptInput.value.trim();
+        }
+        const textareas = document.querySelectorAll<HTMLTextAreaElement>('#dev-lore-flavor-list .dev-lore-stage-input');
+        const stages: string[] = [];
+        textareas.forEach(ta => {
+          const val = ta.value.trim();
+          if (val.length > 0) {
+            stages.push(val);
+          }
+        });
+        obj.userData.flavorText = stages;
         obj.userData.isModified = true;
         document.getElementById('dev-btn-save-server')?.click();
       }
     });
+
+    this.updateLorePanel(null);
 
     // Save to Server
     document.getElementById('dev-btn-save-server')?.addEventListener('click', async () => {
@@ -904,8 +1038,12 @@ export class Dev3DEditorPanel {
             isDragging = false;
             header.style.cursor = 'grab';
             try {
-              header.releasePointerCapture(e.pointerId);
-            } catch (_) {}
+              if (header.hasPointerCapture(e.pointerId)) {
+                header.releasePointerCapture(e.pointerId);
+              }
+            } catch (err: unknown) {
+              Telemetry.getInstance().record('warn', 'Pointer capture release failed', String(err));
+            }
           }
         };
         header.addEventListener('pointerup', stopDrag);
@@ -1094,6 +1232,8 @@ export class Dev3DEditorPanel {
           this.showToast('Upload failed', 'error');
         }
     });
+
+    this.setupLightsTab();
   }
 
   private bindGizmoEvents(): void {
@@ -1143,10 +1283,7 @@ export class Dev3DEditorPanel {
           document.getElementById('dev-rot-z-val')!.innerText = `${rotZInput.value}°`;
         }
 
-        const lorePromptInput = document.getElementById('dev-lore-prompt') as HTMLInputElement;
-        const loreFlavorInput = document.getElementById('dev-lore-flavor') as HTMLTextAreaElement;
-        if (lorePromptInput) lorePromptInput.value = obj.userData.interactionPrompt || '';
-        if (loreFlavorInput) loreFlavorInput.value = obj.userData.flavorText || '';
+
 
         const typeSelect = document.getElementById('dev-anim-type') as HTMLSelectElement;
         const axisSelect = document.getElementById('dev-anim-axis') as HTMLSelectElement;
@@ -1177,6 +1314,7 @@ export class Dev3DEditorPanel {
         }
       }
       this.updateSpatialTelemetry(objects.length === 1 ? objects[0] : null);
+      this.updateLorePanel(objects.length === 1 ? objects[0] : null);
       this.isUpdatingFromUI = false;
     };
 
@@ -1458,6 +1596,357 @@ export class Dev3DEditorPanel {
       clearInterval(this.telemetryInterval);
       this.telemetryInterval = null;
     }
+  }
+
+  public refreshLightsTab(): void {
+    const select = document.getElementById('dev-light-select') as HTMLSelectElement | null;
+    if (!select) return;
+
+    const fixtures = LightRigManager.getInstance().getAll();
+    select.innerHTML = '<option value="">-- Select Active Light --</option>';
+    for (const f of fixtures) {
+      const opt = document.createElement('option');
+      opt.value = f.id;
+      opt.textContent = `${f.name} [${f.room || 'global'}] (${f.type})`;
+      if (f.id === this.selectedLightId) opt.selected = true;
+      select.appendChild(opt);
+    }
+
+    if (!this.selectedLightId && fixtures.length > 0) {
+      this.selectedLightId = fixtures[0].id;
+      select.value = fixtures[0].id;
+    } else if (this.selectedLightId && !fixtures.some((f) => f.id === this.selectedLightId)) {
+      this.selectedLightId = fixtures.length > 0 ? fixtures[0].id : null;
+      if (this.selectedLightId) select.value = this.selectedLightId;
+    }
+
+    this.updateLightControlFields();
+  }
+
+  private updateLightControlFields(): void {
+    const posX = document.getElementById('dev-light-pos-x') as HTMLInputElement | null;
+    const posY = document.getElementById('dev-light-pos-y') as HTMLInputElement | null;
+    const posZ = document.getElementById('dev-light-pos-z') as HTMLInputElement | null;
+    const tarX = document.getElementById('dev-light-tar-x') as HTMLInputElement | null;
+    const tarY = document.getElementById('dev-light-tar-y') as HTMLInputElement | null;
+    const tarZ = document.getElementById('dev-light-tar-z') as HTMLInputElement | null;
+    const targetRow = document.getElementById('dev-light-target-row');
+    const colorPicker = document.getElementById('dev-light-color-picker') as HTMLInputElement | null;
+    const colorHex = document.getElementById('dev-light-color-hex') as HTMLInputElement | null;
+    const intensity = document.getElementById('dev-light-intensity') as HTMLInputElement | null;
+    const intensityVal = document.getElementById('dev-light-intensity-val');
+    const distance = document.getElementById('dev-light-distance') as HTMLInputElement | null;
+    const distanceVal = document.getElementById('dev-light-distance-val');
+    const angle = document.getElementById('dev-light-angle') as HTMLInputElement | null;
+    const angleVal = document.getElementById('dev-light-angle-val');
+    const penumbra = document.getElementById('dev-light-penumbra') as HTMLInputElement | null;
+    const penumbraVal = document.getElementById('dev-light-penumbra-val');
+    const spotParams = document.getElementById('dev-light-spot-params');
+
+    if (!this.selectedLightId) {
+      return;
+    }
+
+    const fixture = LightRigManager.getInstance().get(this.selectedLightId);
+    if (!fixture) return;
+
+    const p = fixture.light.position;
+    if (posX) posX.value = p.x.toFixed(2);
+    if (posY) posY.value = p.y.toFixed(2);
+    if (posZ) posZ.value = p.z.toFixed(2);
+
+    if (fixture.target) {
+      if (targetRow) targetRow.style.display = 'block';
+      const tp = fixture.target.position;
+      if (tarX) tarX.value = tp.x.toFixed(2);
+      if (tarY) tarY.value = tp.y.toFixed(2);
+      if (tarZ) tarZ.value = tp.z.toFixed(2);
+    } else {
+      if (targetRow) targetRow.style.display = 'none';
+    }
+
+    const hexStr = `#${fixture.light.color.getHexString()}`;
+    if (colorPicker) colorPicker.value = hexStr;
+    if (colorHex) colorHex.value = hexStr;
+
+    if (intensity) intensity.value = String(fixture.light.intensity);
+    if (intensityVal) intensityVal.textContent = fixture.light.intensity.toFixed(2);
+
+    const dist = (fixture.light as THREE.PointLight | THREE.SpotLight).distance || 0;
+    if (distance) distance.value = String(dist);
+    if (distanceVal) distanceVal.textContent = `${dist.toFixed(1)}m`;
+
+    if (fixture.light instanceof THREE.SpotLight) {
+      if (spotParams) spotParams.style.display = 'block';
+      if (angle) angle.value = String(fixture.light.angle);
+      if (angleVal) angleVal.textContent = `${fixture.light.angle.toFixed(2)} rad`;
+      if (penumbra) penumbra.value = String(fixture.light.penumbra);
+      if (penumbraVal) penumbraVal.textContent = fixture.light.penumbra.toFixed(2);
+    } else {
+      if (spotParams) spotParams.style.display = 'none';
+    }
+
+    if (this.lightHelper) {
+      this.lightHelper.update();
+    }
+  }
+
+  private setupLightsTab(): void {
+    const select = document.getElementById('dev-light-select') as HTMLSelectElement | null;
+    const btnRefresh = document.getElementById('dev-btn-lights-refresh');
+    const posX = document.getElementById('dev-light-pos-x') as HTMLInputElement | null;
+    const posY = document.getElementById('dev-light-pos-y') as HTMLInputElement | null;
+    const posZ = document.getElementById('dev-light-pos-z') as HTMLInputElement | null;
+    const tarX = document.getElementById('dev-light-tar-x') as HTMLInputElement | null;
+    const tarY = document.getElementById('dev-light-tar-y') as HTMLInputElement | null;
+    const tarZ = document.getElementById('dev-light-tar-z') as HTMLInputElement | null;
+    const colorPicker = document.getElementById('dev-light-color-picker') as HTMLInputElement | null;
+    const colorHex = document.getElementById('dev-light-color-hex') as HTMLInputElement | null;
+    const intensity = document.getElementById('dev-light-intensity') as HTMLInputElement | null;
+    const distance = document.getElementById('dev-light-distance') as HTMLInputElement | null;
+    const angle = document.getElementById('dev-light-angle') as HTMLInputElement | null;
+    const penumbra = document.getElementById('dev-light-penumbra') as HTMLInputElement | null;
+    const btnGizmo = document.getElementById('dev-btn-light-gizmo');
+    const btnHelper = document.getElementById('dev-btn-light-helper');
+    const btnCopyJson = document.getElementById('dev-btn-light-copy-json');
+
+    select?.addEventListener('change', () => {
+      this.selectedLightId = select.value || null;
+      if (this.lightHelper) {
+        this.scene.remove(this.lightHelper);
+        this.lightHelper.dispose();
+        this.lightHelper = null;
+      }
+      this.updateLightControlFields();
+    });
+
+    btnRefresh?.addEventListener('click', () => this.refreshLightsTab());
+
+    const onPosChange = () => {
+      if (!this.selectedLightId || !posX || !posY || !posZ) return;
+      const x = parseFloat(posX.value);
+      const y = parseFloat(posY.value);
+      const z = parseFloat(posZ.value);
+      if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+        LightRigManager.getInstance().shiftLight(this.selectedLightId, x, y, z, true);
+        if (this.lightHelper) this.lightHelper.update();
+      }
+    };
+
+    posX?.addEventListener('input', onPosChange);
+    posY?.addEventListener('input', onPosChange);
+    posZ?.addEventListener('input', onPosChange);
+
+    const onTarChange = () => {
+      if (!this.selectedLightId || !tarX || !tarY || !tarZ) return;
+      const x = parseFloat(tarX.value);
+      const y = parseFloat(tarY.value);
+      const z = parseFloat(tarZ.value);
+      if (!isNaN(x) && !isNaN(y) && !isNaN(z)) {
+        LightRigManager.getInstance().setTarget(this.selectedLightId, x, y, z);
+        if (this.lightHelper) this.lightHelper.update();
+      }
+    };
+
+    tarX?.addEventListener('input', onTarChange);
+    tarY?.addEventListener('input', onTarChange);
+    tarZ?.addEventListener('input', onTarChange);
+
+    colorPicker?.addEventListener('input', () => {
+      if (!this.selectedLightId || !colorPicker) return;
+      if (colorHex) colorHex.value = colorPicker.value;
+      LightRigManager.getInstance().setColor(this.selectedLightId, colorPicker.value);
+    });
+
+    colorHex?.addEventListener('change', () => {
+      if (!this.selectedLightId || !colorHex) return;
+      if (colorPicker) colorPicker.value = colorHex.value;
+      LightRigManager.getInstance().setColor(this.selectedLightId, colorHex.value);
+    });
+
+    intensity?.addEventListener('input', () => {
+      if (!this.selectedLightId || !intensity) return;
+      const val = parseFloat(intensity.value);
+      if (!isNaN(val)) {
+        const valEl = document.getElementById('dev-light-intensity-val');
+        if (valEl) valEl.textContent = val.toFixed(2);
+        LightRigManager.getInstance().setIntensity(this.selectedLightId, val);
+      }
+    });
+
+    distance?.addEventListener('input', () => {
+      if (!this.selectedLightId || !distance) return;
+      const val = parseFloat(distance.value);
+      if (!isNaN(val)) {
+        const valEl = document.getElementById('dev-light-distance-val');
+        if (valEl) valEl.textContent = `${val.toFixed(1)}m`;
+        LightRigManager.getInstance().setDistance(this.selectedLightId, val);
+      }
+    });
+
+    angle?.addEventListener('input', () => {
+      if (!this.selectedLightId || !angle) return;
+      const val = parseFloat(angle.value);
+      if (!isNaN(val)) {
+        const valEl = document.getElementById('dev-light-angle-val');
+        if (valEl) valEl.textContent = `${val.toFixed(2)} rad`;
+        LightRigManager.getInstance().setAngle(this.selectedLightId, val);
+      }
+    });
+
+    penumbra?.addEventListener('input', () => {
+      if (!this.selectedLightId || !penumbra) return;
+      const val = parseFloat(penumbra.value);
+      if (!isNaN(val)) {
+        const valEl = document.getElementById('dev-light-penumbra-val');
+        if (valEl) valEl.textContent = val.toFixed(2);
+        LightRigManager.getInstance().setPenumbra(this.selectedLightId, val);
+      }
+    });
+
+    btnGizmo?.addEventListener('click', () => {
+      if (!this.selectedLightId) return;
+      const fixture = LightRigManager.getInstance().get(this.selectedLightId);
+      if (!fixture) return;
+      const targetObj = fixture.fixtureGroup || fixture.light;
+      this.devGizmo.attachMultiple([targetObj]);
+      this.showToast(`Attached gizmo to ${fixture.name}`, 'info');
+    });
+
+    btnHelper?.addEventListener('click', () => {
+      if (!this.selectedLightId) return;
+      const fixture = LightRigManager.getInstance().get(this.selectedLightId);
+      if (!fixture) return;
+
+      if (this.lightHelper) {
+        this.scene.remove(this.lightHelper);
+        this.lightHelper.dispose();
+        this.lightHelper = null;
+        this.showToast('Removed light helper', 'info');
+      } else {
+        if (fixture.light instanceof THREE.SpotLight) {
+          this.lightHelper = new THREE.SpotLightHelper(fixture.light);
+        } else if (fixture.light instanceof THREE.PointLight) {
+          this.lightHelper = new THREE.PointLightHelper(fixture.light, 0.4);
+        }
+        if (this.lightHelper) {
+          this.scene.add(this.lightHelper);
+          this.showToast(`Visible helper attached for ${fixture.name}`, 'info');
+        }
+      }
+    });
+
+    btnCopyJson?.addEventListener('click', () => {
+      const json = LightRigManager.getInstance().exportJson();
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(json).then(
+          () => this.showToast('Copied light rig JSON to clipboard', 'success'),
+          () => this.showToast('Clipboard copy failed', 'error')
+        );
+      }
+    });
+
+    EventBus.getInstance().on('light_rig:registered', () => this.refreshLightsTab());
+    EventBus.getInstance().on('light_rig:unregistered', () => this.refreshLightsTab());
+    EventBus.getInstance().on('light_rig:cleared', () => this.refreshLightsTab());
+  }
+
+  private updateLorePanel(obj: THREE.Object3D | null): void {
+    const promptInput = document.getElementById('dev-lore-prompt') as HTMLInputElement | null;
+    const addBtn = document.getElementById('dev-btn-lore-add-flavor') as HTMLButtonElement | null;
+    const saveBtn = document.getElementById('dev-btn-lore-save') as HTMLButtonElement | null;
+    const listContainer = document.getElementById('dev-lore-flavor-list');
+
+    if (!promptInput || !listContainer) return;
+
+    if (!obj) {
+      promptInput.value = '';
+      promptInput.disabled = true;
+      if (addBtn) addBtn.disabled = true;
+      if (saveBtn) saveBtn.disabled = true;
+      listContainer.innerHTML = '<div style="color: #6b7280; font-size: 11px; text-align: center; padding: 16px 8px;">Select a single interactive prop to inspect and edit lore.</div>';
+      return;
+    }
+
+    promptInput.disabled = false;
+    if (addBtn) addBtn.disabled = false;
+    if (saveBtn) saveBtn.disabled = false;
+    promptInput.value = obj.userData?.interactionPrompt || '';
+
+    const flavor = obj.userData?.flavorText;
+    let stages: string[] = [];
+    if (Array.isArray(flavor)) {
+      stages = flavor.map((s) => String(s));
+    } else if (typeof flavor === 'string' && flavor.trim().length > 0) {
+      stages = [flavor.trim()];
+    }
+
+    if (stages.length === 0) {
+      stages = [''];
+    }
+
+    this.renderLoreStages(stages);
+  }
+
+  private renderLoreStages(stages: string[]): void {
+    const listContainer = document.getElementById('dev-lore-flavor-list');
+    if (!listContainer) return;
+
+    listContainer.innerHTML = '';
+    stages.forEach((text, idx) => {
+      listContainer.appendChild(this.createLoreStageCard(idx, text));
+    });
+  }
+
+  private createLoreStageCard(index: number, text: string): HTMLElement {
+    const card = document.createElement('div');
+    card.className = 'dev-lore-stage-card';
+    card.style.cssText = 'background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.1); border-radius: 4px; padding: 6px;';
+
+    const header = document.createElement('div');
+    header.style.cssText = 'display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;';
+
+    const badge = document.createElement('span');
+    badge.className = 'dev-lore-stage-badge';
+    badge.style.cssText = 'font-size: 10px; color: #4ade80; font-family: monospace; font-weight: bold; letter-spacing: 0.05em;';
+    badge.textContent = `STAGE ${index + 1} (CLICK #${index + 1})`;
+
+    const delBtn = document.createElement('button');
+    delBtn.type = 'button';
+    delBtn.className = 'dev-btn-lore-del-stage';
+    delBtn.title = 'Delete stage';
+    delBtn.style.cssText = 'background: rgba(239, 68, 68, 0.15); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 3px; padding: 1px 6px; font-size: 10px; cursor: pointer;';
+    delBtn.textContent = 'DEL';
+
+    header.appendChild(badge);
+    header.appendChild(delBtn);
+
+    const textarea = document.createElement('textarea');
+    textarea.className = 'dev-lore-stage-input';
+    textarea.rows = 2;
+    textarea.placeholder = `Stage ${index + 1} observation note...`;
+    textarea.style.cssText = 'width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.12); color: #e5e7eb; font-size: 11px; line-height: 1.4; padding: 4px; border-radius: 3px; resize: vertical;';
+    textarea.value = text;
+
+    card.appendChild(header);
+    card.appendChild(textarea);
+    return card;
+  }
+
+  private reindexLoreStages(): void {
+    const listContainer = document.getElementById('dev-lore-flavor-list');
+    if (!listContainer) return;
+    const cards = listContainer.querySelectorAll<HTMLElement>('.dev-lore-stage-card');
+    cards.forEach((card, idx) => {
+      const badge = card.querySelector<HTMLElement>('.dev-lore-stage-badge');
+      if (badge) {
+        badge.textContent = `STAGE ${idx + 1} (CLICK #${idx + 1})`;
+      }
+      const textarea = card.querySelector<HTMLTextAreaElement>('.dev-lore-stage-input');
+      if (textarea) {
+        textarea.placeholder = `Stage ${idx + 1} observation note...`;
+      }
+    });
   }
 }
 

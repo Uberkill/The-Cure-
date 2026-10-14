@@ -65,7 +65,10 @@ function createSpokePortal(
   const plaqueGeo = new THREE.BoxGeometry(0.88, 0.14, 0.03);
   plaqueGeo.translate(0, height + 0.40, 0.05);
 
-  const brassGeos: THREE.BufferGeometry[] = [revealLGeo, revealRGeo, revealTopGeo, plaqueGeo];
+  const bulkheadHousingGeo = new THREE.BoxGeometry(0.22, 0.09, 0.08);
+  bulkheadHousingGeo.translate(0, height + 0.54, 0.06);
+
+  const brassGeos: THREE.BufferGeometry[] = [revealLGeo, revealRGeo, revealTopGeo, plaqueGeo, bulkheadHousingGeo];
   if (isHeavyBlastdoor) {
     const wheelGeo = new THREE.TorusGeometry(0.14, 0.02, 12, 24);
     wheelGeo.translate(0, height / 2, 0.05);
@@ -101,6 +104,19 @@ function createSpokePortal(
   ledMesh.name = id;
   group.add(ledMesh);
 
+  // Warm bulkhead lens
+  const bulkheadLensMat = new THREE.MeshStandardMaterial({
+    color: 0xfffaeb,
+    emissive: 0xfde68a,
+    emissiveIntensity: 0.55,
+    roughness: 0.2
+  });
+  const bulkheadLens = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, 0.16, 16), bulkheadLensMat);
+  bulkheadLens.rotation.z = Math.PI / 2;
+  bulkheadLens.position.set(0, height + 0.54, 0.09);
+  bulkheadLens.raycast = () => {};
+  group.add(bulkheadLens);
+
   return { group, doorMesh, ledMesh };
 }
 
@@ -116,6 +132,16 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   // 2. Back Wall with Split Wainscot and Architectural Forward Corridor Portal
   const backWallGroup = new THREE.Group();
   backWallGroup.name = 'group_wall_back';
+
+  // Contact Ambient Occlusion Shadow Plane (under desk & chair)
+  const deskContactAO = new THREE.Mesh(
+    new THREE.PlaneGeometry(3.0, 1.8),
+    new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.28, depthWrite: false })
+  );
+  deskContactAO.rotation.x = -Math.PI / 2;
+  deskContactAO.position.set(0, 0.003, 0.1);
+  deskContactAO.raycast = () => {};
+  backWallGroup.add(deskContactAO);
 
   // Architectural Concourse Wing Header Plaques (North, East, South)
   const plaqueNorthGeo = new THREE.BoxGeometry(2.4, 0.16, 0.04);
@@ -530,6 +556,48 @@ export function buildRoom04Shell(mat: Room04MaterialPalette): Room04ShellEntitie
   luminaireDiffuser.position.set(0, 5.385, 0.2);
   luminaireDiffuser.name = 'luminaire_diffuser';
   ceilingGroup.add(luminaireDiffuser);
+
+  // 7. Suspended Surgical Task Luminaire (Directly Over Central Examination Desk)
+  const taskLuminaireGroup = new THREE.Group();
+  taskLuminaireGroup.name = 'task_luminaire_pendant';
+  taskLuminaireGroup.position.set(0, 0, 0.1);
+
+  // Tubular brushed chrome suspension rod
+  const suspensionRod = new THREE.Mesh(new THREE.CylinderGeometry(0.018, 0.018, 2.45, 12), mat.brushedChrome);
+  suspensionRod.position.set(0, 4.15, 0);
+  suspensionRod.raycast = () => {};
+  taskLuminaireGroup.add(suspensionRod);
+
+  // Spun-metal surgical conical shade (dark titanium exterior)
+  const shadeCowl = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.45, 0.28, 28, 1, true), mat.titaniumChassis);
+  shadeCowl.position.set(0, 2.76, 0);
+  shadeCowl.raycast = () => {};
+  taskLuminaireGroup.add(shadeCowl);
+
+  // Merged brass elements: ceiling canopy collar + ball swivel coupler + rim bezel
+  const canopyGeo = new THREE.CylinderGeometry(0.12, 0.12, 0.05, 16);
+  canopyGeo.translate(0, 5.42, 0);
+
+  const swivelGeo = new THREE.SphereGeometry(0.065, 16, 16);
+  swivelGeo.translate(0, 2.92, 0);
+
+  const bezelGeo = new THREE.TorusGeometry(0.45, 0.016, 12, 28);
+  bezelGeo.rotateX(Math.PI / 2);
+  bezelGeo.translate(0, 2.62, 0);
+
+  const mergedLuminaireBrassGeo = mergeGeometries([canopyGeo, swivelGeo, bezelGeo]);
+  const luminaireBrassMesh = new THREE.Mesh(mergedLuminaireBrassGeo, mat.brassGold);
+  luminaireBrassMesh.raycast = () => {};
+  taskLuminaireGroup.add(luminaireBrassMesh);
+
+  // High-intensity white frosted diffuser lens
+  const diffuserLens = new THREE.Mesh(new THREE.CircleGeometry(0.43, 28), mat.luminaireDiffuser);
+  diffuserLens.position.set(0, 2.63, 0);
+  diffuserLens.rotation.x = Math.PI / 2;
+  diffuserLens.raycast = () => {};
+  taskLuminaireGroup.add(diffuserLens);
+
+  ceilingGroup.add(taskLuminaireGroup);
 
   return {
     floor,

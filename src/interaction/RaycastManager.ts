@@ -10,6 +10,7 @@ export class RaycastManager {
   private scene: THREE.Scene;
   private eventBus: EventBus;
   private isEnabled: boolean = true;
+  private isPointerDownActive: boolean = false;
   private hoveredObject: THREE.Object3D | null = null;
   private exclusiveTargetId: string | null = null;
 
@@ -30,12 +31,21 @@ export class RaycastManager {
     let startX = 0;
     let startY = 0;
     let startTime = 0;
-
     let hoverTimeout: number | null = null;
 
+    const updateCoordinates = (clientX: number, clientY: number) => {
+      const rect = this.domElement.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        this.mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+        this.mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      } else {
+        this.mouse.x = (clientX / window.innerWidth) * 2 - 1;
+        this.mouse.y = -(clientY / window.innerHeight) * 2 + 1;
+      }
+    };
+
     this.domElement.addEventListener('mousemove', (e) => {
-      this.mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      this.mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      updateCoordinates(e.clientX, e.clientY);
       
       if (!hoverTimeout) {
         hoverTimeout = window.setTimeout(() => {
@@ -46,23 +56,40 @@ export class RaycastManager {
     });
 
     this.domElement.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0 || !this.isEnabled) return;
+      if (e.button !== 0 || !this.isEnabled || !e.isPrimary) {
+        if (!e.isPrimary) {
+          this.isPointerDownActive = false;
+        }
+        return;
+      }
+      this.isPointerDownActive = true;
       startX = e.clientX;
       startY = e.clientY;
       startTime = performance.now();
+      updateCoordinates(e.clientX, e.clientY);
     });
 
     this.domElement.addEventListener('pointerup', (e) => {
-      if (e.button !== 0 || !this.isEnabled) return;
+      if (e.button !== 0 || !this.isEnabled || !this.isPointerDownActive || !e.isPrimary) {
+        this.isPointerDownActive = false;
+        return;
+      }
+      this.isPointerDownActive = false;
       const dist = Math.hypot(e.clientX - startX, e.clientY - startY);
       const elapsed = performance.now() - startTime;
-      // Require minimal mouse movement (< 6px) to distinguish deliberate click from camera orbit drag
-      if (dist < 6 && elapsed < 500) {
+      const slopThreshold = e.pointerType === 'touch' ? 14 : 6;
+      if (dist < slopThreshold && elapsed < 500) {
+        updateCoordinates(e.clientX, e.clientY);
         this.checkClick();
       }
     });
 
+    this.domElement.addEventListener('pointercancel', () => {
+      this.isPointerDownActive = false;
+    });
+
     this.domElement.addEventListener('pointerleave', () => {
+      this.isPointerDownActive = false;
       if (this.hoveredObject) {
         this.hoveredObject = null;
         this.domElement.style.cursor = 'default';
@@ -381,12 +408,16 @@ export class RaycastManager {
   }
 
   public setEnabled(enabled: boolean): void {
+    if (!enabled) {
+      this.isPointerDownActive = false;
+    }
     if (enabled) {
       const openModals = document.querySelectorAll(
-        '.overlay-screen:not(.hidden), .diegetic-screen-overlay:not(.hidden), #modal-dossier:not(.hidden), #modal-settings:not(.hidden), #screen-facility-map:not(.hidden)'
+        '.overlay-screen:not(.hidden), .diegetic-screen-overlay:not(.hidden), #modal-dossier:not(.hidden), #modal-settings:not(.hidden), #modal-inspect:not(.hidden), #screen-facility-map:not(.hidden)'
       );
       if (openModals.length > 0) {
         this.isEnabled = false;
+        this.isPointerDownActive = false;
         return;
       }
     }

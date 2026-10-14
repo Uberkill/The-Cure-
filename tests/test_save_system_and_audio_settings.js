@@ -9,7 +9,7 @@ const SCREENSHOTS_DIR = path.resolve(__dirname, '../screenshots');
 
 export async function runSuite(page, baseUrl) {
   console.log('--- Step 1: Initial Launch & Splash Screen Dismissal ---');
-  await page.goto(`${baseUrl}/`);
+  await page.goto(`${baseUrl}/?test=true`);
   await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 5000 });
   await page.click('#btn-menu-start');
   await page.waitForTimeout(300);

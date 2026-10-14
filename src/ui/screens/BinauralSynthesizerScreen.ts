@@ -67,25 +67,51 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     this.labelFreqEl = el.querySelector('#label-carrier-freq');
     this.btnUnsealMonolithEl = el.querySelector('#btn-unseal-monolith');
 
+    let lastAudioTime = 0;
+    let lastLeftAngle = this.state.leftHornAngleDeg;
+    let lastRightAngle = this.state.rightHornAngleDeg;
+    let lastFreq = this.state.carrierFreqHz;
+
     this.sliderHornLeftEl?.addEventListener('input', (e) => {
-      this.state.leftHornAngleDeg = parseInt((e.target as HTMLInputElement).value, 10);
+      const val = parseInt((e.target as HTMLInputElement).value, 10);
+      this.state.leftHornAngleDeg = val;
+      const now = performance.now();
+      if (Math.abs(val - lastLeftAngle) >= 10 && now - lastAudioTime > 50) {
+        this.audioEngine.playTumblerClick();
+        lastLeftAngle = val;
+        lastAudioTime = now;
+      }
       this.updateResonance();
     });
 
     this.sliderHornRightEl?.addEventListener('input', (e) => {
-      this.state.rightHornAngleDeg = parseInt((e.target as HTMLInputElement).value, 10);
+      const val = parseInt((e.target as HTMLInputElement).value, 10);
+      this.state.rightHornAngleDeg = val;
+      const now = performance.now();
+      if (Math.abs(val - lastRightAngle) >= 10 && now - lastAudioTime > 50) {
+        this.audioEngine.playTumblerClick();
+        lastRightAngle = val;
+        lastAudioTime = now;
+      }
       this.updateResonance();
     });
 
     this.sliderFreqEl?.addEventListener('input', (e) => {
-      this.state.carrierFreqHz = parseInt((e.target as HTMLInputElement).value, 10);
+      const val = parseInt((e.target as HTMLInputElement).value, 10);
+      this.state.carrierFreqHz = val;
+      const now = performance.now();
+      if (Math.abs(val - lastFreq) >= 20 && now - lastAudioTime > 50) {
+        this.audioEngine.playTumblerClick();
+        lastFreq = val;
+        lastAudioTime = now;
+      }
       this.updateResonance();
     });
 
     this.btnPhaseEl?.addEventListener('click', () => {
       if (this.state.acousticNullAchieved) return;
       this.state.phaseInverted = !this.state.phaseInverted;
-      this.audioEngine.playTumblerClick();
+      this.audioEngine.playSwitchToggle();
       this.updateResonance();
     });
 
@@ -120,7 +146,10 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
     if (this.state.acousticNullAchieved) return;
     this.state.acousticNullAchieved = true;
 
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playDoorLatch();
+    window.setTimeout(() => {
+      this.audioEngine.playGlassClink();
+    }, 220);
     this.syncDom();
 
     this.eventBus.emit('puzzle:acoustic_null_achieved', {});
@@ -147,6 +176,7 @@ export class BinauralSynthesizerScreen extends DiegeticScreenBase<Act04Audiology
   }
 
   protected onClosed(): void {
+    this.audioEngine.playDoorLatch();
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;

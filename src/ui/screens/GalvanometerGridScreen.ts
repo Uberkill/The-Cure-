@@ -23,6 +23,8 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
   private btnBusLeverEl: HTMLButtonElement | null = null;
   private breakerStatusEl: HTMLElement | null = null;
   private btnResetBreakerEl: HTMLButtonElement | null = null;
+  private lastShuntAudioTime: number = 0;
+  private lastShuntAudioVal: number[] = [50, 150, 20, 180, 100];
 
   public constructor() {
     super();
@@ -128,7 +130,13 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
     if (this.breakerTripped || this.state.gridBalanced) return;
 
     this.state.shuntResistances[channelIndex] = resistance;
-    this.audioEngine.playTumblerClick();
+    const prev = this.lastShuntAudioVal[channelIndex] ?? resistance;
+    const now = performance.now();
+    if (Math.abs(resistance - prev) >= 10 && now - this.lastShuntAudioTime > 50) {
+      this.audioEngine.playTumblerClick();
+      this.lastShuntAudioVal[channelIndex] = resistance;
+      this.lastShuntAudioTime = now;
+    }
 
     // Overload safety check: if pushed to max (200 Ohms), trip the circuit breaker!
     if (resistance >= 200) {
@@ -148,7 +156,7 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
 
   private handleTripBreaker(channelIndex: number): void {
     this.breakerTripped = true;
-    this.audioEngine.playPneumaticHiss();
+    this.audioEngine.playSwitchKnife();
     this.syncDom();
 
     this.eventBus.emit('ui:subtitle_changed', {
@@ -160,7 +168,8 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
     this.breakerTripped = false;
     // Reset shunts to initial unbalanced values, NOT 100 (which would auto-solve)
     this.state.shuntResistances = [50, 150, 20, 180, 100];
-    this.audioEngine.playTumblerClick();
+    this.lastShuntAudioVal = [50, 150, 20, 180, 100];
+    this.audioEngine.playSwitchKnife();
     this.syncDom();
 
     this.eventBus.emit('ui:subtitle_changed', {
@@ -177,7 +186,13 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
     if (!this.checkGridBalanced() || this.state.gridBalanced) return;
 
     this.state.gridBalanced = true;
-    this.audioEngine.playPneumaticHiss();
+    this.audioEngine.playSwitchKnife();
+    window.setTimeout(() => {
+      this.audioEngine.playDoorHeavy();
+    }, 200);
+    window.setTimeout(() => {
+      this.audioEngine.playPneumaticHiss();
+    }, 450);
     this.syncDom();
 
     this.eventBus.emit('puzzle:synthesis_complete', {});
@@ -280,6 +295,7 @@ export class GalvanometerGridScreen extends DiegeticScreenBase<Act07SynthesisSta
   }
 
   protected onClosed(): void {
+    this.audioEngine.playDoorLatch();
     this.chartRecorder?.setSpeed(0);
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);

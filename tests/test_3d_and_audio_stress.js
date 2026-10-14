@@ -6,6 +6,8 @@ import { startTestServer } from './helpers/testServer.js';
 export async function runSuite(page, baseUrl) {
   console.log('--- Step 1: Bootstrap & Autoplay Verification ---');
   await page.goto(`${baseUrl}/?test=true`);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
   await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 5000 });
   await page.click('#btn-menu-start');
   await page.waitForTimeout(200);

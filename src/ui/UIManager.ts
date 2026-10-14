@@ -4,6 +4,8 @@ import { AudioEngine } from '../audio/AudioEngine';
 import { SaveGameData } from '../types';
 import { FacilityMapScreen } from './screens/FacilityMapScreen';
 import { CRTNodePatcher } from '../entities/CRTNodePatcher';
+import { Telemetry } from '../core/Telemetry';
+import { AssetManifestScreen } from './screens/AssetManifestScreen';
 
 export class UIManager {
   private eventBus: EventBus;
@@ -38,6 +40,15 @@ export class UIManager {
   private btnDevRelock!: HTMLElement | null;
   private btnDev3dToggle!: HTMLElement | null;
 
+  private btnUiModeAuto: HTMLElement | null = null;
+  private btnUiModeDesktop: HTMLElement | null = null;
+  private btnUiModeTouch: HTMLElement | null = null;
+  private currentUiModePreference: 'auto' | 'desktop' | 'touch' = 'auto';
+  private resolvedUiMode: 'desktop' | 'touch' = 'desktop';
+  private coarseMediaQueryList: MediaQueryList | null = null;
+  private coarseQueryListener: ((e: MediaQueryListEvent) => void) | null = null;
+  private resizeModeListener: (() => void) | null = null;
+
   private volumeValEl!: HTMLElement;
   private sfxValEl!: HTMLElement;
   private ambientValEl!: HTMLElement;
@@ -60,10 +71,25 @@ export class UIManager {
   private btnRecenterCamera!: HTMLElement;
   private settingsTelemetryEl!: HTMLElement;
 
+  private perfMode: boolean = false;
+  private lastPerfData: { fps: number; deltaMs: number; calls: number; triangles: number; geometries: number } | null = null;
+  private lastDiagnosticMessage: string = 'ALL SYSTEMS NOMINAL';
+  private lastDiagnosticLevel: 'info' | 'warn' | 'error' = 'info';
+
   constructor() {
     this.eventBus = EventBus.getInstance();
 
     const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('fps') || urlParams.has('perf')) {
+      this.perfMode = true;
+    } else {
+      try {
+        this.perfMode = localStorage.getItem('vault_perf_mode') === 'true';
+      } catch (err: unknown) {
+        Telemetry.getInstance().record('warn', 'PerfMode localStorage read restricted', String(err));
+      }
+    }
+
     if (urlParams.has('test')) {
       const style = document.createElement('style');
       style.textContent = `
@@ -80,6 +106,8 @@ export class UIManager {
     this.setupSettingsModal();
     this.setupInventoryModal();
     this.setupAudioButtons();
+    this.initUiMode();
+    this.updateTelemetryDisplay();
   }
 
   private cacheDomElements(): void {
@@ -87,6 +115,25 @@ export class UIManager {
     this.reticleWrapEl = document.querySelector('.center-reticle-wrap') as HTMLElement;
     this.reticlePromptEl = document.getElementById('reticle-prompt')!;
     this.telemetryEl = document.getElementById('telemetry-status')!;
+    if (this.telemetryEl) {
+      this.telemetryEl.style.cursor = 'pointer';
+      this.telemetryEl.style.userSelect = 'none';
+      this.telemetryEl.title = 'Click to toggle Performance / Diagnostic HUD';
+
+      const togglePerf = (e: Event) => {
+        e.stopPropagation();
+        this.perfMode = !this.perfMode;
+        try {
+          localStorage.setItem('vault_perf_mode', String(this.perfMode));
+        } catch (err: unknown) {
+          Telemetry.getInstance().record('warn', 'PerfMode localStorage write restricted', String(err));
+        }
+        this.updateTelemetryDisplay();
+      };
+
+      this.telemetryEl.addEventListener('click', togglePerf);
+      this.telemetryEl.addEventListener('touchend', togglePerf);
+    }
 
     this.cinematicHeaderEl = document.getElementById('cinematic-header')!;
     this.actTagTextEl = document.getElementById('act-tag-text')!;
@@ -126,6 +173,10 @@ export class UIManager {
     this.settingsTelemetryEl = document.getElementById('settings-telemetry')!;
     this.btnCameraDisengage = document.getElementById('btn-camera-disengage');
     this.navDisengageTarget = document.getElementById('nav-disengage-target');
+
+    this.btnUiModeAuto = document.getElementById('setting-ui-mode-auto');
+    this.btnUiModeDesktop = document.getElementById('setting-ui-mode-desktop');
+    this.btnUiModeTouch = document.getElementById('setting-ui-mode-touch');
   }
 
   private setupListeners(): void {
@@ -163,6 +214,16 @@ export class UIManager {
         this.updateSaveCard();
       }),
 
+      this.eventBus.on('ui:set_mode', ({ preference }) => {
+        this.setUiMode(preference, true);
+      }),
+
+      this.eventBus.on('settings:updated', (settings) => {
+        if (settings.uiMode && settings.uiMode !== this.currentUiModePreference) {
+          this.setUiMode(settings.uiMode, false);
+        }
+      }),
+
       this.eventBus.on('input:object_hovered', ({ label }) => {
         if (label) {
           this.reticlePromptEl.textContent = label;
@@ -176,14 +237,18 @@ export class UIManager {
         this.displayChapterCard(payload.act, payload.title, payload.roomCode, payload.durationMs);
       }),
 
+      this.eventBus.on('perf:tick', (data) => {
+        this.lastPerfData = data;
+        if (this.perfMode) {
+          this.updateTelemetryDisplay();
+        }
+      }),
+
       this.eventBus.on('telemetry:log', ({ level, message }) => {
-        if (this.telemetryEl) {
-          this.telemetryEl.textContent = `DIAGNOSTIC: ${message.slice(0, 40)}`;
-          if (level === 'error') {
-            this.telemetryEl.style.color = 'var(--color-crimson-wax)';
-          } else {
-            this.telemetryEl.style.color = 'var(--ink-muted)';
-          }
+        this.lastDiagnosticMessage = message;
+        this.lastDiagnosticLevel = level;
+        if (!this.perfMode) {
+          this.updateTelemetryDisplay();
         }
       }),
 
@@ -275,12 +340,43 @@ export class UIManager {
     this.settingsTelemetryEl.textContent = `DIAGNOSTIC: ACTIVE SECTOR [${room.toUpperCase()}] // AUDIO SYNTHESIS: OPERATIONAL`;
   }
 
+  private updateTelemetryDisplay(): void {
+    if (!this.telemetryEl) return;
+
+    if (this.perfMode) {
+      if (this.lastPerfData) {
+        const { fps, deltaMs, calls } = this.lastPerfData;
+        this.telemetryEl.textContent = `[ ${fps} FPS • ${deltaMs.toFixed(1)}ms • ${calls} CALLS ] // TAP FOR LOGS`;
+        if (fps < 30) {
+          this.telemetryEl.style.color = 'var(--color-crimson-wax)';
+        } else if (fps < 50) {
+          this.telemetryEl.style.color = '#f59e0b';
+        } else {
+          this.telemetryEl.style.color = 'var(--color-crt-phosphor, #4ade80)';
+        }
+      } else {
+        this.telemetryEl.textContent = '[ CALIBRATING FPS... ] // TAP FOR LOGS';
+        this.telemetryEl.style.color = 'var(--color-crt-phosphor, #4ade80)';
+      }
+    } else {
+      this.telemetryEl.textContent = `DIAGNOSTIC: ${this.lastDiagnosticMessage.slice(0, 36)} [PERF]`;
+      if (this.lastDiagnosticLevel === 'error') {
+        this.telemetryEl.style.color = 'var(--color-crimson-wax)';
+      } else if (this.lastDiagnosticLevel === 'warn') {
+        this.telemetryEl.style.color = '#f59e0b';
+      } else {
+        this.telemetryEl.style.color = 'var(--ink-muted)';
+      }
+    }
+  }
+
   private setupSettingsModal(): void {
     const btnToggle = document.getElementById('btn-settings-toggle');
     const btnClose = document.getElementById('btn-close-settings');
     const btnCloseX = document.getElementById('btn-close-settings-x');
 
     const openSettings = () => {
+      AudioEngine.getInstance().playTumblerClick();
       this.updateSaveCard();
       this.updateDiagnosticsTelemetry();
       this.modalSettingsEl.classList.remove('hidden');
@@ -288,6 +384,7 @@ export class UIManager {
     };
 
     const closeSettings = () => {
+      AudioEngine.getInstance().playTumblerClick();
       this.modalSettingsEl.classList.add('hidden');
       this.eventBus.emit('ui:modal_closed', {});
     };
@@ -296,6 +393,12 @@ export class UIManager {
     btnClose?.addEventListener('click', closeSettings);
     btnCloseX?.addEventListener('click', closeSettings);
 
+    const btnReviewOrientation = document.getElementById('btn-review-orientation');
+    btnReviewOrientation?.addEventListener('click', () => {
+      closeSettings();
+      this.eventBus.emit('ui:open_orientation', {});
+    });
+
     this.modalSettingsEl.addEventListener('click', (e) => {
       if (e.target === this.modalSettingsEl) {
         closeSettings();
@@ -303,10 +406,17 @@ export class UIManager {
     });
 
     this.keydownHandler = (e: KeyboardEvent) => {
+      const isInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+
       if (e.key === 'Escape') {
         let handled = false;
         if (!this.modalSettingsEl.classList.contains('hidden')) {
           closeSettings();
+          handled = true;
+        }
+
+        const orientationEl = document.getElementById('view-orientation');
+        if (orientationEl && !orientationEl.classList.contains('hidden')) {
           handled = true;
         }
         
@@ -339,11 +449,39 @@ export class UIManager {
           handled = true;
         }
 
+        const inventoryEl = document.getElementById('modal-inventory');
+        if (inventoryEl && !inventoryEl.classList.contains('hidden')) {
+          AssetManifestScreen.getInstance().close();
+          handled = true;
+        }
+
+        const anyOpenOverlay = document.querySelector(
+          '.diegetic-screen-overlay:not(.hidden), .overlay-screen:not(.hidden):not(#view-main-menu)'
+        );
+        if (anyOpenOverlay) {
+          handled = true;
+        }
+
         if (handled) {
           e.stopImmediatePropagation();
         } else {
           // If no modal was open, back out of cinematic views
           this.triggerCameraDisengage();
+        }
+      } else if (!isInput) {
+        const orientationEl = document.getElementById('view-orientation');
+        const isOrientationActive = orientationEl && !orientationEl.classList.contains('hidden');
+        const isMainMenuActive = !document.getElementById('view-main-menu')?.classList.contains('hidden');
+
+        if (!isOrientationActive && !isMainMenuActive) {
+          if (e.key === 'm' || e.key === 'M') {
+            const facilityMapEl = document.getElementById('screen-facility-map');
+            if (!facilityMapEl || facilityMapEl.classList.contains('hidden')) {
+              this.eventBus.emit('ui:open_facility_map', {});
+            }
+          } else if (e.key === 'i' || e.key === 'I') {
+            this.eventBus.emit('ui:open_asset_manifest', {});
+          }
         }
       }
     };
@@ -441,6 +579,7 @@ export class UIManager {
 
     // Save Game button
     this.btnSaveGame?.addEventListener('click', () => {
+      AudioEngine.getInstance().playPaperRustle();
       const saved = SaveManager.getInstance().saveGame();
       this.updateSaveCard(saved);
       if (this.saveTimestampLabelEl) {
@@ -453,6 +592,7 @@ export class UIManager {
 
     // Export save file
     this.btnExportSave?.addEventListener('click', () => {
+      AudioEngine.getInstance().playPaperRustle();
       SaveManager.getInstance().exportSaveFile();
     });
 
@@ -466,6 +606,7 @@ export class UIManager {
       if (file) {
         const success = await SaveManager.getInstance().importSaveFile(file);
         if (success) {
+          AudioEngine.getInstance().playPaperRustle();
           this.updateSaveCard();
           closeSettings();
         }
@@ -478,6 +619,7 @@ export class UIManager {
       const confirmed = window.confirm('PURGE RECORD: Clear all recovered crystals, inventory assets, and unlocked clearance back to Act I?');
       if (confirmed) {
         closeSettings();
+        AudioEngine.getInstance().playDoorHeavy();
         AudioEngine.getInstance().teardownScenarioAudio();
         SaveManager.getInstance().purgeSave();
         this.eventBus.emit('scenario:switch_room', { targetRoomId: 'room_04' });
@@ -486,6 +628,20 @@ export class UIManager {
           text: 'Record purged. Returning to Sterile Chamber baseline.'
         });
       }
+    });
+
+    // Display profile 3-way toggle
+    this.btnUiModeAuto?.addEventListener('click', () => {
+      AudioEngine.getInstance().playTumblerClick();
+      this.setUiMode('auto', true);
+    });
+    this.btnUiModeDesktop?.addEventListener('click', () => {
+      AudioEngine.getInstance().playTumblerClick();
+      this.setUiMode('desktop', true);
+    });
+    this.btnUiModeTouch?.addEventListener('click', () => {
+      AudioEngine.getInstance().playTumblerClick();
+      this.setUiMode('touch', true);
     });
   }
 
@@ -516,7 +672,9 @@ export class UIManager {
     if (persist) {
       try {
         sessionStorage.setItem('vault_dev_authorized', authorized ? 'true' : 'false');
-      } catch {}
+      } catch (err: unknown) {
+        Telemetry.getInstance().record('warn', 'SessionStorage dev write restricted', String(err));
+      }
     }
 
     if (this.btnDev3dToggle) {
@@ -551,7 +709,9 @@ export class UIManager {
     let sessionAuthorized = false;
     try {
       sessionAuthorized = sessionStorage.getItem('vault_dev_authorized') === 'true';
-    } catch {}
+    } catch (err: unknown) {
+      Telemetry.getInstance().record('warn', 'SessionStorage dev read restricted', String(err));
+    }
 
     this.setDevAuthorized(urlAuthorized || sessionAuthorized, false);
   }
@@ -594,6 +754,92 @@ export class UIManager {
     return this.currentHotspotId;
   }
 
+  private initUiMode(): void {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paramMode = urlParams.get('mode');
+    const settings = SaveManager.getInstance().getSettings();
+    let initialPref: 'auto' | 'desktop' | 'touch' = 'auto';
+
+    if (paramMode === 'desktop' || paramMode === 'touch' || paramMode === 'auto') {
+      initialPref = paramMode;
+    } else if (settings.uiMode) {
+      initialPref = settings.uiMode;
+    }
+
+    if (typeof window !== 'undefined' && window.matchMedia) {
+      this.coarseMediaQueryList = window.matchMedia('(hover: none) and (pointer: coarse)');
+      this.coarseQueryListener = () => {
+        if (this.currentUiModePreference === 'auto') {
+          this.applyResolvedUiMode();
+        }
+      };
+      if (this.coarseMediaQueryList.addEventListener) {
+        this.coarseMediaQueryList.addEventListener('change', this.coarseQueryListener);
+      } else if ((this.coarseMediaQueryList as any).addListener) {
+        (this.coarseMediaQueryList as any).addListener(this.coarseQueryListener);
+      }
+    }
+
+    this.resizeModeListener = () => {
+      if (this.currentUiModePreference === 'auto') {
+        this.applyResolvedUiMode();
+      }
+    };
+    window.addEventListener('resize', this.resizeModeListener);
+
+    this.setUiMode(initialPref, false);
+  }
+
+  public resolveUiMode(preference: 'auto' | 'desktop' | 'touch'): 'desktop' | 'touch' {
+    if (preference === 'desktop') return 'desktop';
+    if (preference === 'touch') return 'touch';
+
+    const isCoarse = !!(this.coarseMediaQueryList && this.coarseMediaQueryList.matches);
+    const isNarrow = typeof window !== 'undefined' ? window.innerWidth <= 900 : false;
+    return isCoarse || isNarrow ? 'touch' : 'desktop';
+  }
+
+  public setUiMode(preference: 'auto' | 'desktop' | 'touch', persist: boolean = true): void {
+    this.currentUiModePreference = preference;
+    this.applyResolvedUiMode();
+
+    if (persist) {
+      this.eventBus.emit('settings:updated', { uiMode: preference });
+    }
+  }
+
+  private applyResolvedUiMode(): void {
+    const previous = this.resolvedUiMode;
+    this.resolvedUiMode = this.resolveUiMode(this.currentUiModePreference);
+
+    if (typeof document !== 'undefined') {
+      document.documentElement.dataset.uiMode = this.resolvedUiMode;
+    }
+
+    this.updateUiModeButtons();
+
+    if (previous !== this.resolvedUiMode || !document.documentElement.dataset.uiModeSet) {
+      document.documentElement.dataset.uiModeSet = 'true';
+      this.eventBus.emit('ui:mode_changed', {
+        mode: this.resolvedUiMode,
+        preference: this.currentUiModePreference
+      });
+    }
+  }
+
+  private updateUiModeButtons(): void {
+    this.btnUiModeAuto?.classList.toggle('active', this.currentUiModePreference === 'auto');
+    this.btnUiModeDesktop?.classList.toggle('active', this.currentUiModePreference === 'desktop');
+    this.btnUiModeTouch?.classList.toggle('active', this.currentUiModePreference === 'touch');
+  }
+
+  public getUiMode(): { mode: 'desktop' | 'touch'; preference: 'auto' | 'desktop' | 'touch' } {
+    return {
+      mode: this.resolvedUiMode,
+      preference: this.currentUiModePreference
+    };
+  }
+
   public destroy(): void {
     if (this.keydownHandler) {
       window.removeEventListener('keydown', this.keydownHandler);
@@ -602,6 +848,18 @@ export class UIManager {
     if (this.mousemoveHandler) {
       window.removeEventListener('mousemove', this.mousemoveHandler);
       this.mousemoveHandler = null;
+    }
+    if (this.coarseMediaQueryList && this.coarseQueryListener) {
+      if (this.coarseMediaQueryList.removeEventListener) {
+        this.coarseMediaQueryList.removeEventListener('change', this.coarseQueryListener);
+      } else if ((this.coarseMediaQueryList as any).removeListener) {
+        (this.coarseMediaQueryList as any).removeListener(this.coarseQueryListener);
+      }
+      this.coarseQueryListener = null;
+    }
+    if (this.resizeModeListener) {
+      window.removeEventListener('resize', this.resizeModeListener);
+      this.resizeModeListener = null;
     }
     for (const unsub of this.unsubscribers) {
       unsub();

@@ -14,6 +14,8 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
   protected isVisible: boolean = false;
   protected keydownHandler: ((e: KeyboardEvent) => void) | null = null;
 
+  protected previousActiveElement: HTMLElement | null = null;
+
   constructor() {
     this.eventBus = EventBus.getInstance();
   }
@@ -25,6 +27,10 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
   public open(_initialData?: unknown): void {
     if (this.isVisible && this.modalEl && !this.modalEl.classList.contains('hidden')) return;
     this.isVisible = true;
+
+    this.previousActiveElement = (typeof document !== 'undefined' && document.activeElement instanceof HTMLElement)
+      ? document.activeElement
+      : null;
 
     if (!this.modalEl) {
       this.modalEl = this.createModalElement();
@@ -46,6 +52,16 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
     }
 
     this.unbindKeyboardTrapping();
+
+    if (this.previousActiveElement && typeof this.previousActiveElement.focus === 'function') {
+      try {
+        this.previousActiveElement.focus();
+      } catch {
+        // Safe focus restoration
+      }
+      this.previousActiveElement = null;
+    }
+
     this.eventBus.emit('ui:modal_closed', {});
     this.onClosed();
   }
@@ -66,17 +82,43 @@ export abstract class DiegeticScreenBase<TState = Record<string, unknown>> imple
           return;
         }
         e.preventDefault();
+        e.stopImmediatePropagation();
         this.close();
+      } else if (e.key === 'Tab' && this.modalEl) {
+        const focusable = Array.from(
+          this.modalEl.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter(el => el.offsetParent !== null || el.offsetWidth > 0 || el.offsetHeight > 0);
+
+        if (focusable.length > 0) {
+          const first = focusable[0];
+          const last = focusable[focusable.length - 1];
+
+          if (e.shiftKey) {
+            if (document.activeElement === first || !this.modalEl.contains(document.activeElement)) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else {
+            if (document.activeElement === last || !this.modalEl.contains(document.activeElement)) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        } else {
+          e.preventDefault();
+        }
       } else {
         this.handleKeyDown(e);
       }
     };
-    window.addEventListener('keydown', this.keydownHandler, false);
+    window.addEventListener('keydown', this.keydownHandler, true);
   }
 
   protected unbindKeyboardTrapping(): void {
     if (this.keydownHandler) {
-      window.removeEventListener('keydown', this.keydownHandler, false);
+      window.removeEventListener('keydown', this.keydownHandler, true);
       this.keydownHandler = null;
     }
   }

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { Telemetry } from '../core/Telemetry';
+import { getAssetUrl } from '../utils/assetPath';
 
 export class ModelLoader {
   private static instance: ModelLoader;
@@ -24,7 +25,7 @@ export class ModelLoader {
   private async getManifest(): Promise<{ models: string[]; music: string[] }> {
     if (this.manifestLoaded) return this.manifest || { models: [], music: [] };
     try {
-      const res = await fetch('/assets/manifest.json');
+      const res = await fetch(getAssetUrl('assets/manifest.json'));
       if (res.ok) {
         this.manifest = await res.json();
       }
@@ -37,7 +38,7 @@ export class ModelLoader {
 
   public async loadProp(propName: string, fallbackBuilder: () => THREE.Object3D): Promise<THREE.Object3D> {
     const manifest = await this.getManifest();
-    const assetPath = `/assets/models/${propName}.glb`;
+    const assetPath = getAssetUrl(`assets/models/${propName}.glb`);
 
     if (!manifest.models.includes(propName) && !manifest.models.includes(`${propName}.glb`)) {
       this.telemetry.record(

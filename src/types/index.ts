@@ -31,7 +31,7 @@ export type CrystalId =
 
 export type DecayLevel = 0 | 1 | 2 | 3 | 4;
 
-export type ViewState = 'boot' | 'chamber' | 'dossier' | 'crt_patcher' | 'settings' | 'debrief' | 'terminal_blackout';
+export type ViewState = 'boot' | 'chamber' | 'orientation' | 'dossier' | 'crt_patcher' | 'settings' | 'debrief' | 'terminal_blackout';
 
 export interface GameSettings {
   masterVolume: number;
@@ -41,6 +41,7 @@ export interface GameSettings {
   parallaxSensitivity: number;
   crtScanlines: boolean;
   subtitlesEnabled: boolean;
+  uiMode?: 'auto' | 'desktop' | 'touch';
 }
 
 export interface SaveGameData {
@@ -90,7 +91,7 @@ export interface AudioLogMetadata {
 }
 
 export interface EventPayloadMap {
-  'input:object_clicked': { objectId: string; point?: THREE.Vector3; flavorText?: string };
+  'input:object_clicked': { objectId: string; point?: THREE.Vector3; flavorText?: string | string[] };
   'input:object_hovered': { objectId: string | null; label: string };
   'game:stage_transition': { from: GameStage; to: GameStage };
   'scenario:switch_room': { targetRoomId: string; doorThresholdId?: string; isDevJump?: boolean };
@@ -129,12 +130,17 @@ export interface EventPayloadMap {
   'ui:view_changed': { view: ViewState };
   'ui:modal_opened': Record<string, never>;
   'ui:modal_closed': Record<string, never>;
+  'ui:open_orientation': Record<string, never>;
   'ui:open_facility_map': Record<string, never>;
   'ui:open_staff_roster': { staffId?: string };
-  'ui:open_asset_manifest': { trayId?: 'hardware' | 'crystals' | 'records'; itemId?: string };
+  'ui:open_asset_manifest': { trayId?: 'all' | 'hardware' | 'crystals' | 'records'; itemId?: string };
   'ui:subtitle_changed': { text: string };
   'ui:chapter_display': { act: string; title: string; roomCode?: string; durationMs?: number };
+  'ui:mode_changed': { mode: 'desktop' | 'touch'; preference: 'auto' | 'desktop' | 'touch' };
+  'ui:set_mode': { preference: 'auto' | 'desktop' | 'touch' };
   'audio:toggle_synth': { type: 'drone' | 'ballast' | 'phone'; active: boolean };
+  'audio:play_sfx': { sfx: string; volume?: number };
+  'audio:set_room_soundscape': { roomId: string };
   'settings:updated': Partial<GameSettings>;
   'save:updated': { save: SaveGameData };
   'save:cleared': Record<string, never>;
@@ -144,6 +150,11 @@ export interface EventPayloadMap {
   'editor:selection_changed': { selected: THREE.Object3D[] };
   'dev:authorized': { authorized: boolean };
   'dev:toggle_gizmo': Record<string, never>;
+  'light_rig:registered': { id: string; fixture: any };
+  'light_rig:unregistered': { id: string };
+  'light_rig:updated': { id: string; fixture: any };
+  'light_rig:cleared': Record<string, never>;
+  'perf:tick': { fps: number; deltaMs: number; calls: number; triangles: number; geometries: number };
 }
 
 export type EventKey = keyof EventPayloadMap;

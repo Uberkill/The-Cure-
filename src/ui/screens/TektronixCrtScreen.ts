@@ -30,6 +30,9 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   private labelPhaseEl: HTMLElement | null = null;
   private btnKnifeSwitchEl: HTMLButtonElement | null = null;
   private solveTimeoutId: number | null = null;
+  private lastFreqAudioStep: number = 440;
+  private lastPhaseAudioStep: number = 180;
+  private lastDialAudioTime: number = 0;
 
   protected createModalElement(): HTMLElement {
     const el = document.createElement('div');
@@ -110,6 +113,12 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
       if (this.labelFrequencyEl) {
         this.labelFrequencyEl.textContent = `${val}.0 HZ`;
       }
+      const now = performance.now();
+      if (Math.abs(val - this.lastFreqAudioStep) >= 10 && now - this.lastDialAudioTime > 50) {
+        AudioEngine.getInstance().playTumblerClick();
+        this.lastFreqAudioStep = val;
+        this.lastDialAudioTime = now;
+      }
       this.updateResonance();
     });
 
@@ -120,6 +129,12 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
       if (this.labelPhaseEl) {
         this.labelPhaseEl.innerHTML = `${val}.0&deg;`;
       }
+      const now = performance.now();
+      if (Math.abs(val - this.lastPhaseAudioStep) >= 15 && now - this.lastDialAudioTime > 50) {
+        AudioEngine.getInstance().playTumblerClick();
+        this.lastPhaseAudioStep = val;
+        this.lastDialAudioTime = now;
+      }
       this.updateResonance();
     });
 
@@ -129,12 +144,15 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   }
 
   private handleShuntClick(): void {
-    AudioEngine.getInstance().playTumblerClick();
-    if (this.state.brassShuntInserted) return;
+    if (this.state.brassShuntInserted) {
+      AudioEngine.getInstance().playTumblerClick();
+      return;
+    }
 
     const gs = GameState.getInstance();
     // Accept prop_brass_shunt or prop_key
     if (gs.hasItem('prop_brass_shunt') || gs.hasItem('prop_key')) {
+      AudioEngine.getInstance().playSwitchToggle();
       this.state.brassShuntInserted = true;
       if (this.slotShuntEl) {
         this.slotShuntEl.textContent = 'BRASS SHUNT SEATED';
@@ -181,7 +199,7 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   }
 
   private handleKnifeSwitch(): void {
-    AudioEngine.getInstance().playTumblerClick();
+    AudioEngine.getInstance().playSwitchKnife();
     if (!this.state.harmonicLocked || this.state.knifeSwitchThrown) return;
 
     this.state.knifeSwitchThrown = true;
@@ -255,11 +273,13 @@ export class TektronixCrtScreen extends DiegeticScreenBase<Act01SterileState> {
   }
 
   protected onOpened(): void {
+    AudioEngine.getInstance().playSwitchToggle();
     this.syncDomState();
     this.startCanvasRenderLoop();
   }
 
   protected onClosed(): void {
+    AudioEngine.getInstance().playDoorLatch();
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;

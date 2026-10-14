@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Vault • Room 04</title>
+  <title>The Cure • Room 04</title>
   <link rel="stylesheet" href="./src/ui/style.css">
 </head>
 <body>
@@ -13,10 +13,13 @@
 
   <!-- Editorial Cinematic UI Overlay (pointer-events: none on container) -->
   <div class="ui-layer">
-    <!-- Top-Right: Inventory Icon -->
-    <div style="position: absolute; top: 32px; right: 32px; pointer-events: auto; display: flex; gap: 12px; align-items: center;">
-      <button class="pill-btn nav-btn" id="btn-facility-map-toggle" title="Sub-Level 04 Facility Blueprint" style="padding: 8px 16px; font-size: 11px; letter-spacing: 0.12em;">FACILITY SCHEMATIC</button>
-      <button class="inventory-btn" id="btn-inventory-toggle" title="Inventory">
+    <!-- Top-Right: Inventory Icon & Facility Map Navigation -->
+    <div class="top-bar-right" id="hud-top-right">
+      <button class="pill-btn nav-btn top-bar-action-btn" id="btn-facility-map-toggle" title="Sub-Level 04 Facility Blueprint">
+        <span class="map-label-full">FACILITY SCHEMATIC</span>
+        <span class="map-label-short">MAP</span>
+      </button>
+      <button class="inventory-btn top-bar-action-btn" id="btn-inventory-toggle" title="Inventory">
         <!-- Ludasar (Lucide) Backpack Icon -->
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path>
@@ -30,7 +33,7 @@
     </div>
     
     <!-- Top-Left: Camera Disengage / Step Back HUD Button (Contextual) -->
-    <div style="position: absolute; top: 32px; left: 32px; pointer-events: auto; z-index: var(--z-hud-floating, 20);">
+    <div class="top-bar-left" id="hud-top-left">
       <button class="camera-disengage-btn camera-disengage--md hidden" id="btn-camera-disengage" title="Step Back to Room Overview [ESC]" aria-label="Step back to room overview (ESC)" aria-hidden="true">
         <span class="btn-disengage-icon">
           <!-- Tactical Revert / Step Back Return Arrow SVG -->
@@ -96,7 +99,7 @@
   <div class="overlay-screen" id="view-main-menu" style="background-color: #ebefeb; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #030403; z-index: 15000;">
     <div style="text-align: center; margin-bottom: 60px;">
       <div style="font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.25em; color: rgba(0,0,0,0.7); margin-bottom: 16px;">DEPARTMENT OF COGNITIVE ALIGNMENT</div>
-      <h1 style="font-size: 64px; font-weight: bold; letter-spacing: -0.02em; margin: 0; line-height: 1;">THE VAULT</h1>
+      <h1 style="font-size: clamp(38px, 8vw, 64px); font-weight: bold; letter-spacing: -0.02em; margin: 0; line-height: 1;">THE CURE</h1>
       <div style="font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.15em; margin-top: 24px;">ROOM 04 &bull; SANATORIUM PROTOCOL</div>
     </div>
     
@@ -104,6 +107,237 @@
       <button class="pill-btn" id="btn-menu-start" style="width: 100%; padding: 16px; font-size: 14px;">Begin Assessment</button>
       <button class="pill-btn" id="btn-menu-settings" style="width: 100%; padding: 16px; font-size: 14px;">System Preferences</button>
       <button class="pill-btn" id="btn-menu-exit" style="width: 100%; padding: 16px; font-size: 14px;">Exit Terminal</button>
+    </div>
+  </div>
+
+  <!-- Screen: Subject Pre-Admission Orientation (Form 104-O) -->
+  <div class="overlay-screen hidden" id="view-orientation" style="z-index: 15000;">
+    <div class="dossier-paper orientation-dossier" id="orientation-card">
+      <div class="eyelet tl"></div>
+      <div class="eyelet tr"></div>
+      <div class="wax-seal">104</div>
+
+      <!-- Step Navigation Tabs Header -->
+      <div class="orientation-tabs-bar">
+        <div class="orientation-tabs-list">
+          <button class="orientation-tab-btn active" id="tab-step-1" data-step="1">
+            <span class="orientation-tab-num">1</span>
+            <span>Subject Intake</span>
+          </button>
+          <button class="orientation-tab-btn" id="tab-step-2" data-step="2">
+            <span class="orientation-tab-num">2</span>
+            <span>Motor Directives</span>
+          </button>
+          <button class="orientation-tab-btn" id="tab-step-3" data-step="3">
+            <span class="orientation-tab-num">3</span>
+            <span>Egress Protocol</span>
+          </button>
+        </div>
+        <div class="classified-stamp">FORM 104-O // RESTRICTED</div>
+      </div>
+
+      <!-- Step Content Area -->
+      <div class="orientation-body">
+
+        <!-- SLIDE 1: Subject Awakening / Identity -->
+        <div class="step-slide active" id="slide-step-1">
+          <div class="step-header">
+            <div class="step-dept-tag">DIRECTORATE FOR LIMBIC STABILIZATION // PROTOCOL 104-O</div>
+            <h2 class="step-title">Subject Awakening &amp; Identity Record</h2>
+          </div>
+          <div class="slide-split-layout">
+            <div class="illustration-frame">
+              <svg class="illustration-svg" viewBox="0 0 240 180" fill="none" stroke="currentColor">
+                <circle cx="120" cy="90" r="72" stroke="var(--color-sage-deep)" stroke-width="1.2" stroke-dasharray="2 3"></circle>
+                <circle cx="120" cy="90" r="48" stroke="var(--color-brass-cast)" stroke-width="1" opacity="0.6"></circle>
+                <line x1="20" y1="90" x2="220" y2="90" stroke="#CBD3C8" stroke-width="1"></line>
+                <line x1="120" y1="10" x2="120" y2="170" stroke="#CBD3C8" stroke-width="1"></line>
+                <path d="M96 142v-24c-12-8-20-22-20-38 0-24 20-44 44-44s44 20 44 44c0 10-4 20-10 28l4 34" stroke="var(--ink-primary)" stroke-width="1.8" stroke-linecap="round"></path>
+                <path d="M40 90h30l6-16 12 32 10-24 10 16 8-8h54" stroke="var(--color-sage-deep)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                <circle cx="120" cy="80" r="14" stroke="var(--color-crimson-wax)" stroke-width="1.2" stroke-dasharray="3 3"></circle>
+                <circle cx="120" cy="80" r="3" fill="var(--color-crimson-wax)"></circle>
+              </svg>
+              <span class="illustration-caption">FIG 1.0 &bull; LIMBIC DE-COUPLING MATRIX</span>
+            </div>
+            <div class="slide-info-pane">
+              <div class="status-badge-row">
+                <span class="meta-badge">DESIGNATION: SUBJECT 104</span>
+                <span class="meta-badge">ADMISSION: SANATORIUM 04</span>
+                <span class="meta-badge">COGNITION: STABILIZING</span>
+              </div>
+              <p class="narrative-body-text">
+                You are awakening within Examination Room 04. Disorientation and temporary memory attenuation are anticipated consequences of limbic friction decoupling.
+              </p>
+              <p class="narrative-body-text">
+                Your presence is designated as voluntary in accordance with Syndicate Emergency Decree 12. Resistance is a symptom of incomplete stabilization.
+              </p>
+              <div class="quote-box">
+                "Alignment precedes release. There are no shadows to hide in."
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 2: Sensorimotor Controls -->
+        <div class="step-slide" id="slide-step-2">
+          <div class="step-header">
+            <div class="step-dept-tag">DIRECTORATE FOR LIMBIC STABILIZATION // PROTOCOL 104-O</div>
+            <h2 class="step-title">Sensorimotor Manipulation Directives</h2>
+          </div>
+          <div class="controls-split-layout">
+            <div class="control-card">
+              <div class="control-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="5" y="3" width="14" height="18" rx="7"></rect>
+                  <line x1="12" y1="7" x2="12" y2="10"></line>
+                  <path d="M2 12a10 10 0 0 1 3-7"></path>
+                  <path d="M22 12a10 10 0 0 0-3-7"></path>
+                </svg>
+              </div>
+              <div class="control-card-info">
+                <span class="control-card-action">Orbit / Gaze</span>
+                <span class="control-card-binding"><span class="binding-desktop">Left Click + Drag</span><span class="binding-touch">1-Finger Drag</span></span>
+                <span class="control-card-desc">Rotate your 360&deg; field of view</span>
+              </div>
+            </div>
+            <div class="control-card">
+              <div class="control-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="7"></circle>
+                  <line x1="21" y1="21" x2="16" y2="16"></line>
+                  <line x1="11" y1="8" x2="11" y2="14"></line>
+                  <line x1="8" y1="11" x2="14" y2="11"></line>
+                </svg>
+              </div>
+              <div class="control-card-info">
+                <span class="control-card-action">Scrutinize</span>
+                <span class="control-card-binding"><span class="binding-desktop">Scroll Wheel</span><span class="binding-touch">Pinch to Zoom</span></span>
+                <span class="control-card-desc">Magnify and inspect small details</span>
+              </div>
+            </div>
+            <div class="control-card">
+              <div class="control-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="8"></circle>
+                  <line x1="12" y1="2" x2="12" y2="6"></line>
+                  <line x1="12" y1="18" x2="12" y2="22"></line>
+                  <line x1="2" y1="12" x2="6" y2="12"></line>
+                  <line x1="18" y1="12" x2="22" y2="12"></line>
+                </svg>
+              </div>
+              <div class="control-card-info">
+                <span class="control-card-action">Manipulate</span>
+                <span class="control-card-binding"><span class="binding-desktop">Click Reticle Target</span><span class="binding-touch">Tap Reticle Target</span></span>
+                <span class="control-card-desc">Operate switches, knobs, and props</span>
+              </div>
+            </div>
+            <div class="control-card">
+              <div class="control-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                  <path d="M8 12h8"></path>
+                  <path d="M11 9l-3 3 3 3"></path>
+                </svg>
+              </div>
+              <div class="control-card-info">
+                <span class="control-card-action">Step Back</span>
+                <span class="control-card-binding"><span class="binding-desktop">[ ESC ] Key / HUD</span><span class="binding-touch">Tap [ STEP BACK ] Button</span></span>
+                <span class="control-card-desc">Disengage view / dismiss modals</span>
+              </div>
+            </div>
+            <div class="control-card">
+              <div class="control-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="18" height="18" rx="1"></rect>
+                  <line x1="3" y1="9" x2="21" y2="9"></line>
+                  <line x1="9" y1="9" x2="9" y2="21"></line>
+                </svg>
+              </div>
+              <div class="control-card-info">
+                <span class="control-card-action">Facility Blueprint</span>
+                <span class="control-card-binding"><span class="binding-desktop">[ M ] Key / Top-Right</span><span class="binding-touch">Tap Blueprint Button</span></span>
+                <span class="control-card-desc">Top-down Sub-Level 04 map</span>
+              </div>
+            </div>
+            <div class="control-card">
+              <div class="control-card-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path>
+                  <path d="M10 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1"></path>
+                  <path d="M4 10h16"></path>
+                </svg>
+              </div>
+              <div class="control-card-info">
+                <span class="control-card-action">Specimen Ledger</span>
+                <span class="control-card-binding"><span class="binding-desktop">[ I ] Key / Top-Right</span><span class="binding-touch">Tap Manifest Button</span></span>
+                <span class="control-card-desc">Collected documents and artifacts</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLIDE 3: Primary Mission Directive -->
+        <div class="step-slide" id="slide-step-3">
+          <div class="step-header">
+            <div class="step-dept-tag">DIRECTORATE FOR LIMBIC STABILIZATION // PROTOCOL 104-O</div>
+            <h2 class="step-title">Primary Clinical Task &amp; Egress Rule</h2>
+          </div>
+          <div class="directive-split-layout">
+            <div class="illustration-frame">
+              <svg class="illustration-svg" viewBox="0 0 240 180" fill="none" stroke="currentColor">
+                <rect x="50" y="25" width="140" height="130" stroke="var(--ink-primary)" stroke-width="1.8" rx="2"></rect>
+                <line x1="120" y1="25" x2="120" y2="155" stroke="var(--ink-primary)" stroke-width="1.5" stroke-dasharray="4 2"></line>
+                <rect x="20" y="60" width="30" height="14" stroke="var(--color-sage-deep)" stroke-width="1.4"></rect>
+                <line x1="35" y1="67" x2="50" y2="67" stroke="var(--color-brass-cast)" stroke-width="2"></line>
+                <rect x="20" y="105" width="30" height="14" stroke="var(--color-sage-deep)" stroke-width="1.4"></rect>
+                <line x1="35" y1="112" x2="50" y2="112" stroke="var(--color-brass-cast)" stroke-width="2"></line>
+                <rect x="190" y="60" width="30" height="14" stroke="var(--color-sage-deep)" stroke-width="1.4"></rect>
+                <line x1="190" y1="67" x2="205" y2="67" stroke="var(--color-brass-cast)" stroke-width="2"></line>
+                <rect x="190" y="105" width="30" height="14" stroke="var(--color-sage-deep)" stroke-width="1.4"></rect>
+                <line x1="190" y1="112" x2="205" y2="112" stroke="var(--color-brass-cast)" stroke-width="2"></line>
+                <circle cx="120" cy="90" r="22" stroke="var(--color-crimson-wax)" stroke-width="1.5"></circle>
+                <circle cx="120" cy="90" r="14" stroke="var(--color-sage-deep)" stroke-width="1" stroke-dasharray="3 2"></circle>
+                <circle cx="120" cy="90" r="4" fill="var(--color-crimson-wax)"></circle>
+              </svg>
+              <span class="illustration-caption">FIG 2.0 &bull; HYDRAULIC EGRESS INTERLOCK</span>
+            </div>
+            <div class="directive-card-info">
+              <div class="directive-rule-box">
+                <span class="directive-rule-title">THE SANATORIUM LAW:</span>
+                <p class="directive-rule-desc">
+                  Chamber firedoors are slaved directly to the apparatus. Egress cannot be forced through physical violence.
+                </p>
+              </div>
+              <p class="narrative-body-text">
+                Observe the instruments within the chamber. Manipulate the switches, dials, and physical apparatus to achieve cognitive stabilization.
+              </p>
+              <p class="narrative-body-text">
+                Every puzzle is an intentional calibration protocol. Complete your assessment to unseal the observation corridor and proceed deeper into the facility.
+              </p>
+              <div class="quote-box" style="border-left-color: var(--color-sage-deep);">
+                "Your assessment begins the moment you answer."
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Step Navigation Footer -->
+      <div class="orientation-footer">
+        <div class="orientation-pips">
+          <span id="orientation-pip-text">STEP 1 OF 3</span>
+          <div class="pip-dots">
+            <span class="pip-dot active" id="orientation-pip-1"></span>
+            <span class="pip-dot" id="orientation-pip-2"></span>
+            <span class="pip-dot" id="orientation-pip-3"></span>
+          </div>
+        </div>
+        <div class="orientation-nav-buttons">
+          <button class="pill-btn" id="btn-orientation-prev" disabled>Previous</button>
+          <button class="pill-btn active" id="btn-orientation-next">Next Phase</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -247,10 +481,29 @@ Alignment precedes release.</div>
           <input type="checkbox" id="setting-parallax" checked class="settings-checkbox">
         </label>
 
-        <div style="display: flex; justify-content: flex-end; margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(20, 26, 33, 0.05);">
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; padding-top: 8px; border-top: 1px solid rgba(20, 26, 33, 0.05);">
+          <button class="pill-btn" id="btn-review-orientation" style="font-size: 11px; padding: 6px 14px;">
+            Intake Protocol 104-O
+          </button>
           <button class="pill-btn" id="btn-recenter-camera" style="font-size: 11px; padding: 6px 14px;">
             Re-align Optics [Overview]
           </button>
+        </div>
+      </div>
+
+      <!-- Section: Interface Mode & Viewport Calibration -->
+      <div class="settings-group">
+        <div class="settings-group-header">Interface Mode &amp; Viewport Calibration</div>
+        <div class="settings-status-row" style="flex-wrap: wrap; gap: 10px;">
+          <div class="settings-toggle-desc" style="flex: 1; min-width: 200px;">
+            <strong style="color: var(--ink-primary);">Display Profile &amp; Control Ergonomics</strong>
+            <span style="display: block; font-size: 10px; color: var(--ink-secondary);">Calibrate interactions and perspective for Desktop PC or Touch / Tablet hardware.</span>
+          </div>
+          <div class="ui-mode-toggle-group" role="group" aria-label="Interface Mode">
+            <button class="pill-btn ui-mode-btn active" id="setting-ui-mode-auto" data-mode="auto" type="button">AUTO</button>
+            <button class="pill-btn ui-mode-btn" id="setting-ui-mode-desktop" data-mode="desktop" type="button">PC DESKTOP</button>
+            <button class="pill-btn ui-mode-btn" id="setting-ui-mode-touch" data-mode="touch" type="button">TOUCH / TABLET</button>
+          </div>
         </div>
       </div>
 

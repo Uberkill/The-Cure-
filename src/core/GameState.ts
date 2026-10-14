@@ -172,6 +172,7 @@ export class GameState {
       this.pendingCrystalToPatch = null;
       this.synthesisComplete = false;
       this.visitedRooms = new Set(['room_04']);
+      this.flavorIndices.clear();
     } else if (stage === GameStage.ACT_7_SYNTHESIS_BLACKOUT || stage === GameStage.ACT_8_VELVET_LOUNGE) {
       this.patchedCrystals = new Set([
         'crystal_01_quartz',

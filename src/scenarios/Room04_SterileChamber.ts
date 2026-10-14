@@ -9,6 +9,7 @@ import { ModelLoader } from '../loaders/ModelLoader';
 import { TektronixCrtScreen } from '../ui/screens/TektronixCrtScreen';
 import { EditorServerSync } from '../editor/EditorServerSync';
 import { EditorPrefabs } from '../editor/EditorPrefabs';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 export class Room04_SterileChamber implements RoomScenario {
   public id = 'room_04';
@@ -31,7 +32,7 @@ export class Room04_SterileChamber implements RoomScenario {
     },
     vault: {
       id: 'vault',
-      name: 'II. The Vault & CRT',
+      name: 'II. The Apparatus & CRT',
       position: new THREE.Vector3(0, 1.25, 0),
       interactionPrompt: '[INSPECT CRT OSCILLOSCOPE]',
       cameraPreset: {
@@ -226,7 +227,7 @@ export class Room04_SterileChamber implements RoomScenario {
       door.rotation.y = door.userData.animEnd !== undefined ? door.userData.animEnd : -Math.PI / 2.2;
     }
 
-    // Optional override for self-contained hero props if custom Blender .glb models are present in /assets/models/
+    // Override with external models if declared in asset manifest.
     try {
       const loader = ModelLoader.getInstance();
       
@@ -289,6 +290,27 @@ export class Room04_SterileChamber implements RoomScenario {
     this.entities.group.add(mapGroup);
 
     this.updatePortalLeds();
+
+    // Focused Surgical Task Spotlight aligned inside suspended task pendant shade over desk
+    const deskSpot = new THREE.SpotLight(0xfff7ee, 4.2, 10, Math.PI / 3.2, 0.40, 1.1);
+    deskSpot.position.set(0, 2.78, 0.1);
+    deskSpot.target.position.set(0, 0.8, 0.05);
+    deskSpot.castShadow = false;
+    this.entities.group.add(deskSpot.target);
+    this.entities.group.add(deskSpot);
+
+    if (this.id === 'room_04') {
+      LightRigManager.getInstance().register({
+        id: 'room04_desk_spot',
+        name: 'Sterile Chamber Surgical Pendant Spot',
+        room: 'room_04',
+        type: 'spot',
+        light: deskSpot,
+        target: deskSpot.target,
+        initialPosition: deskSpot.position.clone(),
+        initialTarget: deskSpot.target.position.clone()
+      });
+    }
 
     return this.entities.group;
   }
@@ -507,12 +529,12 @@ export class Room04_SterileChamber implements RoomScenario {
   private animatePressureRelease(): void {
     if (!this.entities) return;
     this.updatePortalLeds();
-    this.audioElement.playTumblerClick();
+    this.audioElement.playDoorLatch();
   }
 
   private animateCorridorDoorOpen(): void {
     if (!this.entities) return;
-    this.audioElement.playPneumaticHiss();
+    this.audioElement.playDoorHeavy();
 
     const door = this.entities.corridorDoor;
     const targetRot = door.userData.animEnd !== undefined ? door.userData.animEnd : -Math.PI / 2.2;
@@ -549,7 +571,7 @@ export class Room04_SterileChamber implements RoomScenario {
       }
     };
     switchAnim();
-    this.audioElement.playTumblerClick();
+    this.audioElement.playSwitchKnife();
   }
 
   private triggerActVIIBlackout(): void {
@@ -599,6 +621,7 @@ export class Room04_SterileChamber implements RoomScenario {
   }
 
   public teardown(_scene: THREE.Scene): void {
+    LightRigManager.getInstance().clear('room_04');
     for (const unsub of this.unsubscribers) unsub();
     this.unsubscribers = [];
     this.tektronixScreen.teardown();
@@ -627,7 +650,7 @@ export class Room04_SterileChamber implements RoomScenario {
     }
 
     if (objectId === 'prop_envelope') {
-      this.audioElement.playTumblerClick();
+      this.audioElement.playPaperRustle();
       if (GameState.getInstance().hasItem('prop_envelope')) {
         bus.emit('ui:subtitle_changed', {
           text: 'FORM 104-ALPHA is secured in your Asset Manifest. Open inventory to inspect.'
@@ -640,7 +663,7 @@ export class Room04_SterileChamber implements RoomScenario {
     }
 
     if (objectId === 'prop_bell_jar' || objectId === 'prop_key') {
-      this.audioElement.playTumblerClick();
+      this.audioElement.playGlassClink();
       if (GameState.getInstance().hasItem('prop_key')) {
         bus.emit('ui:subtitle_changed', { text: 'The glass isolation bell jar is empty.' });
       } else {
@@ -655,7 +678,7 @@ export class Room04_SterileChamber implements RoomScenario {
     }
 
     if (objectId === 'prop_telephone') {
-      this.audioElement.playTumblerClick();
+      this.audioElement.playHandsetClick();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'telephone' });
       bus.emit('ui:subtitle_changed', {
         text: 'A soothing, monotone voice whispers from the receiver: "Who are you? The numbers on the envelope are not a cage; they are your calibration. Complete the circuit on the desk."'

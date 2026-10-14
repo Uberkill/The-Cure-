@@ -9,6 +9,14 @@ export class SceneManager {
   private container: HTMLElement;
   private telemetry: Telemetry;
 
+  public lastFrameCalls: number = 0;
+  public lastFrameTriangles: number = 0;
+  public lastFrameGeometries: number = 0;
+  private fpsFrames: number = 0;
+  private fpsLastSampleTime: number = performance.now();
+  private lastDeltaMs: number = 16.6;
+  private lastRenderTimestamp: number = performance.now();
+
   constructor(container: HTMLElement) {
     this.container = container;
     this.telemetry = Telemetry.getInstance();
@@ -70,24 +78,11 @@ export class SceneManager {
   }
 
   private setupLighting(): void {
-    // 1. High-Key Clinical Ambient Fill (bright sterile daylight base)
-    const ambientLight = new THREE.AmbientLight(0xd4ded6, 0.65);
+    // 1. Chiaroscuro Clinical Ambient Fill (deepens corner ambient occlusion & shadows)
+    const ambientLight = new THREE.AmbientLight(0xd4ded6, 0.50);
     this.scene.add(ambientLight);
 
-    // 2. Focused Surgical Task Spotlight aligned with ceiling luminaire diffuser
-    const deskSpot = new THREE.SpotLight(0xfff7ee, 4.0, 14, Math.PI / 3.3, 0.45, 1.2);
-    deskSpot.position.set(0.1, 5.36, 0.3);
-    deskSpot.target.position.set(0, 0.8, 0);
-    this.scene.add(deskSpot.target);
-
-    deskSpot.castShadow = true;
-    deskSpot.shadow.mapSize.width = 2048;
-    deskSpot.shadow.mapSize.height = 2048;
-    deskSpot.shadow.bias = -0.0001;
-    deskSpot.shadow.normalBias = 0.02;
-    this.scene.add(deskSpot);
-
-    // 3. Directional Key Light from High Upper Angle (diffuse high-key fill, no shadow pass overhead)
+    // 2. Directional Key Light from High Upper Angle (diffuse high-key fill, no shadow pass overhead)
     const keyLight = new THREE.DirectionalLight(0xf2f7f2, 1.6);
     keyLight.position.set(-3.2, 7.0, 3.5);
     keyLight.castShadow = false;
@@ -118,6 +113,39 @@ export class SceneManager {
   }
 
   public render(camera: THREE.Camera): void {
+    const now = performance.now();
+    this.lastDeltaMs = now - this.lastRenderTimestamp;
+    this.lastRenderTimestamp = now;
+
     this.renderer.render(this.scene, camera);
+
+    this.lastFrameCalls = this.renderer.info.render.calls;
+    this.lastFrameTriangles = this.renderer.info.render.triangles;
+    this.lastFrameGeometries = this.renderer.info.memory.geometries;
+
+    this.fpsFrames++;
+    const sampleElapsed = now - this.fpsLastSampleTime;
+    if (sampleElapsed >= 400) {
+      const currentFps = Math.round((this.fpsFrames / sampleElapsed) * 1000);
+      this.fpsFrames = 0;
+      this.fpsLastSampleTime = now;
+
+      EventBus.getInstance().emit('perf:tick', {
+        fps: currentFps,
+        deltaMs: Math.round(this.lastDeltaMs * 10) / 10,
+        calls: this.lastFrameCalls,
+        triangles: this.lastFrameTriangles,
+        geometries: this.lastFrameGeometries
+      });
+    }
+  }
+
+  public getRenderMetrics() {
+    return {
+      calls: this.lastFrameCalls,
+      triangles: this.lastFrameTriangles,
+      geometries: this.lastFrameGeometries,
+      deltaMs: Math.round(this.lastDeltaMs * 10) / 10
+    };
   }
 }

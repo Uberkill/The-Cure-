@@ -1,5 +1,6 @@
 import { EventBus } from '../core/EventBus';
 import { CrystalId, AudioLogMetadata } from '../types';
+import { AudioEngine } from '../audio/AudioEngine';
 
 export class CRTNodePatcher {
   private static instance: CRTNodePatcher;
@@ -119,6 +120,7 @@ export class CRTNodePatcher {
           const target = this.nodes[i];
           const dist = Math.hypot(target.x - this.mousePos.x, target.y - this.mousePos.y);
           if (dist < 28) {
+            AudioEngine.getInstance().playTumblerClick();
             this.nodes[this.activeNodeIndex].connected = true;
             target.connected = true;
             this.isDragging = false;
@@ -151,6 +153,7 @@ export class CRTNodePatcher {
   }
 
   public close(): void {
+    AudioEngine.getInstance().playDoorLatch();
     if (this.modalEl) {
       this.modalEl.classList.add('hidden');
     }
@@ -195,6 +198,7 @@ export class CRTNodePatcher {
   private resolvePatch(): void {
     if (!this.currentCrystal || !this.currentLog || this.isResolving) return;
     this.isResolving = true;
+    AudioEngine.getInstance().playGlassClink();
     this.nodes.forEach((n) => (n.connected = true));
     this.resolveTimeoutId = window.setTimeout(() => {
       this.eventBus.emit('puzzle:crt_patch_completed', {

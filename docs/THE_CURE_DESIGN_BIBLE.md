@@ -202,7 +202,7 @@ Create `src/ui/screens/DiegeticScreenBase.ts` providing standard:
 *Note: The old 'escape room' mechanical structure (recovering crystals to fix a door) has been fully absorbed and recontextualized into The Cure framework. The player is not fixing a door to escape; they are passing diagnostic calibrations to prove they are ready to carry The Cure.*
 
 ```
-[THE HUB: THE SURFACE] (Room 04: Sterile Reception & CRT Terminal)
+[THE HUB: THE SURFACE] (Room 01: The Sterile Reception & CRT Terminal)
          │
          ├───> [ACT II: THE SLEEP WARD] (First Descent ──> Crystal 1: Quartz)
          │           │
@@ -247,7 +247,7 @@ With every crystal recovered and slotted into the central CRT console, the prist
 ### Architectural Scale Hierarchy
 The eight chambers progress from sterile, ordered institutional geometry to distorted, spacious, and uncannily domestic spaces:
 
-* **Room 04 (Sterile Reception / The Hub)**: Symmetrical octagonal rotunda (10.0m x 10.0m x 3.6m ceiling). Pristine white alabaster acoustic tiles that slowly corrupt and bruise with each crystal digested.
+* **Room 01 (The Sterile Reception / Central Concourse)**: Symmetrical octagonal rotunda (10.0m x 10.0m x 3.6m ceiling). Pristine white alabaster acoustic tiles that slowly corrupt and bruise with each crystal digested.
 * **Room 02 (The Sleep Ward)**: Elongated, narrow infirmary dormitory (8.0m x 18.0m x 3.8m ceiling) with tubular Breuer cots, somniferous intravenous stands, and mobile dispensary cart.
 * **Room 03 (The Hydrotherapy Room)**: Tiled subterranean wet chamber (12.0m x 12.0m x 4.0m ceiling) with sunken bathtubs, copper plumbing manifolds, and central floor drainage grates.
 * **Room 04 (The Audiology Vault)**: Elongated acoustic testing bunker (10.0m x 16.0m x 4.6m ceiling) featuring sound-absorbent foam baffles, angled sound traps, raised technician monitoring alcove, and open lab journals.

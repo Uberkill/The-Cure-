@@ -207,6 +207,7 @@ export class FacilityMapScreen extends DiegeticScreenBase<FacilityMapState> {
   private currentRoomId: string = 'room_04';
   private selectedSectorId: string = 'room_04';
   private statusMessageEl: HTMLElement | null = null;
+  private isTransiting: boolean = false;
 
   public constructor() {
     super();
@@ -372,21 +373,34 @@ export class FacilityMapScreen extends DiegeticScreenBase<FacilityMapState> {
   }
 
   protected onOpened(): void {
+    this.isTransiting = false;
+    AudioEngine.getInstance().playPaperRustle();
     this.renderMap();
   }
 
   protected onClosed(): void {
+    if (!this.isTransiting) {
+      AudioEngine.getInstance().playDoorLatch();
+    }
+    this.isTransiting = false;
     if (this.statusMessageEl) {
       this.statusMessageEl.textContent = '';
     }
+  }
+
+  private selectSector(sectorId: string): void {
+    if (this.selectedSectorId !== sectorId) {
+      AudioEngine.getInstance().playTumblerClick();
+    }
+    this.selectedSectorId = sectorId;
+    this.renderMap();
   }
 
   protected handleKeyDown(e: KeyboardEvent): void {
     // Keyboard shortcuts: 1-8 to cycle sectors
     const keyNum = parseInt(e.key, 10);
     if (!isNaN(keyNum) && keyNum >= 1 && keyNum <= FACILITY_SECTORS.length) {
-      this.selectedSectorId = FACILITY_SECTORS[keyNum - 1].id;
-      this.renderMap();
+      this.selectSector(FACILITY_SECTORS[keyNum - 1].id);
     }
   }
 
@@ -646,8 +660,7 @@ export class FacilityMapScreen extends DiegeticScreenBase<FacilityMapState> {
       node.addEventListener('click', () => {
         const sectorId = node.getAttribute('data-sector-id');
         if (sectorId) {
-          this.selectedSectorId = sectorId;
-          this.renderMap();
+          this.selectSector(sectorId);
         }
       });
     });
@@ -699,8 +712,7 @@ export class FacilityMapScreen extends DiegeticScreenBase<FacilityMapState> {
       `;
 
       card.addEventListener('click', () => {
-        this.selectedSectorId = sec.id;
-        this.renderMap();
+        this.selectSector(sec.id);
       });
 
       container.appendChild(card);
@@ -872,6 +884,7 @@ export class FacilityMapScreen extends DiegeticScreenBase<FacilityMapState> {
     // Mark room visited upon initiating transit
     gs.markRoomVisited(sector.id);
 
+    this.isTransiting = true;
     this.close();
     AudioEngine.getInstance().playPneumaticHiss();
     this.eventBus.emit('ui:subtitle_changed', {

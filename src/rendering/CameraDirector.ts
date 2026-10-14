@@ -13,6 +13,8 @@ export class CameraDirector {
   private isUserOrbiting: boolean = false;
   private mouseNorm: THREE.Vector2 = new THREE.Vector2(0, 0);
   private currentHotspotId: string = 'overview';
+  private currentUiMode: 'desktop' | 'touch' = 'desktop';
+
 
 
 
@@ -29,6 +31,7 @@ export class CameraDirector {
     this.controls.enableDamping = true;
     this.controls.dampingFactor = 0.05;
     this.controls.target.set(0, 0.85, 0);
+    this.controls.touches = { ONE: THREE.TOUCH.ROTATE, TWO: THREE.TOUCH.DOLLY_PAN };
 
     this.controls.minPolarAngle = 0.1; // Loosened from Math.PI/6 to prevent twisting on steep presets (e.g. envelope)
     this.controls.maxPolarAngle = Math.PI / 2.08;
@@ -83,6 +86,11 @@ export class CameraDirector {
         this.parallaxSensitivity = settings.parallaxSensitivity;
       }
     });
+
+    this.eventBus.on('ui:mode_changed', ({ mode }) => {
+      this.currentUiMode = mode;
+      this.updateCameraProjection();
+    });
   }
 
   private setupMouseParallax(): void {
@@ -94,9 +102,30 @@ export class CameraDirector {
 
   private setupResizeListener(): void {
     window.addEventListener('resize', () => {
-      this.camera.aspect = window.innerWidth / window.innerHeight;
-      this.camera.updateProjectionMatrix();
+      this.updateCameraProjection();
     });
+  }
+
+  public updateCameraProjection(): void {
+    const aspect = window.innerWidth / window.innerHeight;
+    this.camera.aspect = aspect;
+
+    if (this.currentUiMode === 'touch' || aspect < 1.77) {
+      const baseVfovRad = (40 * Math.PI) / 180;
+      const targetHfovRad = 2 * Math.atan(Math.tan(baseVfovRad / 2) * (16 / 9));
+      const compensatedVfovRad = 2 * Math.atan(Math.tan(targetHfovRad / 2) / aspect);
+      const compensatedVfovDeg = (compensatedVfovRad * 180) / Math.PI;
+
+      if (this.currentUiMode === 'touch') {
+        this.camera.fov = THREE.MathUtils.clamp(compensatedVfovDeg, 40, 65);
+      } else {
+        this.camera.fov = THREE.MathUtils.clamp(compensatedVfovDeg, 40, 50);
+      }
+    } else {
+      this.camera.fov = 40;
+    }
+
+    this.camera.updateProjectionMatrix();
   }
 
   public resetForScenario(preset: CameraPreset): void {
@@ -228,7 +257,7 @@ export class CameraDirector {
   public update(delta: number): void {
     this.controls.update();
 
-    if (this.parallaxEnabled && !this.isUserOrbiting && !this.isTransitioning) {
+    if (this.parallaxEnabled && this.currentUiMode !== 'touch' && !this.isUserOrbiting && !this.isTransitioning) {
       // Use setViewOffset for parallax to avoid fighting OrbitControls camera.position
       const targetX = this.mouseNorm.x * (window.innerWidth * (this.parallaxSensitivity * 0.08));
       const targetY = -this.mouseNorm.y * (window.innerHeight * (this.parallaxSensitivity * 0.08));

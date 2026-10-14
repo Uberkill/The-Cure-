@@ -22,6 +22,7 @@ import { DevTransformGizmo } from './interaction/DevTransformGizmo';
 import { Dev3DEditorPanel } from './ui/Dev3DEditorPanel';
 import { EditorVisualizers } from './editor/EditorVisualizers';
 import { AnimatorSystem } from './rendering/AnimatorSystem';
+import { LightRigManager } from './rendering/LightRigManager';
 
 class VaultApp {
   public telemetry: Telemetry;
@@ -89,6 +90,12 @@ class VaultApp {
 
     this.screenManager = new ScreenManager();
     this.uiManager = new UIManager();
+
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) {
+        this.lastTimestamp = performance.now();
+      }
+    });
 
     const devBtn = document.getElementById('btn-dev-3d-toggle');
     devBtn?.addEventListener('click', () => {
@@ -178,10 +185,34 @@ class VaultApp {
         }
       }
 
+      const isTestOrReduced =
+        Boolean(isDevJump) ||
+        (typeof window !== 'undefined' && (
+          new URLSearchParams(window.location.search).has('test') ||
+          Boolean((navigator as { webdriver?: boolean }).webdriver) ||
+          window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        ));
+
+      let veil = document.getElementById('crt-transition-veil');
+      if (!veil && typeof document !== 'undefined') {
+        veil = document.createElement('div');
+        veil.id = 'crt-transition-veil';
+        veil.className = 'crt-transition-veil';
+        document.body.appendChild(veil);
+      }
+
+      if (veil && !isTestOrReduced) {
+        veil.classList.add('active');
+        await new Promise((r) => setTimeout(r, 120));
+      }
+
       const nextScenario = this.scenarioRegistry.getScenario(targetRoomId);
       if (nextScenario) {
         const loadedGroup = await this.scenarioRegistry.loadScenario(nextScenario, this.sceneManager.scene);
-        if (!loadedGroup) return;
+        if (!loadedGroup) {
+          veil?.classList.remove('active');
+          return;
+        }
 
         const arrivalPreset = nextScenario.hotspots[nextScenario.defaultHotspot]?.cameraPreset
           ?? nextScenario.hotspots['overview']?.cameraPreset;
@@ -190,6 +221,7 @@ class VaultApp {
         }
 
         this.raycastManager.setExclusiveTarget(null);
+        this.musicManager.playRoomTrack(targetRoomId);
 
         this.eventBus.emit('ui:chapter_display', {
           act: nextScenario.actTitle,
@@ -206,6 +238,11 @@ class VaultApp {
           this.editorVisualizers.rebuild();
         }
       }
+
+      if (veil && !isTestOrReduced) {
+        await new Promise((r) => setTimeout(r, 80));
+        veil.classList.remove('active');
+      }
     });
 
     this.eventBus.on('input:object_clicked', ({ objectId, flavorText }) => {
@@ -215,16 +252,16 @@ class VaultApp {
         if (handled) return;
       }
       if (flavorText) {
-          if (Array.isArray(flavorText)) {
-            if (flavorText.length === 0) return;
-            const idx = this.gameState.getFlavorIndex(objectId);
-            const text = flavorText[Math.min(idx, flavorText.length - 1)];
-            this.gameState.incrementFlavorIndex(objectId);
-            this.eventBus.emit('ui:subtitle_changed', { text });
-          } else {
-            this.eventBus.emit('ui:subtitle_changed', { text: flavorText });
-          }
+        if (Array.isArray(flavorText)) {
+          if (flavorText.length === 0) return;
+          const idx = this.gameState.getFlavorIndex(objectId);
+          const text = flavorText[idx % flavorText.length];
+          this.gameState.incrementFlavorIndex(objectId);
+          this.eventBus.emit('ui:subtitle_changed', { text });
+        } else {
+          this.eventBus.emit('ui:subtitle_changed', { text: flavorText });
         }
+      }
     });
   }
 
@@ -232,11 +269,10 @@ class VaultApp {
     try {
       this.telemetry.record('info', 'Bootstrapping The Vault: Room 04 Nexus');
 
-      const isTest = new URLSearchParams(window.location.search).has('test');
       const savedData = this.saveManager.loadGame();
       let startingRoomId = 'room_04';
 
-      if (savedData && !isTest) {
+      if (savedData) {
         this.saveManager.hydrateGame(savedData);
         startingRoomId = savedData.currentRoomId || 'room_04';
       }
@@ -251,7 +287,7 @@ class VaultApp {
       }
       this.telemetry.record('info', `Initial Chamber '${startingRoomId}' mounted successfully`);
 
-      this.musicManager.playRoomTrack(startingRoomId === 'room_04' ? 'room_04_theme.mp3' : 'chamber_exploration.mp3');
+      this.musicManager.playRoomTrack(startingRoomId);
       this.animate();
     } catch (err) {
       this.telemetry.record('error', `Initialization failure: ${String(err)}`);
@@ -267,26 +303,40 @@ class VaultApp {
     this.lastTimestamp = now;
     const delta = Math.min(0.1, rawDelta);
 
-    this.cameraDirector.update(delta);
-    this.scenarioRegistry.update(delta);
-    this.animatorSystem.update(delta);
-    this.devEditorPanel.update();
+    const isDocHidden = typeof document !== 'undefined' && document.hidden;
+    const isInspection = this.inspectionManager.isInspectionActive();
 
-    // Primary 3D render pass
-    this.sceneManager.render(this.cameraDirector.camera);
+    if (!isDocHidden) {
+      this.cameraDirector.update(delta);
+      this.scenarioRegistry.update(delta);
+      this.animatorSystem.update(delta);
+      this.devEditorPanel.update();
+      this.sceneManager.render(this.cameraDirector.camera);
+    }
 
-    // Secondary 3D inspection render pass (Single WebGL context)
-    if (this.inspectionManager.isInspectionActive()) {
+    if (isInspection) {
       this.inspectionManager.render(this.sceneManager.renderer);
     }
   };
 }
 
-// Bootstrap application on DOMContentLoaded
-window.addEventListener('DOMContentLoaded', () => {
+function bootstrapApp(): void {
   const app = new VaultApp();
-  (window as unknown as { __VAULT_APP__: VaultApp; THREE: typeof THREE }).__VAULT_APP__ = app;
-  (window as unknown as { THREE: typeof THREE }).THREE = THREE;
+  const win = window as unknown as {
+    __CURE_APP__: VaultApp;
+    __VAULT_APP__: VaultApp;
+    THREE: typeof THREE;
+  };
+  win.__CURE_APP__ = app;
+  win.__VAULT_APP__ = app;
+  win.THREE = THREE;
   (window as unknown as Record<string, unknown>).exportObjectToGLB = exportObjectToGLB;
   (window as unknown as Record<string, unknown>).downloadGLB = downloadGLB;
-});
+  (window as unknown as Record<string, unknown>).LightRigManager = LightRigManager;
+}
+
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+  bootstrapApp();
+}

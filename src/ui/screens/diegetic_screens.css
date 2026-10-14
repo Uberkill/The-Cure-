@@ -2892,5 +2892,97 @@
   animation: pulseInventoryBadge 0.6s ease-in-out 2;
 }
 
+/* ==========================================================================
+   TOUCH / TABLET DIEGETIC SCREEN ERGONOMICS (html[data-ui-mode="touch"])
+   Guarantees zero mutation to baseline desktop layout when in PC Desktop mode
+   ========================================================================== */
+
+html[data-ui-mode="touch"] .facility-map-housing {
+  width: min(96vw, 1260px);
+  min-height: auto !important;
+  height: min(92vh, 860px);
+  height: min(92dvh, 860px);
+  max-height: min(92vh, 860px);
+  max-height: min(92dvh, 860px);
+}
+
+html[data-ui-mode="touch"] .facility-map-housing .diegetic-header {
+  padding: 10px 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+html[data-ui-mode="touch"] .facility-header-left {
+  gap: 8px;
+}
+
+html[data-ui-mode="touch"] .facility-map-body {
+  flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-ui-mode="touch"] .facility-blueprint-viewport {
+  border-right: none;
+  border-bottom: 1px solid rgba(20, 26, 33, 0.15);
+  flex: none;
+  min-height: 280px;
+  padding: 12px 14px;
+}
+
+html[data-ui-mode="touch"] .facility-grid {
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 6px;
+}
+
+html[data-ui-mode="touch"] .facility-sector-card {
+  min-height: 44px;
+  padding: 6px 8px;
+}
+
+html[data-ui-mode="touch"] .facility-dossier-panel {
+  padding: 14px 16px;
+  overflow-y: visible;
+}
+
+html[data-ui-mode="touch"] .manifest-case-container {
+  width: min(96vw, 960px);
+  max-height: min(92vh, 840px);
+  max-height: min(92dvh, 840px);
+  padding: 16px 18px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-ui-mode="touch"] .manifest-case-header {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+html[data-ui-mode="touch"] .manifest-sub-bar {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+html[data-ui-mode="touch"] .manifest-body-grid {
+  grid-template-columns: 1fr;
+  min-height: auto;
+}
+
+html[data-ui-mode="touch"] .manifest-tray-nav {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-ui-mode="desktop"] .manifest-body-grid {
+  grid-template-columns: 1.15fr 0.85fr !important;
+}
+
+html[data-ui-mode="touch"] .diegetic-housing {
+  width: min(96vw, 1140px);
+  max-height: min(94vh, 880px);
+  max-height: min(94dvh, 880px);
+}
+
 
 

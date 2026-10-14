@@ -1,0 +1,1408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sub-Level 04 • Acoustic Calibration Console</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --color-alabaster: #EDF0EB;
+      --color-cardstock: #F4F6F2;
+      --color-sage-deep: #2D4A3E;
+      --color-sage-badge: #3D5A4C;
+      --color-terrazzo-base: #D8DED6;
+      --color-brass-cast: #C28833;
+      --color-teak-smoked: #1F1A18;
+      --color-chassis-dark: #121614;
+      --color-chassis-panel: #1A1F1C;
+      --color-chassis-border: #2E3833;
+      --color-crt-phosphor: #4ADE80;
+      --color-crt-amber: #FBBF24;
+      --ink-primary: #141A21;
+      --ink-secondary: #4A5568;
+      --ink-muted: #718096;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', Menlo, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--color-chassis-dark);
+      color: var(--color-alabaster);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px 24px;
+      overflow-x: hidden;
+    }
+
+    .header-panel {
+      width: 100%;
+      max-width: 1200px;
+      background: var(--color-chassis-panel);
+      border: 1px solid var(--color-chassis-border);
+      padding: 24px 32px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    }
+
+    .header-title-block h1 {
+      font-family: var(--font-serif);
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #FFFFFF;
+      margin-bottom: 6px;
+    }
+
+    .header-title-block p {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--color-crt-phosphor);
+    }
+
+    .unlock-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      font-weight: 600;
+      padding: 12px 24px;
+      background: var(--color-sage-deep);
+      color: #FFFFFF;
+      border: 1px solid var(--color-brass-cast);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .unlock-btn:hover {
+      background: #3A5F50;
+      border-color: #E0A045;
+    }
+
+    .unlock-btn.unlocked {
+      background: #1B3528;
+      border-color: var(--color-crt-phosphor);
+      color: var(--color-crt-phosphor);
+      pointer-events: none;
+    }
+
+    .grid-container {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .grid-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .panel-card {
+      background: var(--color-chassis-panel);
+      border: 1px solid var(--color-chassis-border);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+    }
+
+    .panel-card.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-chassis-border);
+      padding-bottom: 12px;
+    }
+
+    .panel-header h2 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      color: #FFFFFF;
+    }
+
+    .tag-badge {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      background: var(--color-chassis-dark);
+      border: 1px solid var(--color-chassis-border);
+      color: var(--color-crt-phosphor);
+    }
+
+    .slider-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .slider-labels {
+      display: flex;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      color: var(--color-alabaster);
+    }
+
+    .slider-value {
+      color: var(--color-crt-amber);
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: #111413;
+      border: 1px solid var(--color-chassis-border);
+      outline: none;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      background: var(--color-brass-cast);
+      border: 1px solid #FFFFFF;
+      cursor: pointer;
+    }
+
+    .scope-canvas {
+      width: 100%;
+      height: 120px;
+      background: #0D100E;
+      border: 1px solid #203024;
+      display: block;
+    }
+
+    .foley-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 16px;
+    }
+
+    .foley-item {
+      background: #151A17;
+      border: 1px solid #28332D;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .foley-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .foley-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      color: #FFFFFF;
+    }
+
+    .foley-sub {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--ink-muted);
+    }
+
+    .foley-tag {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 2px 6px;
+      background: #202A24;
+      color: var(--color-crt-phosphor);
+      border: 1px solid #2E3E34;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .action-btn {
+      flex: 1;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 8px 6px;
+      background: #242D28;
+      border: 1px solid #3A4A41;
+      color: var(--color-alabaster);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+
+    .action-btn:hover {
+      background: #334039;
+      border-color: var(--color-brass-cast);
+      color: #FFFFFF;
+    }
+
+    .action-btn:active {
+      background: var(--color-brass-cast);
+      color: #000000;
+    }
+
+    .chambers-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .chamber-card {
+      background: #151A17;
+      border: 1px solid #28332D;
+      padding: 14px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .chamber-card:hover {
+      border-color: var(--color-brass-cast);
+      background: #1B221E;
+    }
+
+    .chamber-card.active {
+      border-color: var(--color-crt-phosphor);
+      background: #17261D;
+    }
+
+    .chamber-code {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.14em;
+      color: var(--color-crt-amber);
+    }
+
+    .chamber-title {
+      font-family: var(--font-serif);
+      font-size: 14px;
+      color: #FFFFFF;
+    }
+
+    .chamber-spec {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--ink-muted);
+      line-height: 1.4;
+    }
+
+    .dropzone {
+      border: 2px dashed #3D4A42;
+      background: #131715;
+      padding: 28px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--color-crt-phosphor);
+      background: #18221D;
+    }
+
+    .dropzone-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--color-alabaster);
+    }
+
+    .dropzone-sub {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      color: var(--ink-muted);
+    }
+
+    .audio-meta-box {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      background: #101412;
+      border: 1px solid #242D27;
+      padding: 12px 16px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+      color: var(--color-alabaster);
+    }
+
+    .file-input-hidden {
+      display: none;
+    }
+
+    .status-bar {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      padding: 10px 16px;
+      background: #0E1210;
+      border: 1px solid #222C26;
+      color: var(--color-crt-phosphor);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header & Console Authorization -->
+  <header class="header-panel">
+    <div class="header-title-block">
+      <h1>Sub-Level 04 • Acoustic Calibration Console</h1>
+      <p id="subsystem-status">// SYSTEM STANDBY - AUDIO CONTEXT LOCKED PENDING USER GESTURE</p>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+      <button class="unlock-btn" id="btn-unlock">ENGAGE ACOUSTIC CONSOLE</button>
+      <button class="action-btn" id="btn-tour-foley" style="padding: 10px 14px; font-weight: 600; background: #26382E; border-color: #4A6E5A;">PLAY ALL FOLEY IN SEQUENCE</button>
+      <button class="action-btn" id="btn-tour-soundscape" style="padding: 10px 14px; font-weight: 600; background: #322B1E; border-color: var(--color-brass-cast);">CROSSFADE 8 CHAMBERS TOUR</button>
+      <button class="action-btn" id="btn-stop-all" style="padding: 10px 12px; font-weight: 600; background: #3A1E20; border-color: #8B2C30;">STOP</button>
+    </div>
+  </header>
+
+  <div class="grid-container">
+
+    <!-- Bus Routing & Volume Controls -->
+    <section class="panel-card">
+      <div class="panel-header">
+        <h2>Multi-Bus Attenuation</h2>
+        <span class="tag-badge">Web Audio Graph</span>
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-labels">
+          <span>MASTER BUS GAIN</span>
+          <span class="slider-value" id="val-master">85% (0.85)</span>
+        </div>
+        <input type="range" id="slider-master" min="0" max="100" value="85">
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-labels">
+          <span>TACTILE SFX GAIN</span>
+          <span class="slider-value" id="val-sfx">85% (0.85)</span>
+        </div>
+        <input type="range" id="slider-sfx" min="0" max="100" value="85">
+      </div>
+
+      <div class="slider-row">
+        <div class="slider-labels">
+          <span>AMBIENT SOUNDSCAPE GAIN</span>
+          <span class="slider-value" id="val-ambient">75% (0.75)</span>
+        </div>
+        <input type="range" id="slider-ambient" min="0" max="100" value="75">
+      </div>
+
+      <!-- Real-time CRT Oscilloscope Visualizer -->
+      <canvas class="scope-canvas" id="scope-canvas" width="600" height="120"></canvas>
+    </section>
+
+    <!-- Act Progression Tension Simulator -->
+    <section class="panel-card">
+      <div class="panel-header">
+        <h2>Act Progression Tension Profile</h2>
+        <span class="tag-badge" id="badge-tension-act">ACT I (0.00)</span>
+      </div>
+
+      <p style="font-size: 13px; color: var(--ink-muted); line-height: 1.5;">
+        Simulates how chamber atmospheric drone harmonic overtone detune and lowpass filter cutoff dynamically scale as player progresses across acts. Formulated to avoid listener fatigue.
+      </p>
+
+      <div class="slider-row" style="margin-top: 8px;">
+        <div class="slider-labels">
+          <span>NARRATIVE ACT PROGRESSION</span>
+          <span class="slider-value" id="val-act-title">ACT I • THE RECEPTION</span>
+        </div>
+        <input type="range" id="slider-act" min="0" max="7" value="0" step="1">
+      </div>
+
+      <div class="status-bar" id="tension-metrics">
+        <span>FILTER CUTOFF: 160 Hz</span>
+        <span>OVERTONE DETUNE: +1.50 Hz</span>
+      </div>
+    </section>
+
+    <!-- Lynch / Kurosawa Room Soundscapes (8 Chambers) -->
+    <section class="panel-card full-width">
+      <div class="panel-header">
+        <h2>Chamber Psychological Soundscapes</h2>
+        <span class="tag-badge" id="active-soundscape-tag">IDLE</span>
+      </div>
+
+      <div class="chambers-grid" id="chambers-grid">
+        <!-- Rendered via JavaScript -->
+      </div>
+
+      <div class="status-bar" id="soundscape-status-bar">
+        <span>CURRENT AMBIENT PROFILE: NONE</span>
+        <span id="soundscape-mode-badge">CROSSFADE: 2.0s</span>
+      </div>
+    </section>
+
+    <!-- Tactile Foley Material Soundboard -->
+    <section class="panel-card full-width">
+      <div class="panel-header">
+        <h2>Tactile Material Foley Soundboard</h2>
+        <span class="tag-badge">Public Domain & Procedural</span>
+      </div>
+
+      <div class="foley-grid" id="foley-grid">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </section>
+
+    <!-- Custom User MP3 Hot-Swap Inspection Zone -->
+    <section class="panel-card full-width">
+      <div class="panel-header">
+        <h2>Custom User MP3 Hot-Swap Preview</h2>
+        <span class="tag-badge">Direct Injection</span>
+      </div>
+
+      <div class="dropzone" id="mp3-dropzone">
+        <input type="file" id="file-input" class="file-input-hidden" accept=".mp3,.wav,.ogg">
+        <div class="dropzone-title">DROP CUSTOM MP3 AUDIO FILE HERE OR CLICK TO BROWSE</div>
+        <div class="dropzone-sub">Routes directly through Web Audio compressor and master bus. Preview custom soundtrack before placing in public/assets/audio/music/</div>
+      </div>
+
+      <div class="audio-meta-box" id="audio-meta-box">
+        <div id="meta-filename">FILENAME: --</div>
+        <div id="meta-duration">DURATION: --</div>
+        <div id="meta-dest">PROJECT PATH TARGET: public/assets/audio/music/{roomId}.mp3</div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // Audio Manifest Definitions
+    const SOUND_EFFECTS = [
+      {
+        id: 'paper_rustle',
+        label: 'Cellulose Dossier Rustle',
+        category: 'Cellulose',
+        filename: 'paper_rustle.wav',
+        vol: 0.85
+      },
+      {
+        id: 'door_heavy',
+        label: 'Steel Blastdoor Unseal',
+        category: 'Steel Door',
+        filename: 'door_heavy.wav',
+        vol: 0.95
+      },
+      {
+        id: 'door_latch',
+        label: 'Deadbolt Pressure Latch',
+        category: 'Mechanism',
+        filename: 'door_latch.wav',
+        vol: 0.80
+      },
+      {
+        id: 'drawer_wood',
+        label: 'Teak Drawer Slide & Stop',
+        category: 'Furniture',
+        filename: 'drawer_wood.wav',
+        vol: 0.75
+      },
+      {
+        id: 'clock_tick',
+        label: 'Synchronous Clock Escapement',
+        category: 'Clockwork',
+        filename: 'clock_tick.wav',
+        vol: 0.65
+      },
+      {
+        id: 'pneumatic_hiss',
+        label: 'Pneumatic Airlock Exhaust',
+        category: 'Pneumatics',
+        filename: 'pneumatic_hiss.wav',
+        vol: 0.75
+      },
+      {
+        id: 'switch_knife',
+        label: 'High-Voltage Knife Switch',
+        category: 'Electrical',
+        filename: 'switch_knife.wav',
+        vol: 0.90
+      },
+      {
+        id: 'switch_toggle',
+        label: 'Bakelite Toggle Snap',
+        category: 'Electrical',
+        filename: 'switch1.wav',
+        vol: 0.70
+      },
+      {
+        id: 'glass_clink',
+        label: 'Borosilicate / Crystal Tap',
+        category: 'Glassware',
+        filename: 'glass_clink.wav',
+        vol: 0.70
+      },
+      {
+        id: 'tumbler_click',
+        label: 'Brass Tumbler Detent',
+        category: 'Mechanism',
+        filename: 'click1.wav',
+        vol: 0.65
+      },
+      {
+        id: 'handset_click',
+        label: 'Rotary Cradle Hang-up',
+        category: 'Telephony',
+        filename: 'mouseclick1.wav',
+        vol: 0.75
+      },
+      {
+        id: 'water_drip',
+        label: 'Peristaltic Saline Drip',
+        category: 'Fluid',
+        filename: 'rollover1.wav',
+        vol: 0.60
+      }
+    ];
+
+    const ROOM_CHAMBERS = [
+      {
+        id: 'room_04',
+        act: 'ACT I',
+        code: 'SL4-04-HUB',
+        title: 'The Sterile Reception',
+        mp3: 'room_04.mp3',
+        baseFreq: 60.0,
+        detune: 1.5,
+        cutoff: 160.0,
+        desc: '60 Hz ballast hum + 45 Hz sub-drone. Pure clinical isolation.'
+      },
+      {
+        id: 'sleep_ward',
+        act: 'ACT II',
+        code: 'SL4-02-SLP',
+        title: 'The Sleep Ward',
+        mp3: 'sleep_ward.mp3',
+        baseFreq: 54.0,
+        detune: 2.2,
+        cutoff: 140.0,
+        desc: '54 Hz somniferous drone + 68 BPM cardiac rest sub-thump.'
+      },
+      {
+        id: 'hydrotherapy',
+        act: 'ACT III',
+        code: 'SL4-03-HYD',
+        title: 'Hydrotherapy Suite',
+        mp3: 'hydrotherapy.mp3',
+        baseFreq: 48.0,
+        detune: 1.8,
+        cutoff: 180.0,
+        desc: '48 Hz subterranean bandpass liquid resonance.'
+      },
+      {
+        id: 'audiology',
+        act: 'ACT IV',
+        code: 'SL4-04-AUD',
+        title: 'The Audiology Vault',
+        mp3: 'audiology.mp3',
+        baseFreq: 62.0,
+        detune: 3.5,
+        cutoff: 210.0,
+        desc: '62 Hz / 741 Hz Solfeggio microtonal detuning clusters.'
+      },
+      {
+        id: 'archive',
+        act: 'ACT V',
+        code: 'SL4-05-ARC',
+        title: 'The Archive',
+        mp3: 'archive.mp3',
+        baseFreq: 45.0,
+        detune: 1.2,
+        cutoff: 130.0,
+        desc: '45 Hz cavernous low-end reverberation + soft magnetic tape hiss.'
+      },
+      {
+        id: 'directors_office',
+        act: 'ACT VI',
+        code: 'SL4-06-DIR',
+        title: "The Director's Office",
+        mp3: 'directors_office.mp3',
+        baseFreq: 52.0,
+        detune: 2.0,
+        cutoff: 170.0,
+        desc: '52 Hz analog saturation + faint 11:03 escapement pulse.'
+      },
+      {
+        id: 'synthesis_blackout',
+        act: 'ACT VII',
+        code: 'SL4-07-SYN',
+        title: 'Synthesis Chamber',
+        mp3: 'synthesis.mp3',
+        baseFreq: 50.0,
+        detune: 4.8,
+        cutoff: 240.0,
+        desc: '50 Hz transformer hum with high-voltage cathode instability.'
+      },
+      {
+        id: 'velvet_lounge',
+        act: 'ACT VIII',
+        code: 'SL4-08-VLX',
+        title: 'The Velvet Lounge',
+        mp3: 'velvet_lounge.mp3',
+        baseFreq: 43.0,
+        detune: 2.6,
+        cutoff: 190.0,
+        desc: '43 Hz Rhodes noir chord progression + vinyl floor crackle.'
+      }
+    ];
+
+    const ACTS = [
+      { num: 'ACT I', title: 'ACT I • THE RECEPTION', mult: 0.00 },
+      { num: 'ACT II', title: 'ACT II • THE SLEEP WARD', mult: 0.14 },
+      { num: 'ACT III', title: 'ACT III • HYDROTHERAPY', mult: 0.28 },
+      { num: 'ACT IV', title: 'ACT IV • THE AUDIOLOGY VAULT', mult: 0.43 },
+      { num: 'ACT V', title: 'ACT V • THE ARCHIVE', mult: 0.57 },
+      { num: 'ACT VI', title: "ACT VI • DIRECTOR'S OFFICE", mult: 0.71 },
+      { num: 'ACT VII', title: 'ACT VII • SYNTHESIS CORE', mult: 0.86 },
+      { num: 'ACT VIII', title: 'ACT VIII • THE VELVET LOUNGE', mult: 1.00 }
+    ];
+
+    // Web Audio Subsystem
+    let audioCtx = null;
+    let masterGain = null;
+    let sfxGain = null;
+    let ambientGain = null;
+    let compressor = null;
+    let analyser = null;
+
+    let activeSoundscapeId = null;
+    let soundscapeOsc1 = null;
+    let soundscapeOsc2 = null;
+    let soundscapeFilter = null;
+    let soundscapeGain = null;
+
+    let currentActIndex = 0;
+    let previewAudioElement = null;
+    let previewSourceNode = null;
+    let previewUrl = null;
+
+    const bufferCache = new Map();
+
+    function initAudio() {
+      if (audioCtx) return;
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      audioCtx = new AudioCtxClass();
+
+      masterGain = audioCtx.createGain();
+      masterGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+
+      sfxGain = audioCtx.createGain();
+      sfxGain.gain.setValueAtTime(0.85, audioCtx.currentTime);
+      sfxGain.connect(masterGain);
+
+      ambientGain = audioCtx.createGain();
+      ambientGain.gain.setValueAtTime(0.75, audioCtx.currentTime);
+      ambientGain.connect(masterGain);
+
+      compressor = audioCtx.createDynamicsCompressor();
+      compressor.threshold.setValueAtTime(-14, audioCtx.currentTime);
+      compressor.knee.setValueAtTime(24, audioCtx.currentTime);
+      compressor.ratio.setValueAtTime(10, audioCtx.currentTime);
+      compressor.attack.setValueAtTime(0.003, audioCtx.currentTime);
+      compressor.release.setValueAtTime(0.20, audioCtx.currentTime);
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+
+      masterGain.connect(compressor);
+      compressor.connect(analyser);
+      analyser.connect(audioCtx.destination);
+
+      const unlockBtn = document.getElementById('btn-unlock');
+      unlockBtn.classList.add('unlocked');
+      unlockBtn.textContent = 'ONLINE // 44.1 kHz 32-BIT';
+
+      document.getElementById('subsystem-status').textContent =
+        '// WEB AUDIO ENGINE ACTIVE // COMPRESSOR ENGAGED // MASTER BUS AT 0.85';
+
+      startVisualizer();
+    }
+
+    // Play Bundled Audio Asset
+    async function playBundledAsset(filename, vol) {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+      const isFileProto = window.location.protocol === 'file:';
+      const url = isFileProto ? `./assets/audio/sfx/${filename}` : `/assets/audio/sfx/${filename}`;
+
+      try {
+        let buffer = bufferCache.get(url);
+        if (!buffer) {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const ab = await res.arrayBuffer();
+          buffer = await audioCtx.decodeAudioData(ab);
+          bufferCache.set(url, buffer);
+        }
+
+        const src = audioCtx.createBufferSource();
+        src.buffer = buffer;
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(vol, audioCtx.currentTime);
+
+        src.connect(gainNode);
+        gainNode.connect(sfxGain);
+
+        src.start();
+      } catch (err) {
+        console.warn('Bundled asset load failed, falling back to procedural:', err);
+        // Fallback to procedural
+        const sound = SOUND_EFFECTS.find(s => s.filename === filename);
+        if (sound) playProceduralSound(sound.id, vol);
+      }
+    }
+
+    // Procedural Synthesis Methods (Exact algorithms from MechanicalSoundFX)
+    function playProceduralSound(soundId, volume = 0.85) {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const now = audioCtx.currentTime;
+
+      switch (soundId) {
+        case 'paper_rustle': {
+          const len = Math.floor(audioCtx.sampleRate * 0.45);
+          const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+          const data = buf.getChannelData(0);
+          let flt = 0;
+          for (let i = 0; i < len; i++) {
+            const t = i / audioCtx.sampleRate;
+            const raw = Math.random() * 2 - 1;
+            flt += 0.25 * (raw - flt);
+            const flutter = Math.sin(t * 35) * Math.sin(t * 70) * 0.5 + 0.5;
+            const env = Math.pow(Math.sin((t / 0.45) * Math.PI), 1.8);
+            data[i] = (flt * 0.7 + (Math.random() * 2 - 1) * 0.3) * env * flutter * 0.8;
+          }
+          const src = audioCtx.createBufferSource();
+          src.buffer = buf;
+          const bq = audioCtx.createBiquadFilter();
+          bq.type = 'bandpass';
+          bq.frequency.setValueAtTime(1400, now);
+          bq.Q.setValueAtTime(1.8, now);
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(volume * 0.65, now);
+          src.connect(bq);
+          bq.connect(g);
+          g.connect(sfxGain);
+          src.start(now);
+          break;
+        }
+
+        case 'door_heavy': {
+          const osc1 = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc1.type = 'sawtooth';
+          osc1.frequency.setValueAtTime(85, now);
+          osc1.frequency.exponentialRampToValueAtTime(32, now + 1.2);
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(55, now);
+          osc2.frequency.exponentialRampToValueAtTime(28, now + 1.4);
+          const bq = audioCtx.createBiquadFilter();
+          bq.type = 'lowpass';
+          bq.frequency.setValueAtTime(220, now);
+          bq.frequency.linearRampToValueAtTime(90, now + 1.3);
+          g.gain.setValueAtTime(0.001, now);
+          g.gain.linearRampToValueAtTime(volume * 0.85, now + 0.1);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+          osc1.connect(bq);
+          osc2.connect(bq);
+          bq.connect(g);
+          g.connect(sfxGain);
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 1.45);
+          osc2.stop(now + 1.45);
+          break;
+        }
+
+        case 'door_latch': {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(360, now);
+          osc.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+          g.gain.setValueAtTime(volume * 0.75, now);
+          g.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+          osc.connect(g);
+          g.connect(sfxGain);
+          osc.start(now);
+          osc.stop(now + 0.15);
+          break;
+        }
+
+        case 'drawer_wood': {
+          const len = Math.floor(audioCtx.sampleRate * 0.35);
+          const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < len; i++) {
+            const t = i / audioCtx.sampleRate;
+            const env = 1 - t / 0.35;
+            data[i] = (Math.random() * 2 - 1) * env * 0.6;
+          }
+          const src = audioCtx.createBufferSource();
+          src.buffer = buf;
+          const bq = audioCtx.createBiquadFilter();
+          bq.type = 'bandpass';
+          bq.frequency.setValueAtTime(380, now);
+          bq.Q.setValueAtTime(2.5, now);
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(volume * 0.6, now);
+          src.connect(bq);
+          bq.connect(g);
+          g.connect(sfxGain);
+          src.start(now);
+          break;
+        }
+
+        case 'clock_tick': {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'square';
+          osc.frequency.setValueAtTime(1200, now);
+          osc.frequency.exponentialRampToValueAtTime(450, now + 0.03);
+          g.gain.setValueAtTime(volume * 0.45, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.04);
+          osc.connect(g);
+          g.connect(sfxGain);
+          osc.start(now);
+          osc.stop(now + 0.045);
+          break;
+        }
+
+        case 'pneumatic_hiss': {
+          const len = Math.floor(audioCtx.sampleRate * 0.8);
+          const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+          const data = buf.getChannelData(0);
+          for (let i = 0; i < len; i++) {
+            const t = i / audioCtx.sampleRate;
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-t * 3.5);
+          }
+          const src = audioCtx.createBufferSource();
+          src.buffer = buf;
+          const bq = audioCtx.createBiquadFilter();
+          bq.type = 'bandpass';
+          bq.frequency.setValueAtTime(900, now);
+          bq.Q.setValueAtTime(1.2, now);
+          const g = audioCtx.createGain();
+          g.gain.setValueAtTime(volume * 0.7, now);
+          src.connect(bq);
+          bq.connect(g);
+          g.connect(sfxGain);
+          src.start(now);
+          break;
+        }
+
+        case 'glass_clink': {
+          const osc1 = audioCtx.createOscillator();
+          const osc2 = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc1.type = 'sine';
+          osc1.frequency.setValueAtTime(2150, now);
+          osc2.type = 'sine';
+          osc2.frequency.setValueAtTime(4310, now);
+          g.gain.setValueAtTime(volume * 0.55, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.55);
+          osc1.connect(g);
+          osc2.connect(g);
+          g.connect(sfxGain);
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.6);
+          osc2.stop(now + 0.6);
+          break;
+        }
+
+        case 'switch_knife': {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(180, now);
+          osc.frequency.exponentialRampToValueAtTime(55, now + 0.18);
+          g.gain.setValueAtTime(volume * 0.8, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+          osc.connect(g);
+          g.connect(sfxGain);
+          osc.start(now);
+          osc.stop(now + 0.22);
+          break;
+        }
+
+        case 'switch_toggle':
+        case 'tumbler_click': {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(750, now);
+          osc.frequency.exponentialRampToValueAtTime(180, now + 0.05);
+          g.gain.setValueAtTime(volume * 0.6, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.06);
+          osc.connect(g);
+          g.connect(sfxGain);
+          osc.start(now);
+          osc.stop(now + 0.07);
+          break;
+        }
+
+        case 'water_drip': {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(520, now);
+          osc.frequency.exponentialRampToValueAtTime(1800, now + 0.08);
+          g.gain.setValueAtTime(volume * 0.45, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+          osc.connect(g);
+          g.connect(sfxGain);
+          osc.start(now);
+          osc.stop(now + 0.14);
+          break;
+        }
+
+        case 'handset_click': {
+          const osc = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(90, now + 0.07);
+          g.gain.setValueAtTime(volume * 0.65, now);
+          g.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+          osc.connect(g);
+          g.connect(sfxGain);
+          osc.start(now);
+          osc.stop(now + 0.09);
+          break;
+        }
+      }
+    }
+
+    // Engage Chamber Soundscape (Smooth 2.0s Crossfade)
+    function transitionToChamberSoundscape(chamberId) {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      const chamber = ROOM_CHAMBERS.find(c => c.id === chamberId);
+      if (!chamber) return;
+
+      activeSoundscapeId = chamberId;
+
+      // Update active UI cards
+      document.querySelectorAll('.chamber-card').forEach(card => {
+        if (card.dataset.id === chamberId) {
+          card.classList.add('active');
+        } else {
+          card.classList.remove('active');
+        }
+      });
+
+      const now = audioCtx.currentTime;
+      const tensionMult = ACTS[currentActIndex].mult;
+
+      // Fade out previous procedural soundscape
+      if (soundscapeGain) {
+        soundscapeGain.gain.setValueAtTime(soundscapeGain.gain.value, now);
+        soundscapeGain.gain.linearRampToValueAtTime(0.0001, now + 1.2);
+        const oldG = soundscapeGain;
+        const oldO1 = soundscapeOsc1;
+        const oldO2 = soundscapeOsc2;
+        setTimeout(() => {
+          try {
+            oldO1?.stop();
+            oldO2?.stop();
+            oldO1?.disconnect();
+            oldO2?.disconnect();
+            oldG?.disconnect();
+          } catch (e) {}
+        }, 1300);
+      }
+
+      // Create new soundscape
+      soundscapeGain = audioCtx.createGain();
+      soundscapeGain.gain.setValueAtTime(0.001, now);
+      soundscapeGain.gain.linearRampToValueAtTime(0.24, now + 2.0);
+      soundscapeGain.connect(ambientGain);
+
+      soundscapeFilter = audioCtx.createBiquadFilter();
+      soundscapeFilter.type = 'lowpass';
+      const dynamicCutoff = Math.min(260, chamber.cutoff + tensionMult * 40);
+      soundscapeFilter.frequency.setValueAtTime(dynamicCutoff, now);
+      soundscapeFilter.connect(soundscapeGain);
+
+      soundscapeOsc1 = audioCtx.createOscillator();
+      soundscapeOsc1.type = chamber.id === 'velvet_lounge' ? 'triangle' : 'sine';
+      soundscapeOsc1.frequency.setValueAtTime(chamber.baseFreq, now);
+      soundscapeOsc1.connect(soundscapeFilter);
+      soundscapeOsc1.start(now);
+
+      soundscapeOsc2 = audioCtx.createOscillator();
+      soundscapeOsc2.type = 'sine';
+      const detune = chamber.detune + tensionMult * 1.2;
+      soundscapeOsc2.frequency.setValueAtTime(chamber.baseFreq + detune, now);
+      soundscapeOsc2.connect(soundscapeFilter);
+      soundscapeOsc2.start(now);
+
+      document.getElementById('active-soundscape-tag').textContent = `ACTIVE: ${chamber.code}`;
+      document.getElementById('soundscape-status-bar').innerHTML =
+        `<span>PROFILE: ${chamber.title} (${chamber.baseFreq} Hz Fundamental)</span><span>DYNAMIC CUTOFF: ${Math.round(dynamicCutoff)} Hz</span>`;
+    }
+
+    function updateTensionSimulation() {
+      const act = ACTS[currentActIndex];
+      document.getElementById('badge-tension-act').textContent = `${act.num} (${act.mult.toFixed(2)})`;
+      document.getElementById('val-act-title').textContent = act.title;
+
+      if (!audioCtx || !soundscapeFilter || !soundscapeOsc2 || !activeSoundscapeId) return;
+
+      const chamber = ROOM_CHAMBERS.find(c => c.id === activeSoundscapeId);
+      if (!chamber) return;
+
+      const now = audioCtx.currentTime;
+      const dynamicCutoff = Math.min(260, chamber.cutoff + act.mult * 40);
+      soundscapeFilter.frequency.exponentialRampToValueAtTime(dynamicCutoff, now + 1.5);
+
+      const detune = chamber.detune + act.mult * 1.2;
+      soundscapeOsc2.frequency.exponentialRampToValueAtTime(chamber.baseFreq + detune, now + 1.5);
+
+      document.getElementById('tension-metrics').innerHTML =
+        `<span>FILTER CUTOFF: ${Math.round(dynamicCutoff)} Hz</span><span>OVERTONE DETUNE: +${detune.toFixed(2)} Hz</span>`;
+    }
+
+    // Visualizer Loop
+    function startVisualizer() {
+      const canvas = document.getElementById('scope-canvas');
+      const ctx = canvas.getContext('2d');
+      const bufferLen = analyser.frequencyBinCount;
+      const timeData = new Uint8Array(bufferLen);
+      const freqData = new Uint8Array(bufferLen);
+
+      function draw() {
+        requestAnimationFrame(draw);
+        analyser.getByteTimeDomainData(timeData);
+        analyser.getByteFrequencyData(freqData);
+
+        ctx.fillStyle = '#0D100E';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Grid lines
+        ctx.strokeStyle = '#1A281E';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, canvas.height / 2);
+        ctx.lineTo(canvas.width, canvas.height / 2);
+        ctx.stroke();
+
+        // Frequency Bars (Subtle background)
+        const barWidth = canvas.width / (bufferLen / 2);
+        for (let i = 0; i < bufferLen / 2; i++) {
+          const val = freqData[i] / 255.0;
+          const barHeight = val * canvas.height * 0.7;
+          ctx.fillStyle = 'rgba(74, 222, 128, 0.12)';
+          ctx.fillRect(i * barWidth, canvas.height - barHeight, barWidth - 1, barHeight);
+        }
+
+        // Oscilloscope Waveform (Phosphor Green)
+        ctx.lineWidth = 1.8;
+        ctx.strokeStyle = '#4ADE80';
+        ctx.beginPath();
+        const sliceWidth = canvas.width / bufferLen;
+        let x = 0;
+
+        for (let i = 0; i < bufferLen; i++) {
+          const v = timeData[i] / 128.0;
+          const y = (v * canvas.height) / 2;
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+          x += sliceWidth;
+        }
+
+        ctx.stroke();
+      }
+
+      draw();
+    }
+
+    // Build Foley Soundboard UI
+    function renderFoleyUI() {
+      const container = document.getElementById('foley-grid');
+      container.innerHTML = SOUND_EFFECTS.map(s => `
+        <div class="foley-item">
+          <div class="foley-meta">
+            <div>
+              <div class="foley-name">${s.label}</div>
+              <div class="foley-sub">${s.filename}</div>
+            </div>
+            <span class="foley-tag">${s.category}</span>
+          </div>
+          <div class="btn-group">
+            <button class="action-btn" onclick="playBundledAsset('${s.filename}', ${s.vol})">PLAY CC0 WAV</button>
+            <button class="action-btn" onclick="playProceduralSound('${s.id}', ${s.vol})">SYNTHESIZE</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Build Chambers UI
+    function renderChambersUI() {
+      const container = document.getElementById('chambers-grid');
+      container.innerHTML = ROOM_CHAMBERS.map(c => `
+        <div class="chamber-card" data-id="${c.id}" onclick="transitionToChamberSoundscape('${c.id}')">
+          <div class="chamber-code">${c.act} // ${c.code}</div>
+          <div class="chamber-title">${c.title}</div>
+          <div class="chamber-spec">${c.desc}</div>
+        </div>
+      `).join('');
+    }
+
+    // Setup Custom MP3 Drag & Drop
+    function setupMp3Dropzone() {
+      const dropzone = document.getElementById('mp3-dropzone');
+      const fileInput = document.getElementById('file-input');
+
+      dropzone.addEventListener('click', () => fileInput.click());
+
+      dropzone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropzone.classList.add('dragover');
+      });
+
+      dropzone.addEventListener('dragleave', () => {
+        dropzone.classList.remove('dragover');
+      });
+
+      dropzone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropzone.classList.remove('dragover');
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          handleMp3File(e.dataTransfer.files[0]);
+        }
+      });
+
+      fileInput.addEventListener('change', () => {
+        if (fileInput.files && fileInput.files[0]) {
+          handleMp3File(fileInput.files[0]);
+        }
+      });
+    }
+
+    function handleMp3File(file) {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+      }
+
+      previewUrl = URL.createObjectURL(file);
+
+      if (!previewAudioElement) {
+        previewAudioElement = new Audio();
+        previewAudioElement.crossOrigin = 'anonymous';
+        previewAudioElement.loop = true;
+        previewSourceNode = audioCtx.createMediaElementSource(previewAudioElement);
+        previewSourceNode.connect(ambientGain);
+      }
+
+      previewAudioElement.src = previewUrl;
+      previewAudioElement.play().catch(e => console.warn('Preview playback failed:', e));
+
+      const metaBox = document.getElementById('audio-meta-box');
+      metaBox.style.display = 'flex';
+      document.getElementById('meta-filename').textContent = `INJECTED FILE: ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+      document.getElementById('meta-duration').textContent = `STATUS: STREAMING INTO WEB AUDIO AMBIENT BUS VIA CREATE_MEDIA_ELEMENT_SOURCE`;
+    }
+
+    // Audition Tour Sequencing
+    let activeTourTimer = null;
+
+    async function startFoleyTour() {
+      stopAll();
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+      let idx = 0;
+      function playNext() {
+        if (idx >= SOUND_EFFECTS.length) {
+          document.getElementById('subsystem-status').textContent = '// FOLEY AUDITION TOUR COMPLETE // ALL 12 TACTILE ASSETS VERIFIED';
+          document.querySelectorAll('.foley-item').forEach(el => {
+            el.style.border = '1px solid #28332D';
+            el.style.background = '#151A17';
+          });
+          return;
+        }
+
+        const s = SOUND_EFFECTS[idx];
+        document.getElementById('subsystem-status').textContent = `// AUDITION TOUR [${idx + 1}/12]: ${s.label} (${s.filename})`;
+
+        document.querySelectorAll('.foley-item').forEach((el, i) => {
+          if (i === idx) {
+            el.style.border = '1px solid var(--color-crt-phosphor)';
+            el.style.background = '#1C2920';
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          } else {
+            el.style.border = '1px solid #28332D';
+            el.style.background = '#151A17';
+          }
+        });
+
+        playBundledAsset(s.filename, s.vol);
+
+        idx++;
+        activeTourTimer = setTimeout(playNext, 1400);
+      }
+
+      playNext();
+    }
+
+    async function startSoundscapeTour() {
+      stopAll();
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') await audioCtx.resume();
+
+      let idx = 0;
+      function playNextChamber() {
+        if (idx >= ROOM_CHAMBERS.length) {
+          document.getElementById('subsystem-status').textContent = '// SOUNDSCAPE TOUR COMPLETE // ALL 8 SECTORS AUDITIONED';
+          return;
+        }
+
+        const chamber = ROOM_CHAMBERS[idx];
+        document.getElementById('subsystem-status').textContent = `// SOUNDSCAPE TOUR [${idx + 1}/8]: ${chamber.title} (${chamber.code} • ${chamber.baseFreq} Hz Fundamental)`;
+        transitionToChamberSoundscape(chamber.id);
+
+        idx++;
+        activeTourTimer = setTimeout(playNextChamber, 4000);
+      }
+
+      playNextChamber();
+    }
+
+    function stopAll() {
+      if (activeTourTimer) {
+        clearTimeout(activeTourTimer);
+        activeTourTimer = null;
+      }
+      if (previewAudioElement) {
+        previewAudioElement.pause();
+      }
+      if (soundscapeGain && audioCtx) {
+        const now = audioCtx.currentTime;
+        soundscapeGain.gain.setValueAtTime(soundscapeGain.gain.value, now);
+        soundscapeGain.gain.linearRampToValueAtTime(0.0001, now + 0.8);
+        const oldG = soundscapeGain;
+        const oldO1 = soundscapeOsc1;
+        const oldO2 = soundscapeOsc2;
+        setTimeout(() => {
+          try {
+            oldO1?.stop();
+            oldO2?.stop();
+            oldO1?.disconnect();
+            oldO2?.disconnect();
+            oldG?.disconnect();
+          } catch (e) {}
+        }, 900);
+        soundscapeGain = null;
+      }
+      document.querySelectorAll('.foley-item').forEach(el => {
+        el.style.border = '1px solid #28332D';
+        el.style.background = '#151A17';
+      });
+      document.querySelectorAll('.chamber-card').forEach(card => card.classList.remove('active'));
+      document.getElementById('active-soundscape-tag').textContent = 'SILENCE';
+      document.getElementById('subsystem-status').textContent = '// ACOUSTIC ENGINE IDLE // PLAYBACK HALTED';
+    }
+
+    // Sliders & Controls Event Listeners
+    document.getElementById('btn-unlock').addEventListener('click', initAudio);
+    document.getElementById('btn-tour-foley').addEventListener('click', startFoleyTour);
+    document.getElementById('btn-tour-soundscape').addEventListener('click', startSoundscapeTour);
+    document.getElementById('btn-stop-all').addEventListener('click', stopAll);
+
+    document.getElementById('slider-master').addEventListener('input', (e) => {
+      const val = e.target.value / 100;
+      document.getElementById('val-master').textContent = `${e.target.value}% (${val.toFixed(2)})`;
+      if (masterGain && audioCtx) masterGain.gain.setValueAtTime(val, audioCtx.currentTime);
+    });
+
+    document.getElementById('slider-sfx').addEventListener('input', (e) => {
+      const val = e.target.value / 100;
+      document.getElementById('val-sfx').textContent = `${e.target.value}% (${val.toFixed(2)})`;
+      if (sfxGain && audioCtx) sfxGain.gain.setValueAtTime(val, audioCtx.currentTime);
+    });
+
+    document.getElementById('slider-ambient').addEventListener('input', (e) => {
+      const val = e.target.value / 100;
+      document.getElementById('val-ambient').textContent = `${e.target.value}% (${val.toFixed(2)})`;
+      if (ambientGain && audioCtx) ambientGain.gain.setValueAtTime(val, audioCtx.currentTime);
+    });
+
+    document.getElementById('slider-act').addEventListener('input', (e) => {
+      currentActIndex = parseInt(e.target.value, 10);
+      updateTensionSimulation();
+    });
+
+    // Initialize UI on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      renderFoleyUI();
+      renderChambersUI();
+      setupMp3Dropzone();
+    });
+  </script>
+</body>
+</html>

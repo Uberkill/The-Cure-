@@ -27,6 +27,8 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
   private coordinateLabelEl: HTMLElement | null = null;
   private btnLaunchEl: HTMLButtonElement | null = null;
   private hopperStatusEl: HTMLElement | null = null;
+  private lastFocusAudioLevel: number = 0.2;
+  private lastFocusAudioTime: number = 0;
 
   public constructor() {
     super();
@@ -175,7 +177,7 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
     if (this.state.canisterDelivered) return;
 
     this.state.microfilmMounted = !this.state.microfilmMounted;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playSwitchToggle();
     this.syncDom();
 
     if (this.state.microfilmMounted) {
@@ -190,8 +192,14 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
   }
 
   private setFocusLevel(level: number): void {
-    this.state.opticFocusLevel = Math.round(level * 100) / 100;
-    this.audioEngine.playTumblerClick();
+    const rounded = Math.round(level * 100) / 100;
+    this.state.opticFocusLevel = rounded;
+    const now = performance.now();
+    if (Math.abs(rounded - this.lastFocusAudioLevel) >= 0.05 && now - this.lastFocusAudioTime > 50) {
+      this.audioEngine.playTumblerClick();
+      this.lastFocusAudioLevel = rounded;
+      this.lastFocusAudioTime = now;
+    }
     this.syncDom();
   }
 
@@ -238,7 +246,15 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
     this.state.canisterDelivered = true;
 
     this.audioEngine.playPneumaticHiss();
-    this.audioEngine.playTumblerClick();
+    window.setTimeout(() => {
+      this.audioEngine.playDrawerWood();
+    }, 240);
+    window.setTimeout(() => {
+      this.audioEngine.playDoorLatch();
+    }, 480);
+    window.setTimeout(() => {
+      this.audioEngine.playGlassClink();
+    }, 700);
     this.syncDom();
 
     this.eventBus.emit('puzzle:canister_delivered', {});
@@ -347,6 +363,7 @@ export class MicroficheViewerScreen extends DiegeticScreenBase<Act05ArchiveState
   }
 
   protected onClosed(): void {
+    this.audioEngine.playDoorLatch();
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;

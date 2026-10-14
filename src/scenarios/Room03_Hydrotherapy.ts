@@ -4,6 +4,8 @@ import { EventBus } from '../core/EventBus';
 import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
 import { HydraulicManifoldScreen } from '../ui/screens/HydraulicManifoldScreen';
+import { ProceduralTextures } from '../entities/ProceduralTextures';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 export class Room03_Hydrotherapy implements RoomScenario {
   public id = 'hydrotherapy';
@@ -131,6 +133,17 @@ export class Room03_Hydrotherapy implements RoomScenario {
     const matChrome = new THREE.MeshStandardMaterial({ color: 0xe2e6e9, metalness: 0.9, roughness: 0.15 });
     const matBrass = new THREE.MeshStandardMaterial({ color: 0xc28833, metalness: 0.85, roughness: 0.25 });
     const matCastIron = new THREE.MeshStandardMaterial({ color: 0x1f2421, metalness: 0.6, roughness: 0.7 });
+
+    const greenTileData = ProceduralTextures.createCeramicGreenTiles();
+    const matWetTiles = new THREE.MeshStandardMaterial({
+      color: 0x8fe3d4,
+      map: greenTileData.map,
+      bumpMap: greenTileData.bumpMap,
+      bumpScale: 0.04,
+      roughness: 0.16,
+      metalness: 0.10
+    });
+
     const matWater = new THREE.MeshPhysicalMaterial({
       color: 0x38bdf8,
       transmission: 0.85,
@@ -154,7 +167,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
     floor.receiveShadow = true;
     this.group.add(floor);
 
-    // Ceiling & Walls
+    // Ceiling & Upper Walls
     const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(14, 14), matWall);
     ceiling.position.y = 4.5;
     ceiling.rotation.x = Math.PI / 2;
@@ -167,6 +180,69 @@ export class Room03_Hydrotherapy implements RoomScenario {
     const wallFront = new THREE.Mesh(new THREE.BoxGeometry(14, 4.5, 0.2), matWall);
     wallFront.position.set(0, 2.25, 7);
     this.group.add(wallFront);
+
+    // Tiled Lower Wainscot Walls (Subterranean glazed bath walls)
+    const wainscotBack = new THREE.Mesh(new THREE.BoxGeometry(14, 2.6, 0.22), matWetTiles);
+    wainscotBack.position.set(0, 1.3, -6.9);
+    wainscotBack.raycast = () => {};
+    this.group.add(wainscotBack);
+
+    const wainscotTrimBack = new THREE.Mesh(new THREE.BoxGeometry(14, 0.04, 0.24), matBrass);
+    wainscotTrimBack.position.set(0, 2.62, -6.9);
+    wainscotTrimBack.raycast = () => {};
+    this.group.add(wainscotTrimBack);
+
+    const wainscotLeft = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.6, 14), matWetTiles);
+    wainscotLeft.position.set(-6.9, 1.3, 0);
+    wainscotLeft.raycast = () => {};
+    this.group.add(wainscotLeft);
+
+    const wainscotTrimLeft = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 14), matBrass);
+    wainscotTrimLeft.position.set(-6.9, 2.62, 0);
+    wainscotTrimLeft.raycast = () => {};
+    this.group.add(wainscotTrimLeft);
+
+    const wainscotRight = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.6, 14), matWetTiles);
+    wainscotRight.position.set(6.9, 1.3, 0);
+    wainscotRight.raycast = () => {};
+    this.group.add(wainscotRight);
+
+    const wainscotTrimRight = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.04, 14), matBrass);
+    wainscotTrimRight.position.set(6.9, 2.62, 0);
+    wainscotTrimRight.raycast = () => {};
+    this.group.add(wainscotTrimRight);
+
+    // Front wainscot flanking return doorway (X = -0.9 to 0.9 open)
+    const wainscotFrontL = new THREE.Mesh(new THREE.BoxGeometry(5.9, 2.6, 0.22), matWetTiles);
+    wainscotFrontL.position.set(-3.95, 1.3, 6.9);
+    wainscotFrontL.raycast = () => {};
+    this.group.add(wainscotFrontL);
+
+    const wainscotTrimFrontL = new THREE.Mesh(new THREE.BoxGeometry(5.9, 0.04, 0.24), matBrass);
+    wainscotTrimFrontL.position.set(-3.95, 2.62, 6.9);
+    wainscotTrimFrontL.raycast = () => {};
+    this.group.add(wainscotTrimFrontL);
+
+    const wainscotFrontR = new THREE.Mesh(new THREE.BoxGeometry(5.9, 2.6, 0.22), matWetTiles);
+    wainscotFrontR.position.set(3.95, 1.3, 6.9);
+    wainscotFrontR.raycast = () => {};
+    this.group.add(wainscotFrontR);
+
+    const wainscotTrimFrontR = new THREE.Mesh(new THREE.BoxGeometry(5.9, 0.04, 0.24), matBrass);
+    wainscotTrimFrontR.position.set(3.95, 2.62, 6.9);
+    wainscotTrimFrontR.raycast = () => {};
+    this.group.add(wainscotTrimFrontR);
+
+    // Sanitary Perimeter Cove Baseboard
+    const coveMat = new THREE.MeshStandardMaterial({ color: 0x18241e, roughness: 0.25 });
+    const coveL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 14), coveMat);
+    coveL.position.set(-6.96, 0.06, 0);
+    coveL.raycast = () => {};
+    this.group.add(coveL);
+    const coveR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.12, 14), coveMat);
+    coveR.position.set(6.96, 0.06, 0);
+    coveR.raycast = () => {};
+    this.group.add(coveR);
 
     // Return Door to Central Concourse / Sleep Ward
     const returnDoorGroup = new THREE.Group();
@@ -212,6 +288,16 @@ export class Room03_Hydrotherapy implements RoomScenario {
       tubFloor.castShadow = true;
       tubFloor.receiveShadow = true;
       tubGroup.add(tubFloor);
+
+      // Contact shadow plane under tub
+      const tubAO = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.6, 2.6),
+        new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.32, depthWrite: false })
+      );
+      tubAO.rotation.x = -Math.PI / 2;
+      tubAO.position.set(0, 0.003, 0);
+      tubAO.raycast = () => {};
+      tubGroup.add(tubAO);
 
       const tubWallLeft = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.75, 2.4), matPorcelain);
       tubWallLeft.position.set(-0.645, 0.525, 0);
@@ -399,11 +485,134 @@ export class Room03_Hydrotherapy implements RoomScenario {
 
     this.group.add(drainGroup);
 
-    // Lighting: Cold Surgical Spotlight
-    const coldSpot = new THREE.SpotLight(0xa5d6cb, 1.8, 14, Math.PI / 4, 0.4);
-    coldSpot.position.set(0, 4.2, 0);
+    // Washroom luminaires and spotlights
+    const fixturesGroup = new THREE.Group();
+    fixturesGroup.name = 'group_hydro_light_fixtures';
+
+    // 1. Dual Suspended Porcelain Washroom Pendant Fixtures (tubs and manifold)
+    [
+      { x: -0.7, z: 0.0 },
+      { x: 0.0, z: -5.8 }
+    ].forEach((pos) => {
+      const pendantGroup = new THREE.Group();
+      pendantGroup.position.set(pos.x, 0, pos.z);
+      pendantGroup.raycast = () => {};
+
+      // Ceiling canopy collar
+      const canopy = new THREE.Mesh(new THREE.CylinderGeometry(0.10, 0.10, 0.04, 16), matCastIron);
+      canopy.position.set(0, 4.48, 0);
+      canopy.raycast = () => {};
+      pendantGroup.add(canopy);
+
+      // Galvanized pipe drop stem (y = 4.5 down to y = 3.65)
+      const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.015, 0.85, 12), matChrome);
+      stem.position.set(0, 4.05, 0);
+      stem.raycast = () => {};
+      pendantGroup.add(stem);
+
+      // Porcelain conical shade (y = 3.52)
+      const shade = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.46, 0.26, 24), matPorcelain);
+      shade.position.set(0, 3.52, 0);
+      shade.raycast = () => {};
+      pendantGroup.add(shade);
+
+      // Machined brass rim bezel
+      const rim = new THREE.Mesh(new THREE.TorusGeometry(0.46, 0.014, 12, 24), matBrass);
+      rim.rotation.x = Math.PI / 2;
+      rim.position.set(0, 3.39, 0);
+      rim.raycast = () => {};
+      pendantGroup.add(rim);
+
+      // Emissive diffuser lens
+      const lens = new THREE.Mesh(
+        new THREE.CircleGeometry(0.44, 24),
+        new THREE.MeshBasicMaterial({ color: 0xffffff })
+      );
+      lens.rotation.x = Math.PI / 2;
+      lens.position.set(0, 3.40, 0);
+      lens.raycast = () => {};
+      pendantGroup.add(lens);
+
+      fixturesGroup.add(pendantGroup);
+    });
+
+    // 2. Four Marine / Sanatorium Vapor-Tight Cage Wall Fixtures
+    const cageLampMat = new THREE.MeshStandardMaterial({
+      color: 0xfffaeb,
+      emissive: 0xfef08a,
+      emissiveIntensity: 0.55,
+      roughness: 0.2
+    });
+
+    const cageWallConfigs = [
+      { x: -3.5, y: 2.4, z: -6.82, rotY: 0 },
+      { x: 3.5, y: 2.4, z: -6.82, rotY: 0 },
+      { x: -6.82, y: 2.4, z: 0, rotY: Math.PI / 2 },
+      { x: 6.82, y: 2.4, z: 0, rotY: -Math.PI / 2 }
+    ];
+
+    cageWallConfigs.forEach((cfg) => {
+      const cageGroup = new THREE.Group();
+      cageGroup.position.set(cfg.x, cfg.y, cfg.z);
+      cageGroup.rotation.y = cfg.rotY;
+      cageGroup.raycast = () => {};
+
+      // Cast-iron wall base plate
+      const basePlate = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.03, 16), matCastIron);
+      basePlate.rotation.x = Math.PI / 2;
+      basePlate.raycast = () => {};
+      cageGroup.add(basePlate);
+
+      // Protective ribbed glass globe
+      const globe = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.12, 16), cageLampMat);
+      globe.position.z = 0.07;
+      globe.rotation.x = Math.PI / 2;
+      globe.raycast = () => {};
+      cageGroup.add(globe);
+
+      // Brass wire guard rings
+      const cageGuard = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.007, 8, 16), matBrass);
+      cageGuard.position.z = 0.07;
+      cageGuard.raycast = () => {};
+      cageGroup.add(cageGuard);
+
+      fixturesGroup.add(cageGroup);
+    });
+
+    this.group.add(fixturesGroup);
+
+    // Anchored Cold Surgical Spotlight (originating inside the central tub pendant)
+    const coldSpot = new THREE.SpotLight(0xa5d6cb, 2.2, 12, Math.PI / 3.4, 0.40, 1.1);
+    coldSpot.position.set(-0.7, 3.39, 0);
+    coldSpot.target.position.set(-0.7, 0.6, 0);
+    this.group.add(coldSpot.target);
     coldSpot.castShadow = true;
     this.group.add(coldSpot);
+
+    LightRigManager.getInstance().register({
+      id: 'room03_tub_cold_spot',
+      name: 'Hydrotherapy Tub Pendant Spot',
+      room: 'hydrotherapy',
+      type: 'spot',
+      light: coldSpot,
+      target: coldSpot.target,
+      initialPosition: coldSpot.position.clone(),
+      initialTarget: coldSpot.target.position.clone()
+    });
+
+    // Secondary Warm Fill over the Hydraulic Manifold
+    const manifoldFill = new THREE.PointLight(0xa5d6cb, 1.1, 9);
+    manifoldFill.position.set(0, 3.35, -5.8);
+    this.group.add(manifoldFill);
+
+    LightRigManager.getInstance().register({
+      id: 'room03_manifold_fill',
+      name: 'Hydrotherapy Manifold Fill',
+      room: 'hydrotherapy',
+      type: 'point',
+      light: manifoldFill,
+      initialPosition: manifoldFill.position.clone()
+    });
 
     // Re-entry state restoration
     if (this.manifoldBalanced) {
@@ -424,6 +633,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    LightRigManager.getInstance().clear('hydrotherapy');
     this.unsubscribers.forEach(u => u());
     this.unsubscribers = [];
     this.manifoldScreen.teardown();
@@ -452,17 +662,19 @@ export class Room03_Hydrotherapy implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
+      audio.playDoorHeavy();
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_hydrotherapy' });
       return true;
     }
 
     if (objectId === 'door_portal_sleep_ward') {
+      audio.playDoorLatch();
       bus.emit('scenario:switch_room', { targetRoomId: 'sleep_ward', doorThresholdId: 'door_portal_sleep_ward' });
       return true;
     }
 
     if (objectId === 'prop_drain' || objectId === 'prop_drain_lid') {
-      audio.playTumblerClick();
+      audio.playDoorLatch();
       if (this.manifoldScreen.getState().manifoldBalanced || GameState.getInstance().hasCrystal('crystal_02_bronze')) {
         bus.emit('ui:subtitle_changed', {
           text: 'The heavy cast-iron floor drain hatch is unsealed. The sump chamber beneath is drained.'
@@ -559,7 +771,7 @@ export class Room03_Hydrotherapy implements RoomScenario {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         if (this.crystalLight) this.crystalLight.visible = false;
-        audio.playTumblerClick();
+        audio.playGlassClink();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_02_bronze' as CrystalId,
           label: 'Drained Bronze'

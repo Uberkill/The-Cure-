@@ -92,6 +92,7 @@ const DevEditorPlugin = () => ({
 });
 
 export default defineConfig({
+  base: './',
   plugins: [DevEditorPlugin()],
   server: {
     port: 3000,

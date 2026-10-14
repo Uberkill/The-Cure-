@@ -2,24 +2,36 @@
 node_modules/
 libs/
 
-# Legacy prototypes and diagnostics
-archive/
-
 # Production build outputs
 dist/
 
-# Graphify generated artifacts (AI indexing)
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# AI agent files, scratchpads, and transcripts
+.gemini/
+.antigravity/
+.system_generated/
+.serena/
+brain/
+transcripts/
+subagents/
+scratch/
+TASK_LEDGER.md
+TASK_LEDGER.lock
+task_state.json
 graphify-out/
 .graphify_*.json
 run_graphify_pipeline.py
 
-# Task tracking and AI scratchpads
-TASK_LEDGER.md
-TASK_LEDGER.lock
-task_state.json
-
-# Playwright and test screenshots
+# Test reports, execution traces, and ephemeral screenshots
+test-results/
+playwright-report/
 screenshots/
+*.trace
+*.tsbuildinfo
 *.png
 *.jpg
 !src/assets/**/*.png
@@ -27,20 +39,31 @@ screenshots/
 !public/**/*.png
 !public/**/*.jpg
 
-# Runtime logs and locks
+# Runtime logs and system artifacts
 *.log
-
-# OS files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Exported 3D model outputs
+# Legacy prototypes and scratch scripts
+archive/
 exported_models/
-
-# Development helper scripts
 patch_*.py
 patch_*.ps1
 patch_*.js
 
-.serena/
-
+# IDEs, editors, and coverage
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.cursor/
+.cursorrules
+.windsurf/
+.aider*
+coverage/
+*.tmp
+*.bak
+*.swp

@@ -158,9 +158,17 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       });
     });
 
+    let lastDripAudioTime = 0;
+    let lastDripVal = this.state.ivDripBpm;
     this.sliderEl?.addEventListener('input', () => {
       const bpm = parseInt(this.sliderEl!.value, 10);
       this.state.ivDripBpm = bpm;
+      const now = performance.now();
+      if (Math.abs(bpm - lastDripVal) >= 4 && now - lastDripAudioTime > 80) {
+        this.audioEngine.playWaterDrip();
+        lastDripVal = bpm;
+        lastDripAudioTime = now;
+      }
       this.updatePeristalticRate();
     });
 
@@ -208,7 +216,11 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
       this.state.shutterDigits[1] === 0 &&
       this.state.shutterDigits[2] === 4;
 
+    const wasUnlocked = this.state.shutterUnlocked;
     this.state.shutterUnlocked = isMatched;
+    if (isMatched && !wasUnlocked) {
+      this.audioEngine.playDoorLatch();
+    }
 
     if (this.tumblerBank) {
       this.tumblerBank.setValues(this.state.shutterDigits);
@@ -357,6 +369,12 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
 
     this.state.cartUnlocked = true;
     this.audioEngine.playPneumaticHiss();
+    window.setTimeout(() => {
+      this.audioEngine.playDrawerWood();
+    }, 220);
+    window.setTimeout(() => {
+      this.audioEngine.playGlassClink();
+    }, 450);
 
     if (this.btnUnlockDrawerEl) {
       this.btnUnlockDrawerEl.setAttribute('disabled', 'true');
@@ -388,6 +406,7 @@ export class DispensaryCartScreen extends DiegeticScreenBase<Act02SleepWardState
   }
 
   protected onClosed(): void {
+    this.audioEngine.playDoorLatch();
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;

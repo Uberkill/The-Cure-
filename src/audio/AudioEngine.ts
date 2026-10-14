@@ -1,22 +1,58 @@
 import { EventBus } from '../core/EventBus';
 import { Telemetry } from '../core/Telemetry';
 import { MechanicalSoundFX, SweepTracker } from './MechanicalSoundFX';
+import {
+  PropSoundType,
+  SOUND_EFFECT_MANIFEST,
+  ROOM_SOUNDSCAPE_MANIFEST,
+  RoomSoundscapeDefinition
+} from './AudioManifest';
+import { GameState } from '../core/GameState';
+import { GameStage } from '../types';
+import { getAssetUrl } from '../utils/assetPath';
+
+const STAGE_ORDER: GameStage[] = Object.values(GameStage);
+
+function getStageTensionMultiplier(stage: GameStage): number {
+  const index = STAGE_ORDER.indexOf(stage);
+  if (index <= 0) return 0;
+  return Math.min(1.0, index / (STAGE_ORDER.length - 1));
+}
 
 export class AudioEngine {
   private static instance: AudioEngine;
   private ctx: AudioContext | null = null;
   private telemetry: Telemetry;
   private isUnlocked: boolean = false;
+
   private masterGain: GainNode | null = null;
   private sfxGain: GainNode | null = null;
   private ambientGain: GainNode | null = null;
+  private musicGain: GainNode | null = null;
+  private compressor: DynamicsCompressorNode | null = null;
+
   private persistedMasterVolume: number = 0.85;
   private persistedSfxVolume: number = 0.85;
   private persistedAmbientVolume: number = 0.75;
 
-  // Active oscillators / sources for cleanup
+  private bufferCache: Map<string, AudioBuffer> = new Map();
+  private pendingBufferLoads: Map<string, Promise<AudioBuffer | null>> = new Map();
+
+  private musicElements: [HTMLAudioElement | null, HTMLAudioElement | null] = [null, null];
+  private musicSourceNodes: [MediaElementAudioSourceNode | null, MediaElementAudioSourceNode | null] = [null, null];
+  private musicChannelGains: [GainNode | null, GainNode | null] = [null, null];
+  private activeMusicChannel: 0 | 1 = 0;
+  private currentTrackName: string | null = null;
+
   private activeNodes: Set<{ stop?: () => void; disconnect: () => void }> = new Set();
 
+  private soundscapeOsc1: OscillatorNode | null = null;
+  private soundscapeOsc2: OscillatorNode | null = null;
+  private soundscapeFilter: BiquadFilterNode | null = null;
+  private soundscapeGain: GainNode | null = null;
+  private currentRoomSoundscapeId: string | null = null;
+
+  // Legacy procedural nodes
   private droneOscL: OscillatorNode | null = null;
   private droneOscR: OscillatorNode | null = null;
   private droneGain: GainNode | null = null;
@@ -30,9 +66,6 @@ export class AudioEngine {
 
   private payphoneInterval: number | null = null;
   private jazzInterval: number | null = null;
-
-  // Master DynamicsCompressor to prevent digital clipping / sound cascading
-  private compressor: DynamicsCompressorNode | null = null;
 
   // Sweep tracker for tone alignment frequency sweeps
   private sweepTracker: SweepTracker = { osc: null, gain: null };
@@ -55,9 +88,39 @@ export class AudioEngine {
     return this.ctx;
   }
 
+  public getCurrentTrackName(): string | null {
+    return this.currentTrackName;
+  }
+
+  private isAudioPrimed: boolean = false;
+
+  private primeAudioElements(): void {
+    if (this.isAudioPrimed) return;
+    this.isAudioPrimed = true;
+
+    for (const audio of this.musicElements) {
+      if (audio) {
+        audio.muted = true;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise
+            .then(() => {
+              audio.pause();
+              audio.currentTime = 0;
+              audio.muted = false;
+            })
+            .catch(() => {
+              audio.muted = false;
+            });
+        }
+      }
+    }
+  }
+
   private setupUnlockListeners(): void {
     const unlock = () => {
       this.ensureContext();
+      this.primeAudioElements();
       if (this.ctx && this.ctx.state === 'running') {
         window.removeEventListener('pointerdown', unlock);
         window.removeEventListener('keydown', unlock);
@@ -71,6 +134,7 @@ export class AudioEngine {
 
   private setupListeners(): void {
     const bus = EventBus.getInstance();
+
     bus.on('audio:toggle_synth', ({ type, active }) => {
       this.ensureContext();
       if (this.ctx && this.ctx.state === 'suspended') {
@@ -79,6 +143,24 @@ export class AudioEngine {
       if (type === 'drone') this.toggleDrone(active);
       if (type === 'ballast') this.toggleBallast(active);
       if (type === 'phone') this.togglePhoneTone(active);
+    });
+
+    bus.on('audio:play_sfx', ({ sfx, volume }) => {
+      this.playPropSound(sfx as PropSoundType, volume);
+    });
+
+    bus.on('audio:set_room_soundscape', ({ roomId }) => {
+      this.transitionToRoomSoundscape(roomId);
+    });
+
+    bus.on('scenario:switch_room', ({ targetRoomId }) => {
+      this.transitionToRoomSoundscape(targetRoomId);
+    });
+
+    bus.on('game:stage_transition', () => {
+      if (this.currentRoomSoundscapeId) {
+        this.updateSoundscapeTension();
+      }
     });
 
     bus.on('settings:updated', (settings) => {
@@ -119,7 +201,13 @@ export class AudioEngine {
   public ensureContext(): boolean {
     if (!this.ctx) {
       try {
-        const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        const AudioContextClass =
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+        if (!AudioContextClass) {
+          return false;
+        }
+
         this.ctx = new AudioContextClass();
         this.masterGain = this.ctx.createGain();
         this.masterGain.gain.setValueAtTime(this.persistedMasterVolume, this.ctx.currentTime);
@@ -132,7 +220,11 @@ export class AudioEngine {
         this.ambientGain.gain.setValueAtTime(this.persistedAmbientVolume, this.ctx.currentTime);
         this.ambientGain.connect(this.masterGain);
 
-        // Hardware brickwall limiter / compressor: prevents digital clipping above 0 dBFS
+        this.musicGain = this.ctx.createGain();
+        this.musicGain.gain.setValueAtTime(1.0, this.ctx.currentTime);
+        this.musicGain.connect(this.ambientGain);
+
+        // DynamicsCompressor: Master brickwall limiter against digital clipping
         this.compressor = this.ctx.createDynamicsCompressor();
         this.compressor.threshold.setValueAtTime(-14, this.ctx.currentTime);
         this.compressor.knee.setValueAtTime(24, this.ctx.currentTime);
@@ -142,6 +234,9 @@ export class AudioEngine {
 
         this.masterGain.connect(this.compressor);
         this.compressor.connect(this.ctx.destination);
+
+        // Pre-create dual channel elements for music crossfading
+        this.initMusicChannels();
       } catch (err) {
         this.telemetry.record('warn', `AudioContext initialization failed: ${String(err)}`);
         return false;
@@ -149,16 +244,331 @@ export class AudioEngine {
     }
 
     if (this.ctx && this.ctx.state === 'suspended') {
-      this.ctx.resume().then(() => {
-        this.isUnlocked = true;
-      }).catch((err) => {
-        this.telemetry.record('warn', `AudioContext resume failed: ${String(err)}`);
-      });
+      this.ctx
+        .resume()
+        .then(() => {
+          this.isUnlocked = true;
+        })
+        .catch((err) => {
+          this.telemetry.record('warn', `AudioContext resume failed: ${String(err)}`);
+        });
     } else if (this.ctx && this.ctx.state === 'running') {
       this.isUnlocked = true;
     }
 
     return true;
+  }
+
+  private initMusicChannels(): void {
+    if (!this.ctx || !this.musicGain) return;
+
+    for (let i = 0; i < 2; i++) {
+      if (!this.musicElements[i]) {
+        const audio = new Audio();
+        audio.crossOrigin = 'anonymous';
+        audio.loop = true;
+        this.musicElements[i] = audio;
+
+        const channelGain = this.ctx.createGain();
+        channelGain.gain.setValueAtTime(0, this.ctx.currentTime);
+        channelGain.connect(this.musicGain);
+        this.musicChannelGains[i] = channelGain;
+
+        if (typeof this.ctx.createMediaElementSource === 'function') {
+          try {
+            const source = this.ctx.createMediaElementSource(audio);
+            source.connect(channelGain);
+            this.musicSourceNodes[i] = source;
+          } catch (err) {
+            this.telemetry.record('warn', `createMediaElementSource failed on channel ${i}: ${String(err)}`);
+          }
+        }
+      }
+    }
+  }
+
+  // Pre-load and cache audio buffer
+  public async loadAudioBuffer(url: string): Promise<AudioBuffer | null> {
+    if (this.bufferCache.has(url)) {
+      return this.bufferCache.get(url)!;
+    }
+
+    if (this.pendingBufferLoads.has(url)) {
+      return this.pendingBufferLoads.get(url)!;
+    }
+
+    const loadPromise = (async () => {
+      try {
+        if (!this.ensureContext() || !this.ctx) return null;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const arrayBuf = await res.arrayBuffer();
+        const decoded = await this.ctx.decodeAudioData(arrayBuf);
+        this.bufferCache.set(url, decoded);
+        return decoded;
+      } catch {
+        return null;
+      } finally {
+        this.pendingBufferLoads.delete(url);
+      }
+    })();
+
+    this.pendingBufferLoads.set(url, loadPromise);
+    return loadPromise;
+  }
+
+  public async playPropSound(soundType: PropSoundType, customVolume?: number): Promise<void> {
+    if (!this.ensureContext() || !this.ctx || !this.sfxGain) return;
+
+    const def = SOUND_EFFECT_MANIFEST[soundType];
+    const volume = customVolume !== undefined ? customVolume : def ? def.defaultVolume : 0.8;
+    const filename = def ? def.filename : `${soundType}.wav`;
+    const sfxUrl = getAssetUrl(`assets/audio/sfx/${filename}`);
+
+    let buffer = this.bufferCache.get(sfxUrl) || null;
+    if (!buffer) {
+      buffer = await this.loadAudioBuffer(sfxUrl);
+    }
+
+    if (buffer && this.ctx && this.sfxGain) {
+      const source = this.ctx.createBufferSource();
+      source.buffer = buffer;
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(volume, this.ctx.currentTime);
+
+      source.connect(gain);
+      gain.connect(this.sfxGain);
+
+      this.registerActiveNode(source);
+      source.start();
+
+      source.onended = () => {
+        this.unregisterActiveNode(source);
+        try {
+          source.disconnect();
+          gain.disconnect();
+        } catch (err: unknown) {
+          void err;
+        }
+      };
+      return;
+    }
+
+    // Procedural synthesis fallback
+    this.playProceduralFallback(soundType, volume);
+  }
+
+  private playProceduralFallback(soundType: PropSoundType, volume: number): void {
+    if (!this.ctx || !this.sfxGain) return;
+
+    switch (soundType) {
+      case 'paper_rustle':
+        MechanicalSoundFX.playPaperRustle(this.ctx, this.sfxGain, volume);
+        break;
+      case 'door_heavy':
+        MechanicalSoundFX.playDoorHeavy(this.ctx, this.sfxGain, volume);
+        break;
+      case 'door_latch':
+        MechanicalSoundFX.playDoorLatch(this.ctx, this.sfxGain, volume);
+        break;
+      case 'drawer_wood':
+        MechanicalSoundFX.playDrawerWood(this.ctx, this.sfxGain, volume);
+        break;
+      case 'clock_tick':
+        MechanicalSoundFX.playClockTick(this.ctx, this.sfxGain, volume);
+        break;
+      case 'pneumatic_hiss':
+        MechanicalSoundFX.playPneumaticHiss(this.ctx, this.sfxGain);
+        break;
+      case 'glass_clink':
+        MechanicalSoundFX.playGlassClink(this.ctx, this.sfxGain, volume);
+        break;
+      case 'switch_knife':
+        MechanicalSoundFX.playSwitchKnife(this.ctx, this.sfxGain, volume);
+        break;
+      case 'switch_toggle':
+        MechanicalSoundFX.playSwitchToggle(this.ctx, this.sfxGain, volume);
+        break;
+      case 'tumbler_click':
+        MechanicalSoundFX.playTumblerClick(this.ctx, this.sfxGain);
+        break;
+      case 'water_drip':
+        MechanicalSoundFX.playWaterDrip(this.ctx, this.sfxGain);
+        break;
+      case 'handset_click':
+        MechanicalSoundFX.playHandsetClick(this.ctx, this.sfxGain);
+        break;
+      default:
+        MechanicalSoundFX.playTumblerClick(this.ctx, this.sfxGain);
+        break;
+    }
+  }
+
+  public async transitionToRoomSoundscape(roomId: string): Promise<void> {
+    if (!this.ensureContext() || !this.ctx) return;
+    if (this.currentRoomSoundscapeId === roomId) return;
+
+    this.currentRoomSoundscapeId = roomId;
+    const def = ROOM_SOUNDSCAPE_MANIFEST[roomId] || ROOM_SOUNDSCAPE_MANIFEST['room_04'];
+    const customMp3Url = getAssetUrl(`assets/audio/music/${def.customTrackFilename}`);
+    let customFileExists = false;
+
+    try {
+      const probeRes = await fetch(customMp3Url, { method: 'HEAD' });
+      if (probeRes.ok) {
+        customFileExists = true;
+      }
+    } catch {
+      customFileExists = false;
+    }
+
+    if (customFileExists) {
+      this.stopProceduralSoundscape();
+      this.crossfadeToTrack(customMp3Url);
+    } else {
+      this.stopMusicTracks();
+      this.startProceduralSoundscape(def);
+    }
+  }
+
+  public getCurrentRoomSoundscapeId(): string | null {
+    return this.currentRoomSoundscapeId;
+  }
+
+  private crossfadeToTrack(trackUrl: string): void {
+    if (!this.ctx) return;
+
+    const fromChannel = this.activeMusicChannel;
+    const toChannel: 0 | 1 = fromChannel === 0 ? 1 : 0;
+    this.activeMusicChannel = toChannel;
+
+    const fromAudio = this.musicElements[fromChannel];
+    const fromGain = this.musicChannelGains[fromChannel];
+    const toAudio = this.musicElements[toChannel];
+    const toGain = this.musicChannelGains[toChannel];
+
+    if (!toAudio || !toGain) return;
+
+    toAudio.src = trackUrl;
+    toAudio.play().catch(() => {});
+
+    const now = this.ctx.currentTime;
+    toGain.gain.setValueAtTime(0.001, now);
+    toGain.gain.linearRampToValueAtTime(1.0, now + 2.0);
+
+    if (fromAudio && fromGain) {
+      fromGain.gain.setValueAtTime(fromGain.gain.value, now);
+      fromGain.gain.linearRampToValueAtTime(0.001, now + 1.8);
+
+      window.setTimeout(() => {
+        fromAudio.pause();
+        fromAudio.src = '';
+      }, 2000);
+    }
+
+    this.currentTrackName = trackUrl;
+  }
+
+  private stopMusicTracks(): void {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    for (let i = 0; i < 2; i++) {
+      const audio = this.musicElements[i];
+      const gain = this.musicChannelGains[i];
+      if (audio && gain) {
+        gain.gain.setValueAtTime(gain.gain.value, now);
+        gain.gain.linearRampToValueAtTime(0.0001, now + 1.2);
+        window.setTimeout(() => {
+          audio.pause();
+          audio.src = '';
+        }, 1300);
+      }
+    }
+    this.currentTrackName = null;
+  }
+
+  private startProceduralSoundscape(def: RoomSoundscapeDefinition): void {
+    if (!this.ctx || !this.ambientGain) return;
+
+    this.stopProceduralSoundscape();
+
+    const now = this.ctx.currentTime;
+    const stage = GameState.getInstance().getStage();
+    const tensionMult = getStageTensionMultiplier(stage);
+
+    this.soundscapeGain = this.ctx.createGain();
+    this.soundscapeGain.gain.setValueAtTime(0.001, now);
+    this.soundscapeGain.gain.linearRampToValueAtTime(0.22, now + 2.5);
+    this.soundscapeGain.connect(this.ambientGain);
+
+    this.soundscapeFilter = this.ctx.createBiquadFilter();
+    this.soundscapeFilter.type = 'lowpass';
+    const dynamicCutoff = Math.min(260, def.lowpassCutoff + tensionMult * 40);
+    this.soundscapeFilter.frequency.setValueAtTime(dynamicCutoff, now);
+    this.soundscapeFilter.connect(this.soundscapeGain);
+
+    this.soundscapeOsc1 = this.ctx.createOscillator();
+    this.soundscapeOsc1.type = def.tensionProfile === 'noir' ? 'triangle' : 'sine';
+    this.soundscapeOsc1.frequency.setValueAtTime(def.baseFrequency, now);
+    this.soundscapeOsc1.connect(this.soundscapeFilter);
+    this.soundscapeOsc1.start(now);
+
+    this.soundscapeOsc2 = this.ctx.createOscillator();
+    this.soundscapeOsc2.type = 'sine';
+    const detune = def.harmonicOffset + tensionMult * 1.2;
+    this.soundscapeOsc2.frequency.setValueAtTime(def.baseFrequency + detune, now);
+    this.soundscapeOsc2.connect(this.soundscapeFilter);
+    this.soundscapeOsc2.start(now);
+  }
+
+  public updateSoundscapeTension(): void {
+    if (!this.ctx || !this.soundscapeFilter || !this.soundscapeOsc2 || !this.currentRoomSoundscapeId) return;
+
+    const def = ROOM_SOUNDSCAPE_MANIFEST[this.currentRoomSoundscapeId];
+    if (!def) return;
+
+    const stage = GameState.getInstance().getStage();
+    const tensionMult = getStageTensionMultiplier(stage);
+    const now = this.ctx.currentTime;
+
+    const dynamicCutoff = Math.min(260, def.lowpassCutoff + tensionMult * 40);
+    this.soundscapeFilter.frequency.exponentialRampToValueAtTime(dynamicCutoff, now + 3.0);
+
+    const detune = def.harmonicOffset + tensionMult * 1.2;
+    this.soundscapeOsc2.frequency.exponentialRampToValueAtTime(def.baseFrequency + detune, now + 3.0);
+  }
+
+  public stopProceduralSoundscape(): void {
+    if (!this.ctx || !this.soundscapeGain) return;
+
+    const now = this.ctx.currentTime;
+    this.soundscapeGain.gain.setValueAtTime(this.soundscapeGain.gain.value, now);
+    this.soundscapeGain.gain.linearRampToValueAtTime(0.0001, now + 1.2);
+
+    const osc1 = this.soundscapeOsc1;
+    const osc2 = this.soundscapeOsc2;
+    const filter = this.soundscapeFilter;
+    const gain = this.soundscapeGain;
+
+    this.soundscapeOsc1 = null;
+    this.soundscapeOsc2 = null;
+    this.soundscapeFilter = null;
+    this.soundscapeGain = null;
+
+    window.setTimeout(() => {
+      try {
+        osc1?.stop();
+        osc2?.stop();
+        osc1?.disconnect();
+        osc2?.disconnect();
+        filter?.disconnect();
+        gain?.disconnect();
+      } catch (err: unknown) {
+        void err;
+      }
+    }, 1300);
   }
 
   public teardownScenarioAudio(): void {
@@ -188,6 +598,8 @@ export class AudioEngine {
       this.sweepTracker.osc = null;
       this.sweepTracker.gain = null;
     }
+
+    this.stopProceduralSoundscape();
 
     for (const node of this.activeNodes) {
       try {
@@ -308,18 +720,15 @@ export class AudioEngine {
   }
 
   public playTumblerClick(): void {
-    if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playTumblerClick(this.ctx, this.sfxGain || this.masterGain);
+    this.playPropSound('tumbler_click');
   }
 
   public playPneumaticHiss(): void {
-    if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playPneumaticHiss(this.ctx, this.sfxGain || this.masterGain);
+    this.playPropSound('pneumatic_hiss');
   }
 
   public playWaterDrip(): void {
-    if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playWaterDrip(this.ctx, this.sfxGain || this.masterGain);
+    this.playPropSound('water_drip');
   }
 
   public playToneAlignmentSweep(freq: number): void {
@@ -392,67 +801,47 @@ export class AudioEngine {
     }
   }
 
+  public playPaperRustle(volume?: number): void {
+    this.playPropSound('paper_rustle', volume);
+  }
+
+  public playDoorHeavy(volume?: number): void {
+    this.playPropSound('door_heavy', volume);
+  }
+
+  public playDoorLatch(volume?: number): void {
+    this.playPropSound('door_latch', volume);
+  }
+
+  public playDrawerWood(volume?: number): void {
+    this.playPropSound('drawer_wood', volume);
+  }
+
+  public playClockTick(volume?: number): void {
+    this.playPropSound('clock_tick', volume);
+  }
+
+  public playGlassClink(volume?: number): void {
+    this.playPropSound('glass_clink', volume);
+  }
+
+  public playSwitchKnife(volume?: number): void {
+    this.playPropSound('switch_knife', volume);
+  }
+
+  public playSwitchToggle(volume?: number): void {
+    this.playPropSound('switch_toggle', volume);
+  }
+
   public playHandsetClick(): void {
-    if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-    MechanicalSoundFX.playHandsetClick(this.ctx, this.sfxGain || this.masterGain);
+    this.playPropSound('handset_click');
   }
 
   public playLoungeJazzTheme(): void {
-    if (!this.ensureContext() || !this.ctx || !this.masterGain) return;
-
-    // Procedural Rhodes slow jazz progression (Dm9 - G13 - Cmaj9 - A7b9)
-    const chords = [
-      [293.66, 349.23, 440.00, 523.25], // Dm9
-      [196.00, 246.94, 349.23, 440.00], // G13
-      [261.63, 329.63, 392.00, 493.88], // Cmaj9
-      [220.00, 277.18, 329.63, 415.30]  // A7b9
-    ];
-
-    let chordIdx = 0;
-    const playChord = () => {
-      if (!this.ctx || !this.masterGain) return;
-      const now = this.ctx.currentTime;
-      const notes = chords[chordIdx % chords.length];
-      chordIdx++;
-
-      notes.forEach((freq) => {
-        const osc = this.ctx!.createOscillator();
-        const gain = this.ctx!.createGain();
-
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(freq, now);
-
-        gain.gain.setValueAtTime(0.001, now);
-        gain.gain.exponentialRampToValueAtTime(0.06, now + 0.2);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.8);
-
-        osc.connect(gain);
-        gain.connect(this.ambientGain || this.masterGain!);
-
-        this.registerActiveNode(osc);
-
-        osc.start(now);
-        osc.stop(now + 3.0);
-
-        osc.onended = () => {
-          this.unregisterActiveNode(osc);
-          try {
-            osc.disconnect();
-            gain.disconnect();
-          } catch (err: unknown) {
-            void err;
-          }
-        };
-      });
-    };
-
-    playChord();
-    this.jazzInterval = window.setInterval(playChord, 3200);
+    this.transitionToRoomSoundscape('velvet_lounge');
   }
 
   public speakTerminalMessage(onDone?: () => void): void {
-    // Removed Web Speech API (TTS) voice per user request. 
-    // Replaced with a silent suspenseful delay before the finale blast.
     window.setTimeout(() => {
       if (onDone) onDone();
     }, 3600);
@@ -468,7 +857,6 @@ export class AudioEngine {
     osc.type = 'sine';
     osc.frequency.setValueAtTime(528.0, now);
 
-    // Concussive ear-splitting envelope
     gain.gain.setValueAtTime(0.001, now);
     gain.gain.linearRampToValueAtTime(0.95, now + 0.05);
     gain.gain.setValueAtTime(0.95, now + durationSeconds - 0.2);

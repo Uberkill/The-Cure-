@@ -99,10 +99,10 @@ describe('AssetManifestScreen', () => {
     }
   });
 
-  it('should initialize as singleton with default hardware tray', () => {
+  it('should initialize as singleton with default all tray', () => {
     expect(screen).toBeDefined();
     expect(screen.id).toBe('asset_manifest');
-    expect(screen.getState().activeTray).toBe('hardware');
+    expect(screen.getState().activeTray).toBe('all');
     expect(screen.isOpen()).toBe(false);
   });
 
@@ -143,24 +143,29 @@ describe('AssetManifestScreen', () => {
   it('should update tray badges reactively when inventory items and crystals are collected', () => {
     screen.open();
     const modalEl = document.getElementById('modal-inventory');
+    const badgeAll = modalEl?.querySelector('#badge-count-all');
     const badgeHw = modalEl?.querySelector('#badge-count-hardware');
     const badgeCrys = modalEl?.querySelector('#badge-count-crystals');
     const badgeRec = modalEl?.querySelector('#badge-count-records');
 
+    expect(badgeAll?.textContent).toBe('0');
     expect(badgeHw?.textContent).toBe('0');
     expect(badgeCrys?.textContent).toBe('0/5');
     expect(badgeRec?.textContent).toBe('0');
 
     // Add hardware item
     gs.addItem('prop_key');
+    expect(badgeAll?.textContent).toBe('1');
     expect(badgeHw?.textContent).toBe('1');
 
     // Add dossier record
     gs.addItem('prop_envelope');
+    expect(badgeAll?.textContent).toBe('2');
     expect(badgeRec?.textContent).toBe('1');
 
     // Add crystal
     bus.emit('puzzle:crystal_collected', { crystalId: 'crystal_01_quartz', label: 'Prismatic Quartz' });
+    expect(badgeAll?.textContent).toBe('3');
     expect(badgeCrys?.textContent).toBe('1/5');
   });
 
@@ -171,10 +176,17 @@ describe('AssetManifestScreen', () => {
 
     const modalEl = document.getElementById('modal-inventory');
 
-    // Default hardware tray
+    // Default all tray
+    expect(screen.getState().activeTray).toBe('all');
+    const tabAll = modalEl?.querySelector('#tab-tray-all');
+    expect(tabAll?.classList.contains('active')).toBe(true);
+
+    // Switch to hardware tray
+    screen.selectTray('hardware');
     expect(screen.getState().activeTray).toBe('hardware');
     const tabHw = modalEl?.querySelector('#tab-tray-hardware');
     expect(tabHw?.classList.contains('active')).toBe(true);
+    expect(tabAll?.classList.contains('active')).toBe(false);
 
     // Switch to crystals tray
     screen.selectTray('crystals');
@@ -207,17 +219,16 @@ describe('AssetManifestScreen', () => {
     expect(bpSvg).not.toBeNull();
   });
 
-  it('should render crystal pod status progression (locked -> secured -> cradled)', () => {
+  it('should render crystal pod status progression (empty -> secured -> cradled)', () => {
     screen.open();
     screen.selectTray('crystals');
 
     const modalEl = document.getElementById('modal-inventory');
-    let cardQz = modalEl?.querySelector('[data-item-id="crystal_01_quartz"]');
-    expect(cardQz?.querySelector('.status-locked')?.textContent).toBe('LOCKED IN CHAMBER');
+    expect(modalEl?.querySelector('.manifest-empty-slot')?.textContent).toContain('NO MEMORY CRYSTALS SECURED');
 
     // Collect crystal
     bus.emit('puzzle:crystal_collected', { crystalId: 'crystal_01_quartz', label: 'Prismatic Quartz' });
-    cardQz = modalEl?.querySelector('[data-item-id="crystal_01_quartz"]');
+    let cardQz = modalEl?.querySelector('[data-item-id="crystal_01_quartz"]');
     expect(cardQz?.querySelector('.status-secured')?.textContent).toBe('SECURED IN POD');
 
     // Patch crystal in CRT

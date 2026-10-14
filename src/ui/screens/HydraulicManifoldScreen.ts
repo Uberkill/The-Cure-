@@ -205,6 +205,9 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
 
     this.state.tubWaterLevels = [4, 2, 0];
     this.audioEngine.playPneumaticHiss();
+    window.setTimeout(() => {
+      this.audioEngine.playWaterDrip();
+    }, 180);
     this.syncDom();
 
     this.eventBus.emit('ui:subtitle_changed', {
@@ -221,6 +224,12 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
     this.state.manifoldBalanced = true;
 
     this.audioEngine.playPneumaticHiss();
+    window.setTimeout(() => {
+      this.audioEngine.playDoorLatch();
+    }, 240);
+    window.setTimeout(() => {
+      this.audioEngine.playGlassClink();
+    }, 480);
     this.syncDom();
 
     this.eventBus.emit('puzzle:manifold_balanced', {});
@@ -245,6 +254,7 @@ export class HydraulicManifoldScreen extends DiegeticScreenBase<Act03Hydrotherap
   }
 
   protected onClosed(): void {
+    this.audioEngine.playDoorLatch();
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;

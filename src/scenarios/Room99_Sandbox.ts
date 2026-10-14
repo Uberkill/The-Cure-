@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { RoomScenario, HotspotAnchor } from '../types';
 import { createRoom04Materials, Room04MaterialPalette } from '../entities/room04/Room04Materials';
 import { EditorPrefabs } from '../editor/EditorPrefabs';
+import roomLayoutData from '../data/room_layout.json';
 
 export class Room99_Sandbox implements RoomScenario {
   public id = 'sandbox';
@@ -65,12 +66,20 @@ export class Room99_Sandbox implements RoomScenario {
     originMark.name = 'sandbox_origin';
     this.group.add(originMark);
 
-    // Load saved prefabs
     try {
-      const resp = await fetch('/src/data/room_layout.json');
-      const layout = await resp.json();
+      let layout: any = roomLayoutData;
+      if (typeof window !== 'undefined' && window.location && !window.location.protocol.startsWith('file')) {
+        try {
+          const resp = await fetch('/src/data/room_layout.json');
+          if (resp.ok) {
+            layout = await resp.json();
+          }
+        } catch {
+          // Fall back to bundled roomLayoutData
+        }
+      }
       
-      if (layout.prefabs && Array.isArray(layout.prefabs)) {
+      if (layout && layout.prefabs && Array.isArray(layout.prefabs)) {
         for (const p of layout.prefabs) {
           let prefab;
           if (p.type === 'CustomModel') {

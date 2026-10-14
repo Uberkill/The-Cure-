@@ -4,6 +4,7 @@ import { EventBus } from '../core/EventBus';
 import { GameState } from '../core/GameState';
 import { AudioEngine } from '../audio/AudioEngine';
 import { BinauralSynthesizerScreen } from '../ui/screens/BinauralSynthesizerScreen';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 export class Room04_AudiologyVault implements RoomScenario {
   public id = 'audiology';
@@ -286,7 +287,7 @@ export class Room04_AudiologyVault implements RoomScenario {
     deskLamp.add(deskLight);
     this.group.add(deskLamp);
 
-    // Open Laboratory Spiral Logbook (Diegetic Clue Item, resting on workstation desktop)
+    // Laboratory spiral logbook
     const journalGroup = new THREE.Group();
     journalGroup.position.set(-3.5, 0.82, 3.05);
     journalGroup.name = 'prop_audiology_journal';
@@ -452,16 +453,124 @@ export class Room04_AudiologyVault implements RoomScenario {
 
     this.group.add(ampGroup);
 
+    // Contact Ambient Occlusion Shadows under furniture
+    const chladniAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.9, 1.9),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.32, depthWrite: false })
+    );
+    chladniAO.rotation.x = -Math.PI / 2;
+    chladniAO.position.set(0, 0.003, 0);
+    chladniAO.raycast = () => {};
+    this.group.add(chladniAO);
+
+    const ampAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(1.8, 1.4),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.32, depthWrite: false })
+    );
+    ampAO.rotation.x = -Math.PI / 2;
+    ampAO.position.set(-2.0, 0.003, -1.0);
+    ampAO.raycast = () => {};
+    this.group.add(ampAO);
+
+    const deskAO = new THREE.Mesh(
+      new THREE.PlaneGeometry(2.0, 1.3),
+      new THREE.MeshBasicMaterial({ color: 0x141816, transparent: true, opacity: 0.30, depthWrite: false })
+    );
+    deskAO.rotation.x = -Math.PI / 2;
+    deskAO.position.set(-3.6, 0.003, 3.0);
+    deskAO.raycast = () => {};
+    this.group.add(deskAO);
+
+    // Overhead Acoustic Studio Track Lighting Rails & Canisters
+    const trackGroup = new THREE.Group();
+    trackGroup.name = 'group_audiology_track_lighting';
+
+    // Parallel black conduit track rails along ceiling (y = 4.38)
+    [-1.2, 1.2].forEach((tx) => {
+      const rail = new THREE.Mesh(
+        new THREE.BoxGeometry(0.04, 0.04, 12.0),
+        new THREE.MeshStandardMaterial({ color: 0x1c2420, metalness: 0.8, roughness: 0.3 })
+      );
+      rail.position.set(tx, 4.38, 0);
+      rail.raycast = () => {};
+      trackGroup.add(rail);
+    });
+
+    // 1. Studio Canister Lamp over Chladni Table (originating chladniSpot)
+    const canChladni = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.10, 0.10, 0.24, 16),
+      new THREE.MeshStandardMaterial({ color: 0x1c2420, metalness: 0.7, roughness: 0.35 })
+    );
+    canChladni.position.set(0, 4.24, 0);
+    canChladni.raycast = () => {};
+    trackGroup.add(canChladni);
+
+    const canChladniRim = new THREE.Mesh(new THREE.TorusGeometry(0.10, 0.012, 8, 16), matBrass);
+    canChladniRim.rotation.x = Math.PI / 2;
+    canChladniRim.position.set(0, 4.12, 0);
+    canChladniRim.raycast = () => {};
+    trackGroup.add(canChladniRim);
+
+    const canChladniLens = new THREE.Mesh(
+      new THREE.CircleGeometry(0.09, 16),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    canChladniLens.rotation.x = Math.PI / 2;
+    canChladniLens.position.set(0, 4.13, 0);
+    canChladniLens.raycast = () => {};
+    trackGroup.add(canChladniLens);
+
+    // 2. Studio Canister Lamp angled toward Amplifier Monolith
+    const canAmp = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.09, 0.09, 0.22, 16),
+      new THREE.MeshStandardMaterial({ color: 0x1c2420, metalness: 0.7, roughness: 0.35 })
+    );
+    canAmp.position.set(-1.2, 4.24, -1.0);
+    canAmp.rotation.z = 0.25;
+    canAmp.raycast = () => {};
+    trackGroup.add(canAmp);
+
+    const canAmpLens = new THREE.Mesh(
+      new THREE.CircleGeometry(0.08, 16),
+      new THREE.MeshBasicMaterial({ color: 0xfde68a })
+    );
+    canAmpLens.rotation.x = Math.PI / 2;
+    canAmpLens.position.set(-1.18, 4.13, -1.0);
+    canAmpLens.raycast = () => {};
+    trackGroup.add(canAmpLens);
+
+    this.group.add(trackGroup);
+
     // Moody Lighting Pools
     const ampLight = new THREE.PointLight(0xf59e0b, 1.8, 10);
     ampLight.position.set(-2.0, 2.5, -1.0);
     this.group.add(ampLight);
 
-    const chladniSpot = new THREE.SpotLight(0xa78bfa, 2.2, 8, Math.PI / 6, 0.3);
-    chladniSpot.position.set(0, 3.8, 0);
+    LightRigManager.getInstance().register({
+      id: 'room04_amp_light',
+      name: 'Audiology Amplifier Monolith Glow',
+      room: 'audiology',
+      type: 'point',
+      light: ampLight,
+      initialPosition: ampLight.position.clone()
+    });
+
+    const chladniSpot = new THREE.SpotLight(0xa78bfa, 2.4, 9, Math.PI / 5, 0.35, 1.1);
+    chladniSpot.position.set(0, 4.12, 0);
     chladniSpot.target = chladniTable;
     chladniSpot.castShadow = true;
     this.group.add(chladniSpot);
+
+    LightRigManager.getInstance().register({
+      id: 'room04_chladni_spot',
+      name: 'Audiology Chladni Resonator Spot',
+      room: 'audiology',
+      type: 'spot',
+      light: chladniSpot,
+      target: chladniSpot.target,
+      initialPosition: chladniSpot.position.clone(),
+      initialTarget: chladniTable.position.clone()
+    });
 
     // Re-entry state restoration
     if (this.ampTuned) {
@@ -778,6 +887,7 @@ export class Room04_AudiologyVault implements RoomScenario {
   }
 
   public teardown(scene: THREE.Scene): void {
+    LightRigManager.getInstance().clear('audiology');
     this.unsubscribers.forEach((u) => u());
     this.unsubscribers = [];
     this.binauralScreen.teardown();
@@ -801,6 +911,7 @@ export class Room04_AudiologyVault implements RoomScenario {
     const audio = AudioEngine.getInstance();
 
     if (objectId === 'door_return_hub') {
+      audio.playDoorHeavy();
       bus.emit('scenario:switch_room', { targetRoomId: 'room_04', doorThresholdId: 'door_portal_audiology' });
       return true;
     }
@@ -822,7 +933,7 @@ export class Room04_AudiologyVault implements RoomScenario {
     }
 
     if (objectId === 'prop_audiology_journal' || objectId === 'prop_technician_desk') {
-      audio.playTumblerClick();
+      audio.playPaperRustle();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'workstation' });
       bus.emit('ui:subtitle_changed', {
         text: 'DR. ARIS AUDIOLOGY PROTOCOL: "Standing waves require destructive cancellation. Orient Left Horn to 45 deg, Right Horn to 135 deg, Carrier to 600 Hz, and invert phase by 180 deg to achieve acoustic null. Alternatively, a manual 741 Hz sweep on the amplifier stack bypasses the clamp."'
@@ -938,7 +1049,7 @@ export class Room04_AudiologyVault implements RoomScenario {
         this.crystalCollected = true;
         if (this.crystalMesh) this.crystalMesh.visible = false;
         if (this.crystalLight) this.crystalLight.visible = false;
-        audio.playTumblerClick();
+        audio.playGlassClink();
         bus.emit('puzzle:crystal_collected', {
           crystalId: 'crystal_03_amethyst' as CrystalId,
           label: 'Amethyst Core'

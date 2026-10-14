@@ -282,11 +282,12 @@ export class StaffRosterScreen extends DiegeticScreenBase<StaffRosterState> {
   }
 
   protected onOpened(): void {
+    AudioEngine.getInstance().playPaperRustle();
     this.renderActiveDossier();
   }
 
   protected onClosed(): void {
-    // No-op
+    AudioEngine.getInstance().playDoorLatch();
   }
 
   protected handleKeyDown(e: KeyboardEvent): void {
@@ -294,17 +295,18 @@ export class StaffRosterScreen extends DiegeticScreenBase<StaffRosterState> {
     const idx = staffIds.indexOf(this.activeStaffId);
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === 'd' || e.key === 'D') {
       const nextIdx = (idx + 1) % staffIds.length;
-      AudioEngine.getInstance().playTumblerClick();
       this.selectTab(staffIds[nextIdx]);
     } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp' || e.key === 'a' || e.key === 'A') {
       const prevIdx = (idx - 1 + staffIds.length) % staffIds.length;
-      AudioEngine.getInstance().playTumblerClick();
       this.selectTab(staffIds[prevIdx]);
     }
   }
 
   public selectTab(staffId: string): void {
     if (!STAFF_DOSSIERS[staffId]) return;
+    if (this.activeStaffId !== staffId) {
+      AudioEngine.getInstance().playPaperRustle();
+    }
     this.activeStaffId = staffId;
     this.renderActiveDossier();
   }

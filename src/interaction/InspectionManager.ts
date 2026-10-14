@@ -123,7 +123,7 @@ export class InspectionManager {
     let downTime = 0;
 
     window.addEventListener('pointerdown', (e) => {
-      if (!this.isActive) return;
+      if (!this.isActive || !e.isPrimary) return;
       this.isDragging = true;
       this.prevMouseX = e.clientX;
       this.prevMouseY = e.clientY;
@@ -133,7 +133,7 @@ export class InspectionManager {
     });
 
     window.addEventListener('pointermove', (e) => {
-      if (!this.isActive || !this.isDragging) return;
+      if (!this.isActive || !this.isDragging || !e.isPrimary) return;
       const dx = e.clientX - this.prevMouseX;
       const dy = e.clientY - this.prevMouseY;
 
@@ -145,18 +145,22 @@ export class InspectionManager {
     });
 
     window.addEventListener('pointerup', (e) => {
-      if (!this.isActive) return;
+      if (!this.isActive || !e.isPrimary) return;
       this.isDragging = false;
 
       const dist = Math.hypot(e.clientX - downX, e.clientY - downY);
       const elapsed = performance.now() - downTime;
+      const slopThreshold = e.pointerType === 'touch' ? 14 : 6;
 
-      // Only treat as pin toggle if click occurred with minimal drag (< 6px)
-      if (dist < 6 && elapsed < 500) {
+      if (dist < slopThreshold && elapsed < 500) {
         this.mouseNorm.x = (e.clientX / window.innerWidth) * 2 - 1;
         this.mouseNorm.y = -(e.clientY / window.innerHeight) * 2 + 1;
         this.checkPinClick();
       }
+    });
+
+    window.addEventListener('pointercancel', () => {
+      this.isDragging = false;
     });
 
     this.eventBus.on('inspect:open', ({ targetMesh }) => {

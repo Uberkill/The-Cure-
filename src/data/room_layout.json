@@ -19,12 +19,12 @@
       ]
     },
     "prop_chair": {
-      "x": 0.035514674586528294,
+      "x": 0,
       "y": 0,
-      "z": 1.5748269027816828,
-      "rx": -3.141592653589793,
-      "ry": -0.021154731263610106,
-      "rz": -3.141592653589793,
+      "z": -0.65,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
       "sx": 1,
       "sy": 1,
       "sz": 1,
@@ -96,12 +96,12 @@
       "sx": 1,
       "sy": 1,
       "sz": 1,
+      "interactionPrompt": "[EXAMINE HARMONIC APPARATUS]",
       "flavorText": [
         "The central frequency distillation unit. It requires precise acoustic calibration.",
         "Its casing is lined with barium shielding. The Department used these to extract memories via sound.",
         "A faint vibration pulses through the metal. It is actively waiting for an input frequency."
-      ],
-      "interactionPrompt": "[EXAMINE HARMONIC APPARATUS]"
+      ]
     },
     "prop_key": {
       "x": 0.9666273177924557,
@@ -130,12 +130,12 @@
       "sx": 1,
       "sy": 1,
       "sz": 1,
+      "interactionPrompt": "[UNSEAL: CLINICAL DOSSIER]",
       "flavorText": [
         "A heavy classified clinical dossier folder. 'FORM 104-ALPHA // DEPT. OF COGNITIVE ALIGNMENT' is embossed on the front cover.",
         "The wax seal is stamped with an insignia of a tuning fork striking a human skull.",
         "It feels unusually heavy, as if the paper inside is lined with lead."
-      ],
-      "interactionPrompt": "[UNSEAL: CLINICAL DOSSIER]"
+      ]
     },
     "prop_telephone": {
       "x": 0.9601651393321209,
@@ -147,12 +147,12 @@
       "sx": 1,
       "sy": 1,
       "sz": 1,
+      "interactionPrompt": "[EXAMINE TELEPHONE]",
       "flavorText": [
         "A heavy bakelite rotary telephone. The line is dead, but it still hums faintly.",
         "The rotary dial is locked in place. You can only receive calls on this device, not make them.",
         "Putting your ear to the receiver, you don't hear a dial tone. You hear rhythmic breathing."
-      ],
-      "interactionPrompt": "[EXAMINE TELEPHONE]"
+      ]
     },
     "prop_brass_shunt": {
       "x": 0.7106924900899643,
@@ -346,138 +346,6 @@
       "sy": 1,
       "sz": 1
     },
-    "prop_cot_101": {
-      "x": -3.5399999901652337,
-      "y": 0,
-      "z": -4.2,
-      "rx": 0,
-      "ry": 1.5707963267948966,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_headboard_101": {
-      "x": 0,
-      "y": 0.55,
-      "z": -1.05,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_clipboard_101": {
-      "x": 0,
-      "y": 0.66,
-      "z": 0.95,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_cot_102": {
-      "x": -3.5399981045736504,
-      "y": 0,
-      "z": -1.0891227570564272,
-      "rx": -3.141592653589793,
-      "ry": 1.5611230357437373,
-      "rz": -3.141592653589793,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_headboard_102": {
-      "x": 0,
-      "y": 0.55,
-      "z": -1.05,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_clipboard_102": {
-      "x": 0,
-      "y": 0.66,
-      "z": 0.95,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_cot_103": {
-      "x": -3.4399973390538343,
-      "y": 0,
-      "z": 1.9004592922203263,
-      "rx": -3.141592653589793,
-      "ry": 1.5593137620736217,
-      "rz": -3.141592653589793,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_headboard_103": {
-      "x": 0,
-      "y": 0.55,
-      "z": -1.05,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_clipboard_103": {
-      "x": 0,
-      "y": 0.66,
-      "z": 0.95,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_cot_104": {
-      "x": -3.6399370071393657,
-      "y": 0,
-      "z": 4.897756444455501,
-      "rx": 0,
-      "ry": 1.5146779538449426,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_headboard_104": {
-      "x": 0,
-      "y": 0.55,
-      "z": -1.05,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
-    "prop_clipboard_104": {
-      "x": 0,
-      "y": 0.66,
-      "z": 0.95,
-      "rx": 0,
-      "ry": 0,
-      "rz": 0,
-      "sx": 1,
-      "sy": 1,
-      "sz": 1
-    },
     "prop_uv_toggle": {
       "x": -5.88,
       "y": 1.8,
@@ -554,6 +422,211 @@
       "sx": 1,
       "sy": 1,
       "sz": 1
+    },
+    "prop_card_catalog": {
+      "x": -3.8,
+      "y": 0,
+      "z": 3.5,
+      "rx": 0,
+      "ry": 0.7853981633974483,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[SEARCH: OAK CARD CATALOG]"
+    },
+    "prop_film_canister_104": {
+      "x": -3.5,
+      "y": 1.74,
+      "z": 3.4,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE: MICROFILM CANISTER 104]"
+    },
+    "prop_cabinet_0": {
+      "x": -2.4,
+      "y": 0,
+      "z": -2,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cabinet_1": {
+      "x": -2.4,
+      "y": 0,
+      "z": 0,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cabinet_2": {
+      "x": -2.4,
+      "y": 0,
+      "z": 2,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cabinet_3": {
+      "x": 2.4,
+      "y": 0,
+      "z": -2,
+      "rx": 0,
+      "ry": 3.141592653589793,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cabinet_4": {
+      "x": 2.4,
+      "y": 0,
+      "z": 0,
+      "rx": 0,
+      "ry": 3.141592653589793,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cabinet_5": {
+      "x": 2.4,
+      "y": 0,
+      "z": 2,
+      "rx": 0,
+      "ry": 3.141592653589793,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cabinet_6": {
+      "x": 0,
+      "y": 0,
+      "z": -3.8,
+      "rx": 0,
+      "ry": 1.5707963267948966,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cabinet_7": {
+      "x": -1,
+      "y": 0,
+      "z": -0.8,
+      "rx": 0,
+      "ry": -0.7853981633974483,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_drawer_104": {
+      "x": 0,
+      "y": 1,
+      "z": 0.5,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_microfiche_reader": {
+      "x": 0.6975531768554479,
+      "y": 0,
+      "z": -0.6,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_cross_ledger": {
+      "x": 0.6483618451572084,
+      "y": 0.014027141582071523,
+      "z": 0.2816700160384954,
+      "rx": 0,
+      "ry": 0.5987366960507254,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1
+    },
+    "prop_facility_directory": {
+      "x": -6.62,
+      "y": 2.3,
+      "z": 0,
+      "rx": 0,
+      "ry": 1.5707963267948966,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "flavorText": "Institutional Clinical Personnel Ledger and Shift Roster. A hardboard clipboard mounted to the smoked teak board holds the shift schedules, inspection walkthrough logs, and confidential field notes for the 5 sanatorium duty staff."
+    },
+    "prop_pneumatic_terminal": {
+      "x": 6.62,
+      "y": 2,
+      "z": 1.6,
+      "rx": 0,
+      "ry": -1.5707963267948966,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "flavorText": "Pneumatic Dispatch Terminal Model 72. High-speed vacuum conduit routing specimen tubes and patient intake dossiers to peripheral wings."
+    },
+    "prop_waiting_bench": {
+      "x": -3.8,
+      "y": 0,
+      "z": 6.4,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "flavorText": "A low institutional waiting bench constructed from bent teak and tubular chrome. The foam padding has hardened with age."
+    },
+    "prop_wall_clock": {
+      "x": 0,
+      "y": 4,
+      "z": -6.62,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "flavorText": "A synchronized master-slave wall clock. Its sweep-second hand clicks once every thirty seconds with a hollow mechanical shudder."
+    },
+    "prop_facility_map": {
+      "x": 2.2,
+      "y": 1.7,
+      "z": -6.65,
+      "rx": 0,
+      "ry": 0,
+      "rz": 0,
+      "sx": 1,
+      "sy": 1,
+      "sz": 1,
+      "interactionPrompt": "[EXAMINE: SUB-LEVEL 04 FACILITY BLUEPRINT]"
     }
   },
   "environment": {
@@ -561,5 +634,38 @@
     "fogDensity": 0.02,
     "ambColor": "#ffffff",
     "ambIntensity": 0.5
+  },
+  "prop_cross_ledger": {
+    "x": 0.6483618451572084,
+    "y": 0.014027141582071523,
+    "z": 0.2816700160384954,
+    "rx": 0,
+    "ry": 0.5987366960507254,
+    "rz": 0,
+    "sx": 1,
+    "sy": 1,
+    "sz": 1
+  },
+  "prop_credenza": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "rx": 0,
+    "ry": 0,
+    "rz": 0,
+    "sx": 1,
+    "sy": 1,
+    "sz": 1
+  },
+  "prop_desk": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "rx": 0,
+    "ry": 0,
+    "rz": 0,
+    "sx": 1,
+    "sy": 1,
+    "sz": 1
   }
 }

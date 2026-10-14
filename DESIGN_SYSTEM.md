@@ -263,11 +263,36 @@ Standardized z-index layers prevent cross-modal occlusion:
 * **Graduations**: Calibrated tick scale (30 to 120 BPM/ml) with highlighted target equilibrium indicator (68 BPM cardiac rest sync).
 * **Fluid Physics**: High-contrast green saline fluid column (`rgba(74, 222, 128, 0.6)`) with curved surface meniscus and rhythmic cardiac pulse oscillation responding to infusion rate.
 
-### 4.15. Mechanical Tumbler Combination Bank (`MechanicalTumblerBank.ts`)
-* **Cylindrical Drums**: 3-wheel combination bank with 3D cylindrical drum perspective shading, knurled borders, and ratcheted step buttons.
-* **Feedback States**: Active alignment styling (`color: #4ADE80`, glow bloom) when tumblers match target combinations (e.g. `1-0-4`).
-* **Accessibility**: Keyboard navigable via Arrow keys, Space, and Enter with sound feedback.
+### 4.16. Camera Disengage / Step Back HUD Control (`.camera-disengage-btn`)
+* **Housing & Placement**: Mounted at viewport top-left (`top: 32px`, `left: 32px`, `z-index: 100`). Styled as an ivory cardstock brutalist tile (`background: var(--color-alabaster)`, border `1px solid rgba(20, 26, 33, 0.22)`, radius `var(--radius-md, 6px)`).
+* **Tactile Affordance**: Displays an authentic tactical return arrow SVG, an institutional monospace label (`OVERVIEW`), and an aged paper keyboard stamp (`[ESC]`).
+* **Responsive Scaling Contract**:
+  * Default / Medium (`.camera-disengage--md`): 52px width x 54px min-height, 22px icon.
+  * Large (`.camera-disengage--lg`): 62px width x 64px min-height, 26px icon.
+  * Compact Circular Touch Target (`.camera-disengage--sm`): 44px x 44px circle, icon only, optimized for narrow viewports under 640px.
+* **Contextual State Integration**: Automatically transitions to visible (`opacity: 1`, `pointer-events: auto`) when the camera moves to any inspection hotspot away from `overview`, and hides smoothly (`opacity: 0`, `visibility: hidden`) on overview arrival or room transition.
 
+### 4.17. Clinical Specimen Evidence Case & Requisition Ledger (`AssetManifestScreen.ts` / FORM 104-INV)
+* **Chassis & Apron**: Dual-pane brutalist specimen ledger (`max-width: 960px`, `width: min(94vw, 960px)`). Exterior apron styled in dark chassis paneling (`--color-chassis-panel: #1E2220`) with brass corner escutcheons and verified requisition stamps.
+* **Master-Detail Category Trays**:
+  * `ALL ASSETS` (Default): Unified specimen list displaying all acquired hardware, records, and secured crystals together without forcing tab switches.
+  * `TRAY 01: HARDWARE & TOOLS`: Physical tools (Tuning Key, Brass Fuse Shunt).
+  * `TRAY 02: MEMORY CRYSTALS`: Chromatic LED specimen pods. Uncollected crystals are omitted to eliminate spoilers and cognitive overload; overall crystal progress is displayed via a Brutalist badge (`CRYSTAL CORES: X / 5 SECURED`).
+  * `TRAY 03: ARCHIVAL RECORDS`: Admission dossiers and staff rosters.
+* **Tactical Specimen Inspection Bay**:
+  * Orthographic SVG technical blueprints rendered on calibrated sage green drafting grid (`#2D4A3E`) with crosshair reticles.
+  * Metadata ledger: Specimen Designation, Origin Sector, Serial / Lot Number, Physical Composition, and Forensic Clinical Notes.
+  * Diegetic action triggers: `[EXAMINE 3D ARTIFACT]` (opens 360-degree turntable), `[READ DOSSIER]` (opens 3D paper dossier), and `[REPLAY MEMORY LOG]` (plays audio memory recording).
+* **In-World Synchronization**: Picking up the dossier in Room 01 hides the 3D desk mesh, updates desk hotspot prompt to `[DESK: DOSSIER SECURED]`, pulses `#btn-inventory-toggle` for 1200ms, and auto-selects the item on open.
+
+### 4.18. Clinical Personnel Directory (`StaffRosterScreen.ts` / FORM 108-STAFF)
+* **Form 108-STAFF Substrate**: Multi-sheet administrative clinical roster detailing attending physicians, technicians, and observers (Dr. H. Vandermeer, Dr. K. Vance, Dr. M. Thorne).
+* **Bureaucratic Elements**: Archival clearance classification headers, department stamps (`DIRECTORATE APPROVED`), and confidential annotations explaining the Limbo and Project Legion protocols.
+
+### 4.19. Developer Mode Clearance Cipher UI (`#input-dev-passcode`)
+* **Security & Anti-Cheat Protocol**: Locks developer mode tabs, free-camera toggles, 3D transform gizmos, and stage jump buttons behind an institutional clearance cipher.
+* **Tactile Passcode Field**: Monospace masked input field (`letter-spacing: 0.3em`, border `1px solid var(--color-sage-deep)`). Requires entering passcode `104` to disengage security interlocks.
+* **Feedback States**: Displays clinical status badge (`CLEARANCE VERIFIED // LEVEL 4 AUTHORIZED` or `RESTRICTED // INVALID PASSCODE`).
 
 ---
 

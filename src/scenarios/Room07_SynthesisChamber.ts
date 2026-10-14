@@ -5,6 +5,7 @@ import { EventBus } from '../core/EventBus';
 import { GalvanometerGridScreen } from '../ui/screens/GalvanometerGridScreen';
 import { AudioEngine } from '../audio/AudioEngine';
 import { GameState } from '../core/GameState';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 export class Room07_SynthesisChamber extends Room04_SterileChamber {
   public override id = 'synthesis_blackout';
@@ -76,6 +77,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
   private arcTimerId: number | null = null;
   private arcTimeoutId: number | null = null;
   private schematicTexture: THREE.CanvasTexture | null = null;
+  private emergencyBeacons: THREE.PointLight[] = [];
 
   public override async buildScene(scene: THREE.Scene): Promise<THREE.Group> {
     const group = await super.buildScene(scene);
@@ -284,6 +286,16 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
 
       this.entities.group.add(gridConsole);
 
+      // Contact shadow plane under substation switchgear cabinet
+      const gridAO = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.6, 2.4),
+        new THREE.MeshBasicMaterial({ color: 0x050a07, transparent: true, opacity: 0.45, depthWrite: false })
+      );
+      gridAO.rotation.x = -Math.PI / 2;
+      gridAO.position.set(-3.2, 0.003, 0.0);
+      gridAO.raycast = () => {};
+      this.entities.group.add(gridAO);
+
       // 5. Heavy Copper Power Conduit Runs (from central cathode to substation bay)
       const busbarGeo = new THREE.TubeGeometry(
         new THREE.CatmullRomCurve3([
@@ -371,6 +383,9 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
 
       // Severed Overhead Conduits Dangling from Ceiling
       const matFlexConduit = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.7 });
+      const matCopperWire = new THREE.MeshStandardMaterial({ color: 0xd97706, metalness: 0.9, roughness: 0.25 });
+      const matConduitCollar = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.3 });
+
       const conduit1Geo = new THREE.TubeGeometry(
         new THREE.CatmullRomCurve3([
           new THREE.Vector3(-1.8, 3.6, -1.2),
@@ -384,6 +399,38 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       conduit1.raycast = () => {};
       conduit1.userData.isSubPart = true;
       this.entities.group.add(conduit1);
+
+      // Conduit 1 Terminating Collar & Exposed Frayed Copper Wires
+      const collar1 = new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.046, 0.05, 12), matConduitCollar);
+      collar1.position.set(-1.75, 2.60, -1.15);
+      collar1.raycast = () => {};
+      collar1.userData.isSubPart = true;
+      this.entities.group.add(collar1);
+
+      [
+        [-0.015, -0.05, 0.012],
+        [0.018, -0.045, -0.01],
+        [-0.012, -0.065, -0.014],
+        [0.014, -0.055, 0.018]
+      ].forEach(([wx, wy, wz]) => {
+        const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.004, 0.003, 0.07, 6), matCopperWire);
+        wire.position.set(-1.75 + wx, 2.58 + wy, -1.15 + wz);
+        wire.rotation.z = wx * 8;
+        wire.rotation.x = wz * 8;
+        wire.raycast = () => {};
+        wire.userData.isSubPart = true;
+        entities.group.add(wire);
+      });
+
+      // Emissive High-Voltage Arc Spark Node
+      const sparkNode = new THREE.Mesh(
+        new THREE.SphereGeometry(0.022, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0x67e8f9 })
+      );
+      sparkNode.position.set(-1.75, 2.52, -1.15);
+      sparkNode.raycast = () => {};
+      sparkNode.userData.isSubPart = true;
+      this.entities.group.add(sparkNode);
 
       const conduit2Geo = new THREE.TubeGeometry(
         new THREE.CatmullRomCurve3([
@@ -399,12 +446,89 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       conduit2.userData.isSubPart = true;
       this.entities.group.add(conduit2);
 
+      const collar2 = new THREE.Mesh(new THREE.CylinderGeometry(0.040, 0.040, 0.04, 12), matConduitCollar);
+      collar2.position.set(1.45, 2.70, -1.5);
+      collar2.raycast = () => {};
+      collar2.userData.isSubPart = true;
+      this.entities.group.add(collar2);
+
+      [
+        [-0.01, -0.04, 0.01],
+        [0.012, -0.045, -0.01]
+      ].forEach(([wx, wy, wz]) => {
+        const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.05, 6), matCopperWire);
+        wire.position.set(1.45 + wx, 2.68 + wy, -1.5 + wz);
+        wire.raycast = () => {};
+        wire.userData.isSubPart = true;
+        entities.group.add(wire);
+      });
+
       // Subtle Electrical Arc Flicker Light at severed conduit
       const arcLight = new THREE.PointLight(0x67e8f9, 0, 8);
-      arcLight.position.set(-1.75, 2.6, -1.15);
+      arcLight.position.set(-1.75, 2.52, -1.15);
       arcLight.name = 'light_electrical_arc_flicker';
       this.entities.group.add(arcLight);
       this.arcLight = arcLight;
+
+      LightRigManager.getInstance().register({
+        id: 'room07_arc_light',
+        name: 'Synthesis Chamber Arc Spark Light',
+        room: 'synthesis_blackout',
+        type: 'point',
+        light: arcLight,
+        initialPosition: arcLight.position.clone()
+      });
+
+      // Wall-Mounted Industrial Emergency Bulkhead Beacons
+      const matBeaconGuard = new THREE.MeshStandardMaterial({ color: 0x111827, metalness: 0.8, roughness: 0.4 });
+      const matBeaconLens = new THREE.MeshStandardMaterial({
+        color: 0xd97706,
+        emissive: 0xb45309,
+        emissiveIntensity: 0.85,
+        roughness: 0.25
+      });
+
+      [
+        { pos: new THREE.Vector3(3.2, 2.2, 1.8), rotY: -Math.PI / 3 },
+        { pos: new THREE.Vector3(-1.8, 2.2, 3.4), rotY: Math.PI / 4 }
+      ].forEach(({ pos, rotY }, bIdx) => {
+        const bGroup = new THREE.Group();
+        bGroup.position.copy(pos);
+        bGroup.rotation.y = rotY;
+        bGroup.raycast = () => {};
+        bGroup.userData.isSubPart = true;
+
+        const bPlate = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.28, 0.05), matBeaconGuard);
+        bPlate.raycast = () => {};
+        bGroup.add(bPlate);
+
+        const bDome = new THREE.Mesh(new THREE.CylinderGeometry(0.065, 0.075, 0.16, 12), matBeaconLens);
+        bDome.position.z = 0.09;
+        bDome.rotation.x = Math.PI / 2;
+        bDome.raycast = () => {};
+        bGroup.add(bDome);
+
+        const bGuardRing = new THREE.Mesh(new THREE.TorusGeometry(0.08, 0.008, 6, 16), matBeaconGuard);
+        bGuardRing.position.z = 0.12;
+        bGuardRing.raycast = () => {};
+        bGroup.add(bGuardRing);
+
+        entities.group.add(bGroup);
+
+        const bLight = new THREE.PointLight(0xd97706, 0.65, 5);
+        bLight.position.copy(pos);
+        entities.group.add(bLight);
+        this.emergencyBeacons.push(bLight);
+
+        LightRigManager.getInstance().register({
+          id: `room07_beacon_${bIdx + 1}`,
+          name: `Synthesis Emergency Beacon ${bIdx + 1}`,
+          room: 'synthesis_blackout',
+          type: 'point',
+          light: bLight,
+          initialPosition: bLight.position.clone()
+        });
+      });
 
       const triggerArc = () => {
         if (!this.arcLight) return;
@@ -572,11 +696,14 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       this.arcLight.dispose();
       this.arcLight = null;
     }
+    this.emergencyBeacons.forEach((b) => b.dispose());
+    this.emergencyBeacons = [];
     if (this.schematicTexture) {
       this.schematicTexture.dispose();
       this.schematicTexture = null;
     }
     this.galvanometerScreen.teardown();
+    LightRigManager.getInstance().clear('synthesis_blackout');
     super.teardown(scene);
   }
 
@@ -586,6 +713,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
 
     if (objectId === 'prop_door' || objectId === 'exit_airlock_passage') {
       if (this.galvanometerScreen.getState().gridBalanced || GameState.getInstance().isSynthesisComplete()) {
+        audio.playDoorHeavy();
         bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge' });
       } else {
         bus.emit('ui:subtitle_changed', {
@@ -597,6 +725,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
 
     if (objectId === 'door_portal_velvet_lounge') {
       if (this.galvanometerScreen.getState().gridBalanced || GameState.getInstance().isSynthesisComplete()) {
+        audio.playDoorHeavy();
         bus.emit('scenario:switch_room', { targetRoomId: 'velvet_lounge', doorThresholdId: 'door_portal_velvet_lounge' });
       } else {
         bus.emit('ui:subtitle_changed', {
@@ -615,7 +744,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
       objectId === 'door_portal_directors_office' ||
       objectId === 'door_portal_synthesis'
     ) {
-      audio.playTumblerClick();
+      audio.playDoorLatch();
       bus.emit('ui:subtitle_changed', {
         text: 'EMERGENCY CONTAINMENT INTERLOCK // Sector blast bulkheads sealed under atmospheric containment protocol. Balance power bus at galvanometer grid.'
       });
@@ -623,7 +752,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
     }
 
     if (objectId === 'prop_bus_schematic') {
-      audio.playTumblerClick();
+      audio.playPaperRustle();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'grid' });
       bus.emit('ui:subtitle_changed', {
         text: 'POWER BUS SCHEMATIC // SUB-LEVEL 04: "Nominal operating load: 100 OHMS per channel across all 5 shunt channels. Breaker trip calibrated at 200 OHMS total differential imbalance. Balance all channels to 100 OHMS to unseal emergency egress."'
@@ -639,7 +768,7 @@ export class Room07_SynthesisChamber extends Room04_SterileChamber {
         });
         return true;
       }
-      audio.playTumblerClick();
+      audio.playSwitchKnife();
       bus.emit('camera:move_to_hotspot', { hotspotId: 'grid' });
       this.galvanometerScreen.open();
       return true;

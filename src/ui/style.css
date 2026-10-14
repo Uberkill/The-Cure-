@@ -89,6 +89,34 @@ body, html {
   padding: 40px;
 }
 
+/* Top Bar HUD Navigation Containers */
+.top-bar-right {
+  position: absolute;
+  top: 32px;
+  right: 32px;
+  pointer-events: auto;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  z-index: 20;
+}
+
+.top-bar-left {
+  position: absolute;
+  top: 32px;
+  left: 32px;
+  pointer-events: auto;
+  z-index: var(--z-hud-floating, 20);
+}
+
+.map-label-full {
+  display: inline;
+}
+
+.map-label-short {
+  display: none;
+}
+
 /* Editorial Title Card (Top-Left) Permanent HUD */
 .cinematic-header {
   pointer-events: none;
@@ -777,21 +805,53 @@ body, html {
   .dossier-paper {
     padding: 24px;
   }
+  .top-bar-right {
+    top: 14px;
+    right: 14px;
+    gap: 8px;
+  }
+  .top-bar-left {
+    top: 14px;
+    left: 14px;
+  }
+  .map-label-full {
+    display: none;
+  }
+  .map-label-short {
+    display: inline;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+  }
+  #btn-facility-map-toggle {
+    padding: 8px 12px;
+    font-size: 10px;
+  }
   .cinematic-header {
-  pointer-events: none;
-  max-width: 480px;
-  transition: opacity 2.5s ease-in-out, transform 2.5s ease-in-out;
-  opacity: 1;
-}
+    pointer-events: none;
+    max-width: min(90vw, 360px);
+    transition: opacity 2.5s ease-in-out, transform 2.5s ease-in-out;
+    opacity: 1;
+    margin-top: 54px;
+  }
   .film-title {
-  font-family: var(--font-serif);
-  font-size: 38px;
-  font-weight: 400;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-  color: var(--ink-primary);
-  margin-bottom: 6px;
-}
+    font-family: var(--font-serif);
+    font-size: clamp(20px, 5.5vw, 28px);
+    font-weight: 400;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--ink-primary);
+    margin-bottom: 4px;
+  }
+  .act-tag {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    margin-bottom: 4px;
+  }
+  .film-subtitle {
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
   .audio-director {
     top: auto;
     bottom: 140px;
@@ -2134,4 +2194,677 @@ body, html {
 .tumbler-drum-face.aligned {
   color: #4ADE80;
   text-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+}
+
+/* ==========================================================================
+   Form 104-O: Subject Pre-Admission Orientation Modal Styles
+   ========================================================================== */
+
+.orientation-dossier {
+  width: min(94vw, 780px);
+  max-width: 780px;
+  min-height: 540px;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  background: var(--color-cardstock, #F4F6F2);
+  border: 1px solid #D6DDD4;
+  box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7);
+  border-radius: 4px;
+}
+
+.orientation-dossier .eyelet {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: radial-gradient(circle at 35% 35%, var(--color-brass-bright), var(--color-brass-cast) 70%, #6E4917);
+  border-radius: 50%;
+  border: 1px solid #5C3D12;
+  box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.6), 0 2px 4px rgba(0, 0, 0, 0.3);
+  z-index: 5;
+}
+
+.orientation-dossier .eyelet.tl { top: 12px; left: 14px; }
+.orientation-dossier .eyelet.tr { top: 12px; right: 14px; }
+
+.orientation-dossier .wax-seal {
+  position: absolute;
+  top: 14px;
+  right: 48px;
+  width: 36px;
+  height: 36px;
+  font-size: 11px;
+  z-index: 6;
+}
+
+.orientation-tabs-bar {
+  background: #E5ECE2;
+  border-bottom: 2px solid #D4DCD0;
+  padding: 12px 32px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.orientation-tabs-list {
+  display: flex;
+  gap: 6px;
+}
+
+.orientation-tab-btn {
+  background: #D8E0D5;
+  border: 1px solid #C5CFBF;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  padding: 8px 14px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.orientation-tab-btn:hover {
+  color: var(--ink-primary);
+  background: #E2EAE0;
+}
+
+.orientation-tab-btn.active {
+  background: var(--color-cardstock, #F4F6F2);
+  color: var(--color-sage-deep);
+  border-color: #D6DDD4;
+  border-top: 2px solid var(--color-sage-deep);
+  padding-top: 7px;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.orientation-tab-num {
+  background: var(--color-sage-deep);
+  color: #FFFFFF;
+  font-size: 9px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 2px;
+}
+
+.orientation-tab-btn:not(.active) .orientation-tab-num {
+  background: #8FA195;
+}
+
+.classified-stamp {
+  border: 2px solid var(--color-crimson-wax);
+  color: var(--color-crimson-wax);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  padding: 4px 8px;
+  text-transform: uppercase;
+  transform: rotate(-2deg);
+  border-radius: 2px;
+  margin-bottom: 8px;
+  user-select: none;
+}
+
+.orientation-body {
+  flex: 1;
+  padding: 24px 32px 18px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.orientation-body .step-slide {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  animation: fadeInSlide 0.25s ease-out;
+}
+
+.orientation-body .step-slide.active {
+  display: flex;
+}
+
+@keyframes fadeInSlide {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.orientation-body .step-header {
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: 8px;
+}
+
+.orientation-body .step-dept-tag {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.20em;
+  color: var(--ink-muted);
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.orientation-body .step-title {
+  font-family: var(--font-serif);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--ink-primary);
+  letter-spacing: 0.01em;
+}
+
+/* Slide 1 Layout */
+.slide-split-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: center;
+  flex: 1;
+}
+
+.illustration-frame {
+  background: #E8ECE6;
+  border: 1px solid #CBD3C8;
+  border-radius: 2px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.illustration-svg {
+  width: 100%;
+  height: 175px;
+}
+
+.illustration-caption {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--color-sage-deep);
+  text-transform: uppercase;
+  margin-top: 6px;
+}
+
+.slide-info-pane {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.status-badge-row {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.meta-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  background: #E0E7DC;
+  color: var(--color-sage-deep);
+  border: 1px solid #CBD3C8;
+  padding: 3px 6px;
+  border-radius: 2px;
+}
+
+.narrative-body-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--ink-secondary);
+}
+
+.quote-box {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--ink-primary);
+  border-left: 3px solid var(--color-brass-cast);
+  padding-left: 10px;
+  margin-top: 4px;
+}
+
+/* Slide 2 Layout (Controls Grid) */
+.controls-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+  margin-top: 2px;
+}
+
+.control-card {
+  background: rgba(255, 255, 255, 0.75);
+  border: 1px solid #D6DDD4;
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.control-card:hover {
+  border-color: var(--color-sage-deep);
+  background: #FFFFFF;
+}
+
+.control-card-icon {
+  width: 38px;
+  height: 38px;
+  background: #E8ECE6;
+  border: 1px solid #CBD3C8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  color: var(--color-sage-deep);
+  border-radius: 2px;
+}
+
+.control-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.control-card-action {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--ink-primary);
+  text-transform: uppercase;
+}
+
+.control-card-binding {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--color-sage-deep);
+  font-weight: 600;
+}
+
+.control-card-desc {
+  font-size: 11px;
+  color: var(--ink-muted);
+  line-height: 1.2;
+}
+
+/* Slide 3 Layout (Directive) */
+.directive-split-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 20px;
+  align-items: center;
+  flex: 1;
+}
+
+.directive-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.directive-rule-box {
+  background: rgba(216, 222, 214, 0.45);
+  border-left: 3px solid var(--color-sage-deep);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.directive-rule-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--ink-primary);
+  text-transform: uppercase;
+}
+
+.directive-rule-desc {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--ink-secondary);
+}
+
+/* Orientation Footer */
+.orientation-footer {
+  padding: 12px 32px;
+  background: #E5ECE2;
+  border-top: 1px solid #D6DDD4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.orientation-pips {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--ink-muted);
+  letter-spacing: 0.12em;
+}
+
+.pip-dots {
+  display: flex;
+  gap: 5px;
+  margin-left: 6px;
+}
+
+.pip-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #BAC5B7;
+  transition: all 0.2s ease;
+}
+
+.pip-dot.active {
+  background: var(--color-sage-deep);
+  transform: scale(1.2);
+}
+
+.orientation-nav-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ==========================================================================
+   Viewport Responsiveness & Dual-Mode Ergonomics (PC Desktop vs Touch / Tablet)
+   ========================================================================== */
+
+/* Touch-action none on WebGL 3D canvases to prevent browser gesture conflicts */
+canvas {
+  touch-action: none;
+}
+
+/* UI Mode 3-Way Switch in Settings Modal */
+.ui-mode-toggle-group {
+  display: flex;
+  gap: 4px;
+  background: rgba(20, 26, 33, 0.06);
+  padding: 3px;
+  border-radius: 4px;
+  border: 1px solid rgba(20, 26, 33, 0.12);
+}
+
+.ui-mode-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 6px 12px;
+  border-radius: 3px;
+  background: transparent;
+  color: var(--ink-secondary);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.ui-mode-btn:hover {
+  background: rgba(20, 26, 33, 0.05);
+  color: var(--ink-primary);
+}
+
+.ui-mode-btn.active {
+  background: var(--color-sage-deep);
+  color: #FFFFFF;
+  border-color: var(--color-sage-deep);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+/* Dual-Mode Binding Visibility */
+html[data-ui-mode="desktop"] .binding-touch,
+html:not([data-ui-mode="touch"]) .binding-touch {
+  display: none !important;
+}
+
+html[data-ui-mode="touch"] .binding-desktop {
+  display: none !important;
+}
+
+html[data-ui-mode="touch"] .binding-touch {
+  display: inline !important;
+}
+
+/* ==========================================================================
+   TOUCH / TABLET MODE SPECIFIC ERGONOMICS (html[data-ui-mode="touch"])
+   Guarantees zero mutation to baseline desktop layout when in PC Desktop mode
+   ========================================================================== */
+
+html[data-ui-mode="touch"] .orientation-dossier {
+  width: min(96vw, 780px);
+  max-width: 780px;
+  min-height: auto;
+  max-height: min(92vh, 740px);
+  max-height: min(92dvh, 740px);
+}
+
+html[data-ui-mode="touch"] .orientation-tabs-bar {
+  padding: 8px 48px 0 16px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-ui-mode="touch"] .orientation-tab-btn {
+  padding: 6px 10px;
+  font-size: 9px;
+  gap: 4px;
+}
+
+html[data-ui-mode="touch"] .orientation-dossier .wax-seal {
+  width: 28px;
+  height: 28px;
+  top: 8px;
+  right: 12px;
+  font-size: 9px;
+}
+
+html[data-ui-mode="touch"] .orientation-dossier .classified-stamp {
+  font-size: 8px;
+  padding: 2px 6px;
+  margin-bottom: 4px;
+}
+
+html[data-ui-mode="touch"] .orientation-body {
+  padding: 16px 20px 14px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+html[data-ui-mode="touch"] .orientation-footer {
+  padding: 10px 20px;
+  flex-shrink: 0;
+}
+
+html[data-ui-mode="touch"] .slide-split-layout,
+html[data-ui-mode="touch"] .directive-split-layout {
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+html[data-ui-mode="touch"] .illustration-frame {
+  padding: 8px;
+}
+
+html[data-ui-mode="touch"] .illustration-svg {
+  max-height: 120px;
+}
+
+html[data-ui-mode="touch"] .controls-split-layout {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 8px;
+}
+
+html[data-ui-mode="touch"] .settings-dossier {
+  max-height: min(90vh, 760px);
+  max-height: min(90dvh, 760px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 20px 24px;
+}
+
+/* Touch mode HUD positioning and labels */
+html[data-ui-mode="touch"] .top-bar-right {
+  top: 14px;
+  right: 14px;
+  gap: 8px;
+}
+
+html[data-ui-mode="touch"] .top-bar-left {
+  top: 14px;
+  left: 14px;
+}
+
+html[data-ui-mode="touch"] .map-label-full {
+  display: none !important;
+}
+
+html[data-ui-mode="touch"] .map-label-short {
+  display: inline !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+html[data-ui-mode="touch"] #btn-facility-map-toggle {
+  padding: 8px 12px;
+}
+
+html[data-ui-mode="touch"] .cinematic-header {
+  margin-top: 54px;
+  max-width: min(90vw, 360px);
+}
+
+html[data-ui-mode="touch"] .film-title {
+  font-size: clamp(20px, 5.5vw, 28px);
+}
+
+html[data-ui-mode="touch"] .act-tag,
+html[data-ui-mode="touch"] .film-subtitle {
+  font-size: 9px;
+}
+
+html[data-ui-mode="touch"] .ui-mode-toggle-group {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+}
+
+html[data-ui-mode="touch"] .ui-mode-btn {
+  text-align: center;
+  padding: 8px 4px;
+  font-size: 9px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-ui-mode="touch"] .settings-action-btns {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+html[data-ui-mode="touch"] .settings-action-btns .pill-btn {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+/* Touch targets sizing for in-game HUD controls */
+html[data-ui-mode="touch"] .top-bar-action-btn,
+html[data-ui-mode="touch"] #btn-camera-disengage {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+html[data-ui-mode="touch"] #btn-camera-disengage {
+  padding: 8px 14px;
+}
+
+/* ==========================================================================
+   PC DESKTOP MODE REGRESSION SHIELD (html[data-ui-mode="desktop"])
+   Explicitly enforces desktop styling tokens regardless of viewport dimensions
+   ========================================================================== */
+
+html[data-ui-mode="desktop"] .top-bar-right {
+  top: 32px !important;
+  right: 32px !important;
+  gap: 12px !important;
+}
+
+html[data-ui-mode="desktop"] .top-bar-left {
+  top: 32px !important;
+  left: 32px !important;
+}
+
+html[data-ui-mode="desktop"] .map-label-full {
+  display: inline !important;
+}
+
+html[data-ui-mode="desktop"] .map-label-short {
+  display: none !important;
+}
+
+html[data-ui-mode="desktop"] .cinematic-header {
+  margin-top: 0 !important;
+  max-width: 480px !important;
+}
+
+html[data-ui-mode="desktop"] .film-title {
+  font-size: 38px !important;
+}
+
+html[data-ui-mode="desktop"] .ui-mode-toggle-group {
+  display: flex !important;
+}
+
+html[data-ui-mode="desktop"] .settings-action-btns {
+  display: flex !important;
+}
+
+.crt-transition-veil {
+  position: fixed;
+  inset: 0;
+  background: #060907;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transition: opacity 0.12s ease-out;
+}
+
+.crt-transition-veil.active {
+  opacity: 0.96;
+  pointer-events: auto;
 }

@@ -30,6 +30,16 @@ The recovered crystals are not inanimate gemstones; they are crystallized neurol
 | **Crystal 04** | Pitch-Black Obsidian | The Archive (001–100) | The Collective Residue ("We are Legion") | Tape 04: The Carrier is Ready |
 | **Crystal 05** | Glowing Celadon Core | The Director | The Eradication of Conscience | Tape 05: The Final Inoculation |
 
+#### Physical 3D Unsealing & Anti-Bypass Interaction Interlocks
+To ground the narrative in tangible physical space, crystals do not magically appear in the player's inventory upon closing a 2D UI screen. Instead, completing the diegetic terminal puzzle triggers a physical 3D unsealing sequence in the environment:
+1. **Act II (Sleep Ward):** Solving the sedative triad unlatches the dispensary cart lock, sliding the stainless steel drawer forward with a pneumatic hiss to reveal the floating Prismatic Quartz bathed in cyan light (`#a5f3fc`).
+2. **Act III (Hydrotherapy):** Balancing the siphon valves unseats the hydrostatic pressure lock, mechanically sliding the bronze floor drain cover aside to release the Oxidized Bronze crystal in an amber glow (`#f59e0b`).
+3. **Act IV (Audiology Vault):** Achieving the 741 Hz acoustic null at 180-degree phase inversion decouples the electromagnetic speaker clamp, releasing the Fractured Amethyst crystal into the air with a violet radiance (`#c084fc`).
+3. **Act V (Archive):** Dispatching canister GAMMA-07 from the microfiche console trips the pneumatic transit relay, unlatching and sliding open Filing Drawer 104 with a heavy thud to expose the Pitch-Black Obsidian crystal under indigo light (`#818cf8`).
+4. **Act VI (Director's Office):** Dialing the wiretap clock code (1-1-0-3) disengages the desk deadbolt, sliding open the secret executive credenza compartment to expose the Glowing Celadon Core under jade luminescence (`#34d399`).
+
+**Anti-Bypass Interlock:** Direct clicks on crystal meshes prior to verified terminal puzzle completion are strictly rejected by the scenario raycaster with diegetic warning subtitles (e.g. "The Oxidized Bronze crystal is sealed beneath the locked hydrostatic floor drain"). The player must physically click the floating crystal in the 3D scene after unsealing to secure it in their Asset Manifest.
+
 ### 1.3 The Psychological Decay of the Hub
 The Central Hub (Room 04) is the psychological projection of Subject 104's mind. With every crystal recovered and slotted into the central CRT console:
 - The pristine alabaster walls bruise and discolor with subcutaneous hematomas.
@@ -283,7 +293,7 @@ When any diegetic screen opens:
 ### 7.1 Architectural Scale & Chamber Dimensional Hierarchy
 To prevent repetitive square-room fatigue, every chamber in Sub-Level 04 features unique volumetric proportions, ceiling heights, and acoustic-spatial identities:
 
-1. **Room 04: The Central Hub / Sterile Reception** (10.0m x 10.0m x 3.6m ceiling)
+1. **Room 01: The Sterile Reception (Central Concourse)** (10.0m x 10.0m x 3.6m ceiling)
    - Symmetrical octagonal reception hall lined with sterile alabaster acoustic tiles.
    - Central pedestal holding the cathode apparatus, with radial corridors leading to clinical wings.
 2. **Room 02: The Sleep Ward** (8.0m x 18.0m x 3.8m ceiling)
@@ -318,4 +328,18 @@ Puzzles are designed so that players do not need to guess arbitrary numbers or r
 - **The Velvet Lounge (Act VIII)**:
   - Operator PBX Routing Directory (`prop_switchboard_directory`) on the switchboard desk specifies patching Trunk 104 to Line 4 for outside exchange.
   - Gilded Mirror (`prop_bar_mirror_glass`) reflection reveals the decanter placement paradox required to restore equilibrium.
+
+### 7.3 Architectural Portals & Wing Progression
+Rather than generic identical doors arranged radially around a game hub, facility progression is structured across three distinct institutional wings with customized architectural thresholds:
+
+1. **Wing A (Clinical Care Wing):**
+   - **Concourse -> Sleep Ward (Portal North):** Institutional double swinging hospital doors with reinforced wired-glass observation panels and horizontal satin brass push bars.
+   - **Sleep Ward -> Hydrotherapy (Portal En-Suite):** Moisture-resistant arched tiled portal lined with sanitary cove tiles, exposed overhead brass steam conduit, and floor drainage grates.
+2. **Wing B (Diagnostics & Records Wing):**
+   - **Concourse -> Audiology Vault (Portal East):** Heavy sound-dampening acoustic airlock portal with thick neoprene compression gaskets and a knurled rotating clamp wheel.
+   - **Audiology Vault -> Archive (Portal Rear):** Heavy industrial wire-mesh pneumatic security cage with slide-bolt interlock and overhead pneumatic junction pipes.
+3. **Wing C (Administration & Deep Sub-Core):**
+   - **Concourse -> Director's Office (Portal South):** Executive smoked teak single door with recessed bronze reveals, institutional escutcheon plate, and brushed brass lever.
+   - **Director's Office -> Synthesis Core (Portal Hidden):** Concealed steel bulkhead hatch recessed behind executive bookcases with an industrial turn-latch wheel.
+   - **Synthesis Core -> Velvet Lounge (Portal Ruptured):** Heavy reinforced blastdoor violently ruptured outward by thermal expansion, leading into the Lynchian subterranean salon.
 

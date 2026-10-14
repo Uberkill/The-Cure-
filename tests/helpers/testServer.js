@@ -15,19 +15,37 @@ const MIME_TYPES = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.mp3': 'audio/mpeg',
+  '.wav': 'audio/wav',
+  '.ogg': 'audio/ogg',
   '.glb': 'model/gltf-binary',
   '.gltf': 'model/gltf+json'
 };
+
+const ROOT_DIR = path.resolve(__dirname, '../../');
+const PUBLIC_DIR = path.resolve(__dirname, '../../public');
 
 export function startTestServer() {
   return new Promise((resolve, reject) => {
     const server = http.createServer((req, res) => {
       const cleanUrl = req.url.split('?')[0];
-      const filePath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
-      const ext = path.extname(filePath).toLowerCase();
+      let targetPath = path.join(DIST_DIR, cleanUrl === '/' ? 'index.html' : cleanUrl);
+      
+      if (!fs.existsSync(targetPath)) {
+        const publicPath = path.join(PUBLIC_DIR, cleanUrl);
+        if (fs.existsSync(publicPath) && fs.statSync(publicPath).isFile()) {
+          targetPath = publicPath;
+        } else {
+          const rootPath = path.join(ROOT_DIR, cleanUrl.startsWith('/') ? cleanUrl.slice(1) : cleanUrl);
+          if (fs.existsSync(rootPath) && fs.statSync(rootPath).isFile()) {
+            targetPath = rootPath;
+          }
+        }
+      }
+
+      const ext = path.extname(targetPath).toLowerCase();
       const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
-      fs.readFile(filePath, (err, content) => {
+      fs.readFile(targetPath, (err, content) => {
         if (err) {
           res.writeHead(404);
           res.end('Not Found');

@@ -161,7 +161,7 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
     if (this.state.complianceConfirmed) return;
 
     this.state.decanterPlaced = !this.state.decanterPlaced;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playGlassClink();
     this.syncDom();
 
     if (this.state.decanterPlaced) {
@@ -178,14 +178,14 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
   private handleSelectTrunk(trunk: string): void {
     if (this.state.complianceConfirmed) return;
     this.selectedTrunk = trunk;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playSwitchToggle();
     this.checkPatchPair();
   }
 
   private handleSelectLine(line: string): void {
     if (this.state.complianceConfirmed) return;
     this.selectedLine = line;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playSwitchToggle();
     this.checkPatchPair();
   }
 
@@ -197,8 +197,7 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
 
     if (this.selectedTrunk === '104' && this.selectedLine === '4') {
       this.state.switchboardPatched = true;
-      this.audioEngine.playPneumaticHiss();
-      this.audioEngine.playTumblerClick();
+      this.audioEngine.playSwitchToggle();
       this.syncDom();
 
       this.eventBus.emit('ui:subtitle_changed', {
@@ -206,7 +205,7 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
       });
     } else {
       this.state.switchboardPatched = false;
-      this.audioEngine.playHandsetClick();
+      this.audioEngine.playTumblerClick();
       const t = this.selectedTrunk;
       const l = this.selectedLine;
       this.selectedTrunk = null;
@@ -338,6 +337,7 @@ export class SwitchboardMirrorScreen extends DiegeticScreenBase<Act08VelvetLoung
   }
 
   protected onClosed(): void {
+    this.audioEngine.playDoorLatch();
     if (this.solveTimeoutId !== null) {
       window.clearTimeout(this.solveTimeoutId);
       this.solveTimeoutId = null;

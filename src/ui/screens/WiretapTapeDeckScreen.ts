@@ -233,26 +233,26 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
   private handlePlayTape(): void {
     if (this.state.safeUnlatched) return;
     this.isPlaying = true;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playSwitchToggle();
     this.syncDom();
   }
 
   private handleStopTape(): void {
     this.isPlaying = false;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playSwitchToggle();
     this.syncDom();
   }
 
   private handleRewindTape(): void {
     this.isPlaying = true;
     this.state.wiretapTapeSpeed = 'rewind';
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playSwitchToggle();
     this.syncDom();
   }
 
   private setTapeSpeed(speed: 'normal' | 'half'): void {
     this.state.wiretapTapeSpeed = speed;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playSwitchToggle();
     this.syncDom();
   }
 
@@ -272,7 +272,7 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     const hh = this.clockHours.toString().padStart(2, '0');
     const mm = this.clockMinutes.toString().padStart(2, '0');
     this.state.carriageClockTime = `${hh}:${mm}`;
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playClockTick();
     this.syncDom();
 
     if (this.checkUnlockCondition()) {
@@ -307,8 +307,13 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
     if (this.state.safeUnlatched) return;
     this.state.safeUnlatched = true;
 
-    this.audioEngine.playPneumaticHiss();
-    this.audioEngine.playTumblerClick();
+    this.audioEngine.playDrawerWood();
+    window.setTimeout(() => {
+      this.audioEngine.playDoorLatch();
+    }, 220);
+    window.setTimeout(() => {
+      this.audioEngine.playGlassClink();
+    }, 440);
     this.syncDom();
 
     this.eventBus.emit('puzzle:safe_unlatched', {});
@@ -412,6 +417,7 @@ export class WiretapTapeDeckScreen extends DiegeticScreenBase<Act06DirectorState
   }
 
   protected onClosed(): void {
+    this.audioEngine.playDoorLatch();
     this.isPlaying = false;
     this.tapeTransport?.setState('stop');
     if (this.solveTimeoutId !== null) {

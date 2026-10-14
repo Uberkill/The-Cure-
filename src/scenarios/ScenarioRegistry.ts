@@ -11,6 +11,8 @@ import { Room07_SynthesisChamber } from './Room07_SynthesisChamber';
 import { Room08_VelvetLounge } from './Room08_VelvetLounge';
 import { Room99_Sandbox } from './Room99_Sandbox';
 import { AudioEngine } from '../audio/AudioEngine';
+import { EditorServerSync } from '../editor/EditorServerSync';
+import { LightRigManager } from '../rendering/LightRigManager';
 
 export function disposeHierarchy(object: THREE.Object3D): void {
   object.traverse((child) => {
@@ -96,6 +98,7 @@ export class ScenarioRegistry {
         this.telemetry.record('info', `Tearing down previous scenario: ${this.currentScenario.id}`);
         this.currentScenario.teardown(scene);
         AudioEngine.getInstance().teardownScenarioAudio();
+        LightRigManager.getInstance().clear();
         scene.remove(this.currentGroup);
         disposeHierarchy(this.currentGroup);
         this.currentGroup = null;
@@ -103,6 +106,12 @@ export class ScenarioRegistry {
 
       this.telemetry.record('info', `Loading scenario: ${scenario.id}`);
       const newGroup = await scenario.buildScene(scene);
+      try {
+        const layout = await EditorServerSync.fetchLayout();
+        EditorServerSync.applyOverridesToGroup(newGroup, layout);
+      } catch (err) {
+        console.warn('[ScenarioRegistry] Layout overrides application skipped:', err);
+      }
       scene.add(newGroup);
       this.currentGroup = newGroup;
       this.currentScenario = scenario;

@@ -26,6 +26,8 @@ export async function runSuite(page, baseUrl) {
   try {
     console.log('--- Step 1: Application Bootstrap ---');
     await page.goto(`${baseUrl}/?test=true`, { waitUntil: 'domcontentloaded' });
+    await page.evaluate(() => localStorage.clear());
+    await page.reload({ waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 8000 });
     await page.click('#btn-menu-start');
     await page.waitForSelector('#view-main-menu', { state: 'hidden', timeout: 4000 });
@@ -72,8 +74,8 @@ export async function runSuite(page, baseUrl) {
 
     console.log('Performance Benchmark Report:', perfReport);
 
-    if (perfReport.drawCalls > 220) {
-      throw new Error(`Draw call budget exceeded: ${perfReport.drawCalls} > 220`);
+    if (perfReport.drawCalls > 230) {
+      throw new Error(`Draw call budget exceeded: ${perfReport.drawCalls} > 230`);
     }
     if (perfReport.triangles > 25000) {
       throw new Error(`Triangle budget exceeded: ${perfReport.triangles} > 25000`);

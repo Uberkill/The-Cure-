@@ -5,6 +5,8 @@
  * vitals ECG/EEG waveform trace, typewriter notes, and rubber stamps.
  */
 
+import { AudioEngine } from '../../audio/AudioEngine';
+
 export interface PatientRecord {
   id: string;
   cot: string;
@@ -129,6 +131,9 @@ export class ClinicalClipboard {
 
   public selectSubject(subjectId: string): void {
     if (!this.records[subjectId]) return;
+    if (this.currentSubjectId !== subjectId) {
+      AudioEngine.getInstance().playPaperRustle();
+    }
     this.currentSubjectId = subjectId;
 
     this.tabButtons.forEach((btn, id) => {

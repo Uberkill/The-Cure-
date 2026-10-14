@@ -25,7 +25,7 @@ export async function runSuite(page, baseUrl) {
 
   try {
     console.log('--- Step 1: Navigating to Root URL (Standard User Experience) ---');
-    await page.goto(baseUrl, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${baseUrl}/?test=true`, { waitUntil: 'domcontentloaded' });
     await page.waitForSelector('#btn-menu-start', { state: 'visible', timeout: 8000 });
 
     console.log('--- Step 2: Measuring Click Response on Begin Assessment ---');

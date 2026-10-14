@@ -1,5 +1,6 @@
 import { DiegeticScreenBase } from './DiegeticScreenBase';
 import { ClinicalClipboard } from '../components/ClinicalClipboard';
+import { AudioEngine } from '../../audio/AudioEngine';
 
 export interface ClinicalClipboardState {
   activeSubject: string;
@@ -62,13 +63,14 @@ export class ClinicalClipboardScreen extends DiegeticScreenBase<ClinicalClipboar
   }
 
   protected onOpened(): void {
+    AudioEngine.getInstance().playPaperRustle();
     if (this.clipboardWidget) {
       this.clipboardWidget.selectSubject(this.currentSubject);
     }
   }
 
   protected onClosed(): void {
-    // No-op
+    AudioEngine.getInstance().playDoorLatch();
   }
 
   protected handleKeyDown(e: KeyboardEvent): void {

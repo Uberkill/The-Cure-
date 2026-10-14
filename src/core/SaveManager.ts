@@ -5,7 +5,9 @@ import { SaveGameData, GameStage, GameSettings } from '../types';
 
 export class SaveManager {
   private static instance: SaveManager;
-  private static readonly STORAGE_KEY = 'the_vault_save_record';
+  private static readonly PRIMARY_STORAGE_KEY = 'the_cure_save_record';
+  private static readonly LEGACY_STORAGE_KEY = 'the_vault_save_record';
+  public static readonly STORAGE_KEY = 'the_cure_save_record';
   private static readonly SCHEMA_VERSION = 1;
 
   private eventBus: EventBus;
@@ -82,6 +84,16 @@ export class SaveManager {
     return this.lastKnownRoomId;
   }
 
+  public getSettings(): Partial<GameSettings> {
+    if (Object.keys(this.currentSettings).length === 0) {
+      const saved = this.loadGame();
+      if (saved && saved.settings) {
+        this.currentSettings = { ...saved.settings };
+      }
+    }
+    return { ...this.currentSettings };
+  }
+
   public createSaveData(): SaveGameData {
     return {
       version: SaveManager.SCHEMA_VERSION,
@@ -116,7 +128,13 @@ export class SaveManager {
     const storage = this.getStorage();
     if (storage) {
       try {
-        storage.setItem(SaveManager.STORAGE_KEY, JSON.stringify(data));
+        const json = JSON.stringify(data);
+        storage.setItem(SaveManager.PRIMARY_STORAGE_KEY, json);
+        try {
+          storage.setItem(SaveManager.LEGACY_STORAGE_KEY, json);
+        } catch {
+          // Dual-write legacy mirror is non-fatal if storage quota is constrained
+        }
         this.telemetry.record('info', `Game saved successfully: Stage ${data.currentStage}, Room ${data.currentRoomId}`);
       } catch (err) {
         this.telemetry.record('warn', `LocalStorage quota or write failed: ${String(err)}`);
@@ -135,7 +153,10 @@ export class SaveManager {
     let raw: string | null = null;
     if (storage) {
       try {
-        raw = storage.getItem(SaveManager.STORAGE_KEY);
+        raw = storage.getItem(SaveManager.PRIMARY_STORAGE_KEY);
+        if (!raw) {
+          raw = storage.getItem(SaveManager.LEGACY_STORAGE_KEY);
+        }
       } catch (err) {
         this.telemetry.record('warn', `LocalStorage read failed: ${String(err)}`);
       }
@@ -250,7 +271,8 @@ export class SaveManager {
     const storage = this.getStorage();
     if (storage) {
       try {
-        storage.removeItem(SaveManager.STORAGE_KEY);
+        storage.removeItem(SaveManager.PRIMARY_STORAGE_KEY);
+        storage.removeItem(SaveManager.LEGACY_STORAGE_KEY);
       } catch (err) {
         this.telemetry.record('warn', `LocalStorage removal failed: ${String(err)}`);
       }
