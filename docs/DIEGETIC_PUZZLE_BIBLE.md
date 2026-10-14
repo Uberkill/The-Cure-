@@ -1,4 +1,4 @@
-# The Vault: Room 04 — Master Diegetic Puzzle & Narrative Bible
+# The Cure: Room 04: Master Diegetic Puzzle & Narrative Bible
 
 > **Project Directive**  
 > Complete redesign of all eight facility chambers from linear, single-step data transcription ("read code, enter code") into tactile, multi-stage, diegetic analogue machines. Every puzzle is integrated into the overarching **Legion** narrative, operates through a dedicated interactive UI screen, and adheres to strict non-linear dependency graphs, fail-safe resets, and continuous sensory feedback.
@@ -16,7 +16,7 @@ The Directorate discovered that individual human psyches shatter when subjected 
 - **Subject 101**: Absorbed acute emotional grief and terror (resulting in uncontrollable physical motor tremors).
 - **Subject 102**: Absorbed verbal expression and defiance (resulting in surgical excision of the vocal cords).
 - **Subject 103**: Absorbed auditory perception and memory (resulting in acute acoustic dissociation and sensory hallucinations).
-- **Subjects 001–100**: Preserved in cold microfiche storage in the Archive—the discarded residue of ninety-nine failed limbic extractions.
+- **Subjects 001 to 100**: Preserved in cold microfiche storage in the Archive, representing the discarded residue of ninety-nine failed limbic extractions.
 - **Dr. H. Vandermeer (The Director)**: Synthesized his own moral guilt into the core crystal, choosing total clinical numbness over remorse.
 
 ### 1.2 The Five Memory Crystals as Living Psychic Organs
@@ -27,7 +27,7 @@ The recovered crystals are not inanimate gemstones; they are crystallized neurol
 | **Crystal 01** | Prismatic Quartz | Subject 101 | Motor tremors, limbic weeping, terror | Tape 01: The Discovery of Limbic Decoupling (1973) |
 | **Crystal 02** | Oxidized Bronze | Subject 102 | Severed vocal cords, silent screaming | Tape 02: Flesh as the Infection |
 | **Crystal 03** | Fractured Amethyst | Subject 103 | Auditory hallucinations, phase psychosis | Tape 03: The Synthesis of Silence |
-| **Crystal 04** | Pitch-Black Obsidian | The Archive (001–100) | The Collective Residue ("We are Legion") | Tape 04: The Carrier is Ready |
+| **Crystal 04** | Pitch-Black Obsidian | The Archive (001 to 100) | The Collective Residue ("We are Legion") | Tape 04: The Carrier is Ready |
 | **Crystal 05** | Glowing Celadon Core | The Director | The Eradication of Conscience | Tape 05: The Final Inoculation |
 
 #### Physical 3D Unsealing & Anti-Bypass Interaction Interlocks
@@ -45,7 +45,7 @@ The Central Hub (Room 04) is the psychological projection of Subject 104's mind.
 - The pristine alabaster walls bruise and discolor with subcutaneous hematomas.
 - The glazed green wainscot tiles weep dark fluid along the mortar lines.
 - The warm 1970s analog hum becomes layered with faint, overlapping whispers of previous subjects.
-- By Act VII, the chamber undergoes total sensory collapse. The player does not escape into freedom—they are released into the civilian subway network as the perfected carrier of total emotional numbness.
+- By Act VII, the chamber undergoes total sensory collapse. The player does not escape into freedom. They are released into the civilian subway network as the perfected carrier of total emotional numbness.
 
 ---
 
@@ -85,12 +85,12 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 
 ---
 
-### Act I: The Sterile Chamber — The Tektronix CRT & Capacitor Bridge
+### Act I: The Sterile Chamber: The Tektronix CRT & Capacitor Bridge
 * **The Diegetic Hardware Console**:
   A 1970s Tektronix dual-trace oscilloscope housed in battleship-gray steel with Bakelite rotary knobs, an analog galvanometer, a blown ceramic fuse socket, and a heavy brass knife switch.
 * **The Interactive Mechanics**:
   1. *Fuse Installation*: The player must drag a solid brass shunt from the desk into the open ceramic fuse block on the console apron to restore high-voltage power.
-  2. *Frequency & Phase Tuning*: Two large rotary dials (Frequency: 400–700 Hz; Phase: $0^\circ$–$360^\circ$). Rotating the dials recalculates the parametric Lissajous curve in real time:
+  2. *Frequency & Phase Tuning*: Two large rotary dials (Frequency: 400 to 700 Hz; Phase: $0^\circ$ to $360^\circ$). Rotating the dials recalculates the parametric Lissajous curve in real time:
      $$\begin{cases} x(t) = A \sin(\omega_1 t + \delta) \\ y(t) = B \sin(\omega_2 t) \end{cases}$$
   3. *Sensory Telegraphing*: As the player approaches 528 Hz and $90^\circ$ phase offset, the chaotic wandering green phosphor wave locks into a stable, glowing circular Lissajous ring.
   4. *Throwing the Knife Switch*: Once the ring stabilizes, the interlock solenoid clicks open, enabling the knife switch. Dragging the switch down with a resonant metallic thud depressurizes the corridor airlock.
@@ -99,7 +99,7 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 
 ---
 
-### Act II: The Sleep Ward — The 2-Step Dispensary Machine & UV Diagnostic Matrix
+### Act II: The Sleep Ward: The 2-Step Dispensary Machine & UV Diagnostic Matrix
 * **The Diegetic Hardware Console**:
   A stainless steel mobile dispensary cart front-panel designed as a two-stage sequential puzzle machine: an outer mechanical security shutter protecting an internal sedative infusion console, paired with an ultraviolet (UV) diagnostic light switch.
 * **The Interactive Mechanics**:
@@ -126,9 +126,9 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 
 ---
 
-### Act III: The Hydrotherapy Room — The Hydraulic Pressure Manifold
+### Act III: The Hydrotherapy Room: The Hydraulic Pressure Manifold
 * **The Diegetic Hardware Console**:
-  A heavy cast-iron boiler plate manifold featuring three large spoked brass valve wheels (Tanks 1, 2, 3), three vertical glass level tubes showing colored hydrostatic fluid heights, a center Bourdon-tube pressure dial (0–60 PSI), and a red emergency dump lever.
+  A heavy cast-iron boiler plate manifold featuring three large spoked brass valve wheels (Tanks 1, 2, 3), three vertical glass level tubes showing colored hydrostatic fluid heights, a center Bourdon-tube pressure dial (0 to 60 PSI), and a red emergency dump lever.
 * **The Interactive Mechanics**:
   1. *Hydrostatic Siphon Balancing*: The three tanks are interconnected via differential pressure lines. Turning Valve 1 siphons fluid into Tank 2; turning Valve 2 siphons into Tank 3.
   2. *Equilibrium Goal*: The player must balance all three water columns to the calibrated datum mark (1.2m). When balanced, hydrostatic differential cancels to exactly 0.0 PSI.
@@ -141,7 +141,7 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 
 ---
 
-### Act IV: The Audiology Vault — The Binaural Phase Synthesizer
+### Act IV: The Audiology Vault: The Binaural Phase Synthesizer
 * **The Diegetic Hardware Console**:
   A brushed-aluminum acoustic control deck featuring two circular azimuth turntable compasses (controlling directional horns), a $180^\circ$ phase-inversion toggle, a frequency sweep potentiometer, and a live Chladni sand resonance plate display.
 * **The Interactive Mechanics**:
@@ -157,7 +157,7 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 
 ---
 
-### Act V: The Archive — The Optical Microfiche Viewer & Pneumatic Dispatch
+### Act V: The Archive: The Optical Microfiche Viewer & Pneumatic Dispatch
 * **The Diegetic Hardware Console**:
   A desktop optical microfilm reader with an illuminated frosted-glass viewing screen, manual film reel advance knobs, a knurled focus ring, and an integrated brass pneumatic tube transport terminal with rotary sector selector dials.
 * **The Interactive Mechanics**:
@@ -173,7 +173,7 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 
 ---
 
-### Act VI: The Director's Office — The Reel-to-Reel Wiretap Deck & Rotary Phone
+### Act VI: The Director's Office: The Reel-to-Reel Wiretap Deck & Rotary Phone
 * **The Diegetic Hardware Console**:
   A split executive console featuring a Nagra-style portable reel-to-reel magnetic tape recorder (with spinning aluminum reels, VU meters, and speed lever) paired with a heavy cream Bakelite rotary telephone.
 * **The Interactive Mechanics**:
@@ -184,12 +184,12 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
   - Reel-to-reel tape spools visibly rotate at rates matching playback speed.
   - VU meters bounce to audio waveforms.
   - Rotary phone dial has true inertial drag physics and audio clicks proportional to the number dialed.
-* **Accessibility / Keyboard Fallback**: Number keys 0–9 trigger authentic automated rotary dial sequences.
+* **Accessibility / Keyboard Fallback**: Number keys 0 through 9 trigger authentic automated rotary dial sequences.
 * **Fail-Safe**: The clock hands and tape deck can be rewound or adjusted infinitely with zero softlocks.
 
 ---
 
-### Act VII: The Synthesis Chamber — The 5-Channel Galvanometer Energy Grid
+### Act VII: The Synthesis Chamber: The 5-Channel Galvanometer Energy Grid
 * **The Diegetic Hardware Console**:
   A massive power distribution switchboard featuring five crystal receptacle sockets, five analog galvanometer needle meters, five ceramic knife shunts, and a main hydraulic bus lever.
 * **The Interactive Mechanics**:
@@ -200,12 +200,12 @@ Every chamber features a dedicated, full-screen or modal **Diegetic Hardware Con
 * **Sensory Telegraphing**:
   - High-voltage electrical arcs buzz and diminish as circuits balance.
   - Analog galvanometer needles tremble under simulated magnetic damping.
-* **Accessibility / Keyboard Fallback**: Keys 1–5 select channels; Left/Right arrows adjust resistance slider shunts.
+* **Accessibility / Keyboard Fallback**: Keys 1 through 5 select channels; Left/Right arrows adjust resistance slider shunts.
 * **Fail-Safe**: Overloading a channel trips the master circuit breaker with a loud clack, returning all shunts to neutral.
 
 ---
 
-### Act VIII: The Velvet Lounge — The Mirror Paradox & Operator Switchboard
+### Act VIII: The Velvet Lounge: The Mirror Paradox & Operator Switchboard
 * **The Diegetic Hardware Console**:
   A dual-view inspection terminal comparing the physical room against the floor-to-ceiling observation mirror reflection, alongside a vintage 1950s telephone operator switchboard with braided cloth patch cords.
 * **The Interactive Mechanics**:

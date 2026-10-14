@@ -1,6 +1,6 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { marked } from 'marked';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -18,8 +18,7 @@ const files = [
   'docs/PHASED_IMPLEMENTATION_PLAN.md'
 ];
 
-
-let doc = '# THE VAULT: MASTER DOCUMENTATION\n\n*This document is an automated compilation of all technical, architectural, and design documentation for The Vault project.*\n\n---\n\n';
+let doc = '# THE CURE: MASTER DOCUMENTATION\n\n*This document is an automated compilation of all technical, architectural, and design documentation for The Cure: Sub-Level 04.*\n\n---\n\n';
 
 for (const rel of files) {
   const content = fs.readFileSync(path.join(rootDir, rel), 'utf8');
@@ -29,14 +28,14 @@ for (const rel of files) {
 const outDir = path.join(rootDir, 'dist', 'docs');
 fs.mkdirSync(outDir, { recursive: true });
 
-fs.writeFileSync(path.join(outDir, 'THE_VAULT_DOCUMENTATION.md'), doc, 'utf8');
+fs.writeFileSync(path.join(outDir, 'THE_CURE_DOCUMENTATION.md'), doc, 'utf8');
 
 const htmlBody = marked.parse(doc);
 const fullHtml = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
-<title>The Vault - Master Documentation</title>
+<title>The Cure: Sub-Level 04 - Master Documentation</title>
 <style>
   body { font-family: sans-serif; line-height: 1.6; max-width: 900px; margin: 40px auto; padding: 40px 60px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); border-radius: 8px; color: #24292f; }
   h1, h2 { border-bottom: 1px solid #eaecef; padding-bottom: 0.3em; }
@@ -56,5 +55,5 @@ ${htmlBody}
 </html>
 `;
 
-fs.writeFileSync(path.join(outDir, 'THE_VAULT_DOCUMENTATION.html'), fullHtml, 'utf8');
+fs.writeFileSync(path.join(outDir, 'THE_CURE_DOCUMENTATION.html'), fullHtml, 'utf8');
 console.log('Successfully compiled master documentation (MD & HTML) into dist/docs/.');

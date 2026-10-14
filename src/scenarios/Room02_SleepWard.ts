@@ -12,7 +12,7 @@ export class Room02_SleepWard implements RoomScenario {
   public id = 'sleep_ward';
   public title = 'The Sleep Ward';
   public actTitle = 'ACT II • THE FIRST DESCENT';
-  public roomCode = 'Observation Ward 02 • Subjects 101–103';
+  public roomCode = 'Observation Ward 02 • Subjects 101 to 103';
   public defaultHotspot = 'overview';
 
   public hotspots: Record<string, HotspotAnchor> = {

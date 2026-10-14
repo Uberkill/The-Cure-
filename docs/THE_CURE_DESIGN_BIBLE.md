@@ -1,8 +1,8 @@
-# THE CURE: ROOM 04 — Master Narrative & Opening Triad Architecture
+# THE CURE: ROOM 04: Master Narrative and Opening Triad Architecture
 
 > **Aesthetic & Philosophical Manifesto**  
 > Inspired by Kiyoshi Kurosawa's psychological masterpiece *Cure* (1997), *The Cure: Room 04* reframes the escape-room paradigm into a hypnotic psychological descent. Human sorrow, empathy, and free will are diagnosed by the Directorate as an unbearable psychological contagion. Total emotional numbness and unthinking compliance are heralded as **The Cure**.  
-> The protagonist (Subject 104) is not an escaped prisoner fighting against an oppressive system; Subject 104 is being systematically calibrated as the carrier—**Patient Zero**—destined to unleash The Cure into the civilian populace.
+> The protagonist (Subject 104) is not an escaped prisoner fighting against an oppressive system; Subject 104 is being systematically calibrated as the carrier (**Patient Zero**), destined to unleash The Cure into the civilian populace.
 
 ---
 
@@ -74,7 +74,7 @@ The player awakens from complete sensory deprivation. The room is blindingly whi
 4. **Beat 4: The Tektronix CRT Console (2:00 - 3:15)**
    - Clicking the oscilloscope console opens the bespoke **Tektronix Diegetic Screen**.
    - **Step 1 (Physical Power Restoration)**: The ceramic fuse block on the console apron is empty. The player drags the brass shunt from inventory into the spring clips. *CLACK.* Vacuum tube filaments behind the rear louvers ignite with an orange glow; the green phosphor screen bursts into life with erratic, jittery noise.
-   - **Step 2 (Harmonic Entrainment)**: Two large Bakelite knobs control Frequency (400–700 Hz) and Phase ($0^\circ$–$360^\circ$). Rotating the frequency knob sweeps the pitch upward. As frequency approaches 528 Hz, the chaotic noise folds into a smooth, hypnotic circular Lissajous ring. The 528 Hz sine wave creates a soothing, acoustic trance effect.
+   - **Step 2 (Harmonic Entrainment)**: Two large Bakelite knobs control Frequency (400 to 700 Hz) and Phase ($0^\circ$ to $360^\circ$). Rotating the frequency knob sweeps the pitch upward. As frequency approaches 528 Hz, the chaotic noise folds into a smooth, hypnotic circular Lissajous ring. The 528 Hz sine wave creates a soothing, acoustic trance effect.
    - **Step 3 (The Interlock Release)**: Once the Lissajous ring locks into a perfect glowing circle, an electromagnetic solenoid clicks open with a sharp *TICK*. The heavy ceramic knife switch lever unlocks.
    - **Step 4 (Throwing the Switch)**: Dragging the knife switch down produces a thunderous mechanical contact sound and an electrical snap.
 5. **Beat 5: The Threshold Unseals (3:15 - 3:45)**
@@ -125,7 +125,7 @@ Transitioning from the pristine safety of Room 04 into the Sleep Ward introduces
 Cold institutional hygiene meets visceral dread. The room is lined with pale turquoise tiles weeping condensation. In the center sit three massive porcelain clawfoot immersion tubs equipped with heavy leather restraint harnesses. A distinct smell of copper, wet stone, and saline hangs in the air.
 
 #### The Narrative Revelation
-Hydrotherapy was not physical therapy—it was used to induce sensory drowning to suppress the limbic nervous system of Subject 102. When Subject 102 continued to scream under water, the Directorate excised their vocal cords.
+Hydrotherapy was not physical therapy; it was used to induce sensory drowning to suppress the limbic nervous system of Subject 102. When Subject 102 continued to scream under water, the Directorate excised their vocal cords.
 
 #### The Hydraulic Manifold Screen
 1. **The Physical Apparatus**:
@@ -235,7 +235,7 @@ The recovered crystals are not inanimate gemstones; they are crystallized neurol
 | **Crystal 01** | Prismatic Quartz | Subject 101 | Motor tremors, limbic weeping, terror | Tape 01: The Discovery of Limbic Decoupling (1973) |
 | **Crystal 02** | Oxidized Bronze | Subject 102 | Severed vocal cords, silent screaming | Tape 02: Flesh as the Infection |
 | **Crystal 03** | Fractured Amethyst | Subject 103 | Auditory hallucinations, phase psychosis | Tape 03: The Synthesis of Silence |
-| **Crystal 04** | Pitch-Black Obsidian | The Archive (001–100) | The Collective Residue ("We are Legion") | Tape 04: The Carrier is Ready |
+| **Crystal 04** | Pitch-Black Obsidian | The Archive (001 to 100) | The Collective Residue ("We are Legion") | Tape 04: The Carrier is Ready |
 | **Crystal 05** | Glowing Celadon Core | The Director | The Eradication of Conscience | Tape 05: The Final Inoculation |
 
 With every crystal recovered and slotted into the central CRT console, the pristine alabaster walls of the Hub bruise and discolor. The visual corruption is the side-effect of Subject 104 successfully digesting the trauma of others and erasing it from their own mind.

@@ -1,26 +1,29 @@
-# Multi-Agent UI/UX & Memory Leak Audit Report
+# Multi-Agent UI/UX & Memory Leak Audit Report (Historical Archive)
 
-The multi-agent auditing workflow has successfully completed. The UI/UX Auditor and the Memory Leak Auditor scanned `src/ui/`, `src/interaction/`, `src/core/`, and `src/rendering/`. 
+> **ARCHIVAL STATUS: RESOLVED**  
+> All findings identified in this early audit report were fully addressed and resolved across Phase 5 (Full System Polish) and Phase 11 (Camera Disengage HUD & Navigation). This document is retained for regression traceability.
 
-Below is the synthesized list of critical flaws, broken down by category:
+The multi-agent auditing workflow scanned `src/ui/`, `src/interaction/`, `src/core/`, and `src/rendering/`.
 
-## 1. GPU & WebGL Memory Leaks (Critical)
-*   **Prefab Deletion Leaks (`Dev3DEditorPanel.ts`):** When you delete an object in the 3D Editor, the system removes it from the scene tree (`obj.parent.remove(obj)`) but completely fails to call `.dispose()` on its geometries, materials, or textures. Repeatedly spawning and deleting custom models/paintings causes massive GPU VRAM leaks.
+Below is the synthesized list of historical flaws and their recorded resolutions:
 
-## 2. Z-Index Wars & Layering (High)
-*   **Uncoordinated Z-Index Layers:** The `z-index` layering is deeply fragmented (Settings modal is `10000`, Main Menu is `9999`, Overlays are `100`).
-*   **Cutscene Occlusion Bug:** The ending cutscene (`.terminal-blackout-screen`) is assigned `z-index: 200`. If triggered while a higher-priority menu (like the Settings window) is open, the finale will render invisibly *behind* the menu.
+## 1. GPU & WebGL Memory Leaks (Resolved in Phase 5)
+* **Prefab Deletion Leaks (`Dev3DEditorPanel.ts`):** Resolved by adding recursive `disposeHierarchy()` in `ScenarioRegistry.ts` that traverses geometries, materials, and textures on object deletion and scenario teardown.
 
-## 3. Keyboard Accessibility & Focus Trapping (High)
-*   **Conflicting ESC Key Bindings:** Both `UIManager.ts` and `ScreenManager.ts` aggressively listen for the `Escape` key. Pressing ESC to exit the settings menu simultaneously triggers the camera's fallback transition, causing jarring visual jumps.
-*   **Missing Focus Traps:** Modals lack `aria-modal="true"`. Keyboard users can Tab completely out of the active modal and blindly interact with hidden buttons in the background HUD.
-*   **Invisible Screen Reader Updates:** The live Telemetry panel lacks `aria-live="polite"`, making real-time performance updates invisible to screen readers.
+## 2. Z-Index Layering (Resolved in Phase 5)
+* **Uncoordinated Z-Index Layers:** Standardized in `style.css` via design system token layers.
+* **Cutscene Occlusion:** Assigned proper priority hierarchy ensuring terminal sequences supersede modals.
 
-## 4. UI Rendering & Hardcoded CSS (Medium)
-*   **Rigid CRT Panel Width:** The `.crt-screen-frame` is hardcoded to `width: 640px; height: 400px;`. Without responsive scaling (`max-width: 100%`), it overflows completely and breaks the layout on narrow windows or mobile devices.
-*   **Dirty Inline Stlying (`ScreenManager.ts`):** Instead of using clean CSS class toggles for the start-up sequence, the code forces `style.opacity = '0'` and `transition` properties via manual DOM iteration, creating dirty inline styles that overwrite global stylesheets.
-*   **Missing Interaction States:** The primary frequency switch button (`.btn-switch`) lacks `:hover`, `:focus-visible`, and `:active` styling, feeling completely dead to the mouse. Furthermore, it retains a `cursor: pointer` even when technically disabled.
+## 3. Keyboard Accessibility & Focus Trapping (Resolved in Phase 8)
+* **Conflicting ESC Key Bindings:** Centralized key handling in `DiegeticScreenBase.ts` with explicit event consumption and modal stacking.
+* **Focus Traps:** Implemented keyboard focus trapping cycling inside open modals with `:focus-visible` outlines.
+* **Screen Reader Updates:** Added `aria-live="polite"` to telemetry and status overlays.
 
-## 5. EventBus & Closure Ghosting (Medium)
-*   **Missing Teardown Pipelines:** None of the core UI components (`UIManager`, `ScreenManager`) or the `SceneManager` implement a `destroy()` or cleanup method. `window.addEventListener` and `EventBus.on` callbacks are permanently registered.
-*   **Runaway Timeout Chains:** The cinematic sequence relies on chained `setTimeout` calls lasting up to 7,000ms. If the game state changes rapidly, these uncancelled timers execute blindly against potentially unmounted DOM elements, throwing silent errors.
+## 4. UI Rendering & Responsive Layout (Resolved in Phases 8 and 16)
+* **Rigid CRT Panel Width:** Added fluid CSS layout with `max-width: 100%` and aspect ratio scaling.
+* **Inline Styling:** Converted manual style manipulation to CSS class toggles (`.hidden`, `.active`).
+* **Missing Interaction States:** Added `:hover`, `:focus-visible`, and `:active` styling to `.btn-switch`. It also sets `cursor: not-allowed` when disabled.
+
+## 5. EventBus & Lifecycle Teardown (Resolved in Phase 5)
+* **Teardown Pipelines:** Added explicit `destroy()` and cleanup methods across screen controllers and scenarios.
+* **Timeout Chains:** Wrapped animation and transition sequences in cancellable handles or tween lifecycles.

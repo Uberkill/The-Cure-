@@ -58,7 +58,7 @@ export const STAFF_DOSSIERS: Record<string, StaffDossier> = {
       { time: '13:15', location: 'Cot 104', entry: 'Ultraviolet examination of headboard. Chemical triad [NITROUS - BROMIDE - VALERIAN] verified.' }
     ],
     clinicalNotes: 'The three-phase chemical regimen successfully dampens cognitive resistance. Mobile dispensary cart requires two-stage unlatching: 3-tumbler intake combination (1-0-4) followed by 68 BPM cardiac matching and sedative triad alignment.',
-    personalJournal: 'We are not curing these people. When we retrieve the quartz crystal from the dispensary tray, the patient\'s limbic responses do not heal—they vanish entirely. Yesterday, Director Vandermeer ordered Cot 104 emptied and transferred to the central reception chamber without my counter-signature. I found scratch marks on the headboard in 104\'s frantic handwriting: "WHO AM I". I hid the mnemonic quartz crystal in the locked mobile cart. God forgive us.',
+    personalJournal: 'We are not curing these people. When we retrieve the quartz crystal from the dispensary tray, the patient\'s limbic responses do not heal; they vanish entirely. Yesterday, Director Vandermeer ordered Cot 104 emptied and transferred to the central reception chamber without my counter-signature. I found scratch marks on the headboard in 104\'s frantic handwriting: "WHO AM I". I hid the mnemonic quartz crystal in the locked mobile cart. God forgive us.',
     puzzleClueSummary: 'Sleep Ward: Align tumblers to 1-0-4, match drip rate to 68 BPM, calibrate sedative triad (Nitrous, Bromide, Valerian), then collect the physical crystal.'
   },
   vance: {
@@ -77,7 +77,7 @@ export const STAFF_DOSSIERS: Record<string, StaffDossier> = {
       { time: '15:15', location: 'Monolith Amplifier', entry: 'Secondary 741 Hz Solfeggio harmonic sweep tested for acoustic clamp release.' }
     ],
     clinicalNotes: 'Standing wave nodes create complete destructive phase cancellation. When horn angles (45 deg / 135 deg), carrier frequency (600 Hz), and 180 deg phase inversion align, acoustic null releases the clamped speaker cone.',
-    personalJournal: 'The standing wave is not merely sound—it is an acoustic mirror. When I wear the Western Electric headphones in the monitoring alcove, I hear voices speaking between 590 Hz and 610 Hz. They are reciting the patient intake pledges from five years ago. I asked the Director why the acoustic baffling has fingernail scratches along the lower edges. He told me to adjust my angles and mind my decibels. I keep my silicone plugs in even when I sleep.',
+    personalJournal: 'The standing wave is not merely sound; it is an acoustic mirror. When I wear the Western Electric headphones in the monitoring alcove, I hear voices speaking between 590 Hz and 610 Hz. They are reciting the patient intake pledges from five years ago. I asked the Director why the acoustic baffling has fingernail scratches along the lower edges. He told me to adjust my angles and mind my decibels. I keep my silicone plugs in even when I sleep.',
     puzzleClueSummary: 'Audiology Vault: Orient Left Horn to 45 deg, Right Horn to 135 deg, set carrier to 600 Hz, flip phase toggle to 180 deg, then collect the amethyst crystal.'
   },
   cross: {

@@ -22,19 +22,19 @@
 └─────────────────────────┴──────────────────────────┴────────────────────────────┘
 ```
 
-### Pillar I: Kiyoshi Kurosawa — Ambient Contagion & Hypnotic Calm
-- **The Philosophy**: In Kurosawa's *Cure* (1997) and *Pulse* (2001), horror does not announce itself with screeching monsters or sudden violence. It is quiet, rational, and chillingly polite. Evil spreads like a sensory virus—carried by a repetitive rhythm, a trickling of water, or a monotone question.
+### Pillar I: Kiyoshi Kurosawa: Ambient Contagion and Hypnotic Calm
+- **The Philosophy**: In Kurosawa's *Cure* (1997) and *Pulse* (2001), horror does not announce itself with screeching monsters or sudden violence. It is quiet, rational, and chillingly polite. Evil spreads like a sensory virus, carried by a repetitive rhythm, a trickling of water, or a monotone question.
 - **Application in The Vault**:
   - The facility staff never threaten or scream at Subject 104. The voices on recordings and over the telephone are measured, articulate, and soothing.
   - The horror comes from realizing that compliance feels peaceful. The temptation to stop resisting and let the mind go numb is the true threat.
 
-### Pillar II: David Lynch — The Uncanny Mundane & The Tension Coil
+### Pillar II: David Lynch: The Uncanny Mundane and The Tension Coil
 - **The Philosophy**: In Lynch's cinema (*Twin Peaks: The Return*, *Mulholland Drive*, *Lost Highway*), horror resides in ordinary mid-century domesticity: an unplugged cream telephone that rings anyway, a radiator that emits an organic hum, an empty hallway that feels alive.
 - **The Emotional Waveform ("Give Fear, Then Take It Away")**:
-  - Lynch builds unbearable tension not by exploding into a jump scare, but by holding an uncomfortable moment until it hurts—and then abruptly **cutting to complete, dead silence**.
+  - Lynch builds unbearable tension not by exploding into a jump scare, but by holding an uncomfortable moment until it hurts, and then abruptly **cutting to complete, dead silence**.
   - Taking the fear away leaves the audience in a sensory vacuum (*"the nothing"*). In that breathless silence, the player's own imagination takes over, magnifying every subtle visual texture, every shadow, and every faint click.
 
-### Pillar III: Corporate Dissociation — The Bureaucracy of the Self (*Severance*)
+### Pillar III: Corporate Dissociation: The Bureaucracy of the Self (*Severance*)
 - **The Philosophy**: Inspired by *Severance*, Franz Kafka's bureaucratic nightmares, and Mark Fisher's *Capitalist Realism*, the facility treats the human soul as malfunctioning office hardware that simply requires scheduled maintenance.
 - **Application in The Vault**:
   - Extreme emotional trauma is described in cheerful corporate wellness language: *"limbic friction"*, *"equilibrium protocol"*, *"phase stabilization"*, *"voluntary cognitive alignment"*.
@@ -64,32 +64,32 @@ Intensity
 
 ### The Emotional Beats in Detail:
 
-#### Beat 1: The Cold Awakening (0:00 - 0:30) — *Suspense & Uncanny Realism*
+#### Beat 1: The Cold Awakening (0:00 - 0:30): *Suspense & Uncanny Realism*
 - **Visual**: The player opens their eyes. Symmetrical white walls, pristine pale terrazzo floor, smoked teak desk.
 - **Acoustic**: A dry, sterile 60 Hz electrical fluorescent light hum.
 - **The Hook**: Before the player moves, the cream rotary telephone on the desk rings with a muffled, rhythmic chime.
 - **The Lynchian Tell**: Looking closely at the telephone, its curly cord dangles loosely onto the floor, severed. It is ringing without a wall connection.
 
-#### Beat 2: The Ringing Phone (0:30 - 1:15) — *The Dread Spike*
+#### Beat 2: The Ringing Phone (0:30 - 1:15): *The Dread Spike*
 - **Action**: The player lifts the receiver. The ringing stops instantly.
 - **Acoustic**: A low 40 Hz binaural drone swells subtly beneath the dialogue, creating physical acoustic tension.
 - **The Voice**: A flat, calm voice speaks with chillingly cordial intimacy:
   > *"Subject 104. You believe you were brought here against your will. But tell me: who was it that signed the intake sheet? Look at your hands. No bruises. No bindings. You chose to be cured. We all chose it. Finish your harmonic calibration. The corridor is waiting."*
 - **The Climax of the Call**: On the final word *"waiting"*, the line emits a sharp electrical pulse.
 
-#### Beat 3: The Acoustic Vacuum (1:15 - 1:45) — *The "Nothing"*
+#### Beat 3: The Acoustic Vacuum (1:15 - 1:45): *The "Nothing"*
 - **The Subversion**: Instead of a jump scare or an alarm, **everything cuts out completely**.
-- **Acoustic**: Zero decibels. Absolute silence for two full seconds. The 60 Hz fluorescent hum, the drone, the phone—gone.
+- **Acoustic**: Zero decibels. Absolute silence for two full seconds. The 60 Hz fluorescent hum, the drone, the phone: gone.
 - **Psychological Effect**: The player's nervous system braces for an attack that never comes. The dread collapses into hypnotic stillness. The player takes a deep breath. In this vacuum, the player feels acutely present in the physical room.
 
-#### Beat 4: Tactile Grounding (1:45 - 2:30) — *Observation & Tangible Props*
+#### Beat 4: Tactile Grounding (1:45 - 2:30): *Observation & Tangible Props*
 - **Visual**: The faint fluorescent hum slowly fades back in, grounding the room in reality.
 - **Action**: The player investigates the desk.
   - Beside the phone lies the **Crimson Dossier**: stamped with official corporate seals and intake protocols.
   - Beside the dossier sits a **Heavy Brass Cylinder Shunt**: machined brass with knurled grip, cold to the touch. The player picks it up (`prop_brass_shunt` acquired).
 - **The Mental Connection**: The player looks at the central Tektronix oscilloscope console on the desk apron. There is an empty ceramic fuse block with exposed brass spring clips.
 
-#### Beat 5: Tactile Mechanical Mastery (2:30 - 3:30) — *Catharsis & Agency*
+#### Beat 5: Tactile Mechanical Mastery (2:30 - 3:30): *Catharsis & Agency*
 - **Action**: Clicking the Tektronix console opens the diegetic hardware screen.
   - The player snaps the brass shunt into the fuse clips. *CLANK.* Vacuum tubes ignite behind the ventilation louvers with a rich orange glow.
   - The player rotates the large Bakelite frequency dial. As the frequency approaches 528 Hz, the erratic green phosphor wave smoothly stabilizes into a glowing circular Lissajous loop.

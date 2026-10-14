@@ -1,12 +1,12 @@
-# The Vault: Sub-Level 04 - Master Design System Specification
+# The Cure: Sub-Level 04 - Master Design System Specification
 
-This specification serves as the immutable, authoritative single source of truth for all visual, typographic, tactile, and diegetic interface design across **The Vault: Sub-Level 04**.
+This specification serves as the authoritative single source of truth for all visual, typographic, tactile, and diegetic interface design across **The Cure: Sub-Level 04**.
 
 ---
 
 ## 1. Aesthetic Philosophy: Analogue Clinical Brutalism
 
-The aesthetic identity of *The Vault* is defined as **Analogue Clinical Brutalism**—a synthesis of mid-20th-century institutional medical facilities, Cold War telecommunication surveillance, and existential psychological dread.
+The aesthetic identity of *The Cure* is defined as **Analogue Clinical Brutalism**: a synthesis of mid-20th-century institutional medical facilities, Cold War telecommunication surveillance, and existential psychological dread.
 
 ### Thematic Influences
 * **Kiyoshi Kurosawa (*Cure*, *Pulse*)**: Quiet, rational, chilled institutional calm. Evil does not announce itself with jump scares; it operates through soothing routine, hums, and rhythmic repetition.
@@ -54,7 +54,7 @@ The aesthetic identity of *The Vault* is defined as **Analogue Clinical Brutalis
 
   /* Warnings, Seals & Purge Alerts */
   --color-crimson-wax: #8B1E23;       /* Intake seal wax, restricted rubber stamps */
-  --color-crimson-glow: #B8282E;      /* Emergency beacon indicator, breaker trip lamp */
+  --color-crimson-glow: #B8282E;      /* Emergency indicator lamp, breaker trip alert */
   --color-crimson-muted: #5F1317;     /* Subdued warning borders, declassified header lines */
 
   /* Typographic Inks */
@@ -84,13 +84,13 @@ Three font families are loaded with explicit system font fallbacks to guarantee 
 
 | Token | Size | Line Height | Tracking | Weight | Target Usage |
 |---|---|---|---|---|---|
-| `--type-display-xl` | 38px–48px | 1.1 | `-0.01em` | 400 | Editorial Chapter Titles, Master Headlines |
-| `--type-display-lg` | 26px–32px | 1.2 | `0em` | 400 | Modal Dossier Headlines, Chamber Names |
-| `--type-display-md` | 20px–24px | 1.3 | `0.02em` | 600 | Apparatus Sub-panel Titles, Instrument Models |
-| `--type-body-lg` | 15px–16px | 1.5 | `0.01em` | 400 | Case Intake Paragraphs, Narrative Dossiers |
-| `--type-body-md` | 13px–14px | 1.5 | `0.02em` | 300 / 400 | Standard UI Descriptions, Instructions |
-| `--type-ui-btn` | 11px–12px | 1.0 | `0.12em` | 500 / 600 | Pill Action Buttons, Navigation Links |
-| `--type-mono-sm` | 10px–11px | 1.4 | `0.15em` | 400 / 500 | Coordinates, Clock Escapements, Sliders |
+| `--type-display-xl` | 38px to 48px | 1.1 | `-0.01em` | 400 | Editorial Chapter Titles, Master Headlines |
+| `--type-display-lg` | 26px to 32px | 1.2 | `0em` | 400 | Modal Dossier Headlines, Chamber Names |
+| `--type-display-md` | 20px to 24px | 1.3 | `0.02em` | 600 | Apparatus Sub-panel Titles, Instrument Models |
+| `--type-body-lg` | 15px to 16px | 1.5 | `0.01em` | 400 | Case Intake Paragraphs, Narrative Dossiers |
+| `--type-body-md` | 13px to 14px | 1.5 | `0.02em` | 300 / 400 | Standard UI Descriptions, Instructions |
+| `--type-ui-btn` | 11px to 12px | 1.0 | `0.12em` | 500 / 600 | Pill Action Buttons, Navigation Links |
+| `--type-mono-sm` | 10px to 11px | 1.4 | `0.15em` | 400 / 500 | Coordinates, Clock Escapements, Sliders |
 | `--type-mono-xs` | 9px | 1.3 | `0.20em` | 600 | Classified Stamps, Technical Telemetry, Pips |
 
 #### Monospace Formatting Directive
@@ -181,7 +181,7 @@ Standardized z-index layers prevent cross-modal occlusion:
 ## 4. UI Component Library Standards
 
 ### 4.1. Tactile Pill Buttons (`.pill-btn`)
-* **Geometry**: Full capsule (`border-radius: var(--radius-pill)`), height 36px–40px, padding `8px 20px`.
+* **Geometry**: Full capsule (`border-radius: var(--radius-pill)`), height 36px to 40px, padding `8px 20px`.
 * **Standard Variant**: Alabaster cardstock background (`#EDF0EB`), 1px solid `var(--ink-primary)` border, `var(--ink-primary)` text. Inverts to solid `var(--ink-primary)` background with Alabaster text on hover (`transform: translateY(-1px)`).
 * **Primary Variant (`.pill-btn.active`, `.pill-btn-primary`)**: Solid `var(--color-sage-deep)` background, white text, 1px solid `var(--color-sage-deep)` border.
 * **Danger Variant (`.pill-btn-danger`)**: 1px solid `var(--color-crimson-wax)` border, crimson text. Inverts to crimson background with white text on hover.
@@ -216,7 +216,7 @@ Standardized z-index layers prevent cross-modal occlusion:
 * **Redaction Bar (`.redaction-bar`)**: Solid carbon black block (`background: var(--ink-primary)`) obscuring classified intelligence text until player clearance is verified.
 
 ### 4.7. Bourdon Hydrostatic Pressure Gauge 2.0 (`BourdonGauge.ts`)
-* **Geometry**: 180px–220px circular dial housed in machined brass or dark Bakelite.
+* **Geometry**: 180px to 220px circular dial housed in machined brass or dark Bakelite.
 * **Dual-Needle System**:
   * **Dynamic Measurement Needle**: High-contrast black carbon needle with counter-balance tail, driven by second-order damped spring harmonic physics (`k = 0.08`, `damping = 0.86`).
   * **Target Limit Needle**: Translucent crimson indicator needle (`#8B1E23`) marking target equilibrium threshold.
@@ -263,7 +263,7 @@ Standardized z-index layers prevent cross-modal occlusion:
 * **Graduations**: Calibrated tick scale (30 to 120 BPM/ml) with highlighted target equilibrium indicator (68 BPM cardiac rest sync).
 * **Fluid Physics**: High-contrast green saline fluid column (`rgba(74, 222, 128, 0.6)`) with curved surface meniscus and rhythmic cardiac pulse oscillation responding to infusion rate.
 
-### 4.16. Camera Disengage / Step Back HUD Control (`.camera-disengage-btn`)
+### 4.15. Camera Disengage / Step Back HUD Control (`.camera-disengage-btn`)
 * **Housing & Placement**: Mounted at viewport top-left (`top: 32px`, `left: 32px`, `z-index: 100`). Styled as an ivory cardstock brutalist tile (`background: var(--color-alabaster)`, border `1px solid rgba(20, 26, 33, 0.22)`, radius `var(--radius-md, 6px)`).
 * **Tactile Affordance**: Displays an authentic tactical return arrow SVG, an institutional monospace label (`OVERVIEW`), and an aged paper keyboard stamp (`[ESC]`).
 * **Responsive Scaling Contract**:
@@ -272,7 +272,7 @@ Standardized z-index layers prevent cross-modal occlusion:
   * Compact Circular Touch Target (`.camera-disengage--sm`): 44px x 44px circle, icon only, optimized for narrow viewports under 640px.
 * **Contextual State Integration**: Automatically transitions to visible (`opacity: 1`, `pointer-events: auto`) when the camera moves to any inspection hotspot away from `overview`, and hides smoothly (`opacity: 0`, `visibility: hidden`) on overview arrival or room transition.
 
-### 4.17. Clinical Specimen Evidence Case & Requisition Ledger (`AssetManifestScreen.ts` / FORM 104-INV)
+### 4.16. Clinical Specimen Evidence Case & Requisition Ledger (`AssetManifestScreen.ts` / FORM 104-INV)
 * **Chassis & Apron**: Dual-pane brutalist specimen ledger (`max-width: 960px`, `width: min(94vw, 960px)`). Exterior apron styled in dark chassis paneling (`--color-chassis-panel: #1E2220`) with brass corner escutcheons and verified requisition stamps.
 * **Master-Detail Category Trays**:
   * `ALL ASSETS` (Default): Unified specimen list displaying all acquired hardware, records, and secured crystals together without forcing tab switches.
@@ -285,20 +285,30 @@ Standardized z-index layers prevent cross-modal occlusion:
   * Diegetic action triggers: `[EXAMINE 3D ARTIFACT]` (opens 360-degree turntable), `[READ DOSSIER]` (opens 3D paper dossier), and `[REPLAY MEMORY LOG]` (plays audio memory recording).
 * **In-World Synchronization**: Picking up the dossier in Room 01 hides the 3D desk mesh, updates desk hotspot prompt to `[DESK: DOSSIER SECURED]`, pulses `#btn-inventory-toggle` for 1200ms, and auto-selects the item on open.
 
-### 4.18. Clinical Personnel Directory (`StaffRosterScreen.ts` / FORM 108-STAFF)
+### 4.17. Clinical Personnel Directory (`StaffRosterScreen.ts` / FORM 108-STAFF)
 * **Form 108-STAFF Substrate**: Multi-sheet administrative clinical roster detailing attending physicians, technicians, and observers (Dr. H. Vandermeer, Dr. K. Vance, Dr. M. Thorne).
 * **Bureaucratic Elements**: Archival clearance classification headers, department stamps (`DIRECTORATE APPROVED`), and confidential annotations explaining the Limbo and Project Legion protocols.
 
-### 4.19. Developer Mode Clearance Cipher UI (`#input-dev-passcode`)
+### 4.18. Developer Mode Clearance Cipher UI (`#input-dev-passcode`)
 * **Security & Anti-Cheat Protocol**: Locks developer mode tabs, free-camera toggles, 3D transform gizmos, and stage jump buttons behind an institutional clearance cipher.
 * **Tactile Passcode Field**: Monospace masked input field (`letter-spacing: 0.3em`, border `1px solid var(--color-sage-deep)`). Requires entering passcode `104` to disengage security interlocks.
 * **Feedback States**: Displays clinical status badge (`CLEARANCE VERIFIED // LEVEL 4 AUTHORIZED` or `RESTRICTED // INVALID PASSCODE`).
+
+### 4.19. Pre-Admission Orientation Card (FORM 104-O)
+* **Substrate**: Three-step briefing cardstock overlay (`.orientation-dossier`) presented between the main menu and room awakening.
+* **Tab Progression**: Monospace tab headers (`01 // INTAKE`, `02 // CONTROLS`, `03 // EGRESS`) with circular crimson wax seal (`.wax-seal`).
+* **Device-Adaptive Directives**: Dynamic instruction spans rendering mouse/keyboard bindings (`.binding-desktop`) or touch gestures (`.binding-touch`) based on the active interface mode.
+
+### 4.20. Dual Interface Mode Tokens
+* **Touch Targets**: Minimum 44x44px clickable area on all interactive elements.
+* **Viewport Adaptations**: Viewport height clamped using `min(92dvh, 740px)` with pinned action footers.
+* **Responsive Selectors**: Strict scoping under `html[data-ui-mode="desktop"]` versus `html[data-ui-mode="touch"]`.
 
 ---
 
 ## 5. Motion & Animation Standards
 
-Interface animations must reflect the mechanical inertia of 1970s analogue machinery—zero bouncy spring cartoon physics.
+Interface animations must reflect the mechanical inertia of 1970s analogue machinery: zero bouncy spring cartoon physics.
 
 ```css
 :root {
@@ -317,7 +327,7 @@ Interface animations must reflect the mechanical inertia of 1970s analogue machi
 * **`crt-scanline-flicker`**: Subtle 0.02 opacity jitter simulating electron beam interference.
 * **`needle-bounce`**: Damped oscillation around target value when hydrostatic or resistance values change.
 * **`dossier-unseal`**: 3D perspective fold-down from 70deg inclination into planar focus.
-* **`beacon-pulse`**: 2.5s rhythmic respiration of the architectural blueprint location pip.
+* **`pip-pulse`**: 2.5s rhythmic respiration of the architectural blueprint location pip.
 
 ---
 
@@ -331,44 +341,13 @@ All icons use clean inline SVG conforming to this strict specification:
 * **stroke-linecap**: `round`
 * **stroke-linejoin**: `round`
 
-### Permitted Icon Standards
-
-```html
-<!-- Settings Gear (44x44px button) -->
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-  <circle cx="12" cy="12" r="3"></circle>
-  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-</svg>
-
-<!-- Patient Inventory Backpack -->
-<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-  <path d="M4 10v9a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-9"></path>
-  <path d="M10 4V3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v1"></path>
-  <path d="M4 10h16"></path>
-  <path d="M22 10a2 2 0 0 0-2-2h-3"></path>
-  <path d="M2 10a2 2 0 0 1 2-2h3"></path>
-  <path d="M9 22v-4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v4"></path>
-</svg>
-
-<!-- Modal Close Cross -->
-<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-  <line x1="18" y1="6" x2="6" y2="18"></line>
-  <line x1="6" y1="6" x2="18" y2="18"></line>
-</svg>
-
-<!-- Architectural Blueprint Compass -->
-<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-  <polygon points="12 2 19 21 12 17 5 21 12 2"></polygon>
-</svg>
-```
-
 ---
 
 ## 7. Compliance Matrix: Do's and Don'ts
 
 | Feature | Permitted (Compliant) | Prohibited (Non-Compliant) |
 |---|---|---|
-| **Iconography** | Pure SVG line paths (`stroke-width: 1.5–2px`) | Unicode Emojis, colored glyphs, Lucide icon bundles |
+| **Iconography** | Pure SVG line paths (`stroke-width: 1.5px to 2.0px`) | Unicode Emojis, colored glyphs, Lucide icon bundles |
 | **Color Schemes** | Alabaster `#EDF0EB`, Sage `#2D4A3E`, Terrazzo `#D8DED6` | Purple neon borders, saturated cyber cyan, magenta |
 | **Phosphors** | P1 Phosphor Green `#4ADE80`, CRT Amber `#FBBF24` | Neon Lime `#00FF88`, generic web green `#00FF00` |
 | **Typography** | `Playfair Display`, `Outfit`, `JetBrains Mono` | Comic Sans, Inter, Roboto, Arial, AI-slop sans |
@@ -382,4 +361,4 @@ All icons use clean inline SVG conforming to this strict specification:
 
 ## 8. Living HTML Showcase Reference
 
-The living, interactive showcase for this design system is maintained at [`design_system.html`](design_system.html). It renders all permitted color tokens, live interactive components, real-time CRT oscilloscopes, damped pressure gauges, and SVG icons in a standalone browser environment.
+The living, interactive showcase for this design system is maintained at [`design_system.html`](design_system.html). It renders permitted color tokens, live interactive components, real-time CRT oscilloscopes, damped pressure gauges, and SVG icons in a standalone browser environment.

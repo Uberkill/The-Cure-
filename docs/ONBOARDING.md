@@ -1,9 +1,9 @@
-# The Vault: Sub-Level 04 - Technical Onboarding & Architecture Guide
+# The Cure: Sub-Level 04 - Technical Onboarding & Architecture Guide
 
 ## 1. Project Overview & Aesthetic Identity
 
-"The Vault: Sub-Level 04" is an interactive 3D psychological thriller web application built with Three.js, Vite, and TypeScript.
-The narrative and visual design follow a strict Bauhaus Modernist Psychological Horror aesthetic inspired by David Lynch (*Mulholland Drive*), Gore Verbinski (*A Cure for Wellness*), and *Severance*.
+"The Cure: Sub-Level 04" is an interactive 3D psychological mystery game built with Three.js, Vite, and TypeScript.
+The narrative and visual design follow a strict Bauhaus Modernist Psychological Horror aesthetic inspired by David Lynch (*Mulholland Drive*), Kiyoshi Kurosawa (*Cure*), and *Severance*.
 
 - **Setting:** Sanatorium of Cognitive Alignment, Sub-Level 04.
 - **Protagonist:** Subject 104.
@@ -35,14 +35,17 @@ src/
 │   └── Telemetry.ts           # Diagnostic logging, crash resilience & WebGL recovery
 ├── audio/
 │   ├── AudioEngine.ts         # Multi-bus Web Audio synthesizer, sub-busses & brickwall limiter
+│   ├── AudioEngine.spec.ts    # Vitest unit tests for cascading foley and volume controls
+│   ├── AudioManifest.ts       # Registry of CC0 audio files and fallback sound profiles
 │   ├── MechanicalSoundFX.ts   # Tactile click, latch, and switch SFX generator
 │   └── MusicTrackManager.ts   # Custom track audio loader with smooth crossfading
 ├── rendering/
 │   ├── SceneManager.ts        # Three.js renderer, ACESFilmic tone mapping, PCF shadows
-│   ├── CameraDirector.ts      # OrbitControls & cinematic camera transitions with input locks
+│   ├── CameraDirector.ts      # OrbitControls, dynamic FOV & cinematic camera transitions
+│   ├── LightRigManager.ts     # Lighting fixtures and mood presets
 │   └── AnimatorSystem.ts      # Tween update pipeline for smooth prop animations
 ├── interaction/
-│   ├── RaycastManager.ts      # Pointer raycasting, hierarchy traversal, dynamic reticle prompts
+│   ├── RaycastManager.ts      # Pointer & touch raycasting, hierarchy traversal, reticle prompts
 │   ├── InspectionManager.ts   # 3D key examination turntable mode with pin alignment
 │   ├── DevTransformGizmo.ts   # Interactive 3D translation/rotation manipulation gizmo
 │   └── InteractionPipelines.spec.ts # Vitest unit tests for raycast traversal & pin math
@@ -56,7 +59,7 @@ src/
 │   ├── ScenarioRegistry.ts    # Chamber loader with recursive GPU VRAM disposal
 │   ├── ScenarioRegistry.spec.ts # Vitest unit tests for scenario lifecycle & mutex locks
 │   ├── Room04_SterileChamber.ts # Act I Central Concourse (The Sterile Reception)
-│   ├── Room02_SleepWard.ts    # Act II Sleep Ward (2-step cart machine, dual-row cots, UV signs)
+│   ├── Room02_SleepWard.ts    # Act II Sleep Ward (tubular cots, 2-step cart machine, UV signs)
 │   ├── Room03_Hydrotherapy.ts # Act III Hydrotherapy (Siphon pressure manifold)
 │   ├── Room04_AudiologyVault.ts # Act IV Audiology Vault (Acoustic null & Chladni mandala)
 │   ├── Room05_Archive.ts      # Act V Archive (Microfiche reader & pneumatic dispatch)
@@ -64,42 +67,46 @@ src/
 │   ├── Room07_SynthesisChamber.ts # Act VII Synthesis Chamber (Galvanometer bridge)
 │   ├── Room08_VelvetLounge.ts # Act VIII Velvet Lounge (Switchboard & compliance finale)
 │   └── Room99_Sandbox.ts      # Developer 3D sandbox chamber
-└── ui/
-    ├── UIManager.ts           # Global HUD overlays, subtitles, settings modal, and reticle prompts
-    ├── ScreenManager.ts       # Transitions between 3D Canvas, Terminal, and Cinematic overlays
-    ├── Dev3DEditorPanel.ts    # In-game inspector for live prop transform adjustments
-    ├── CameraDisengageHUD.spec.ts # Vitest unit tests for camera disengage HUD
-    ├── components/            # Tactile Brutalist physical instrumentation widgets
-    │   ├── BourdonGauge.ts        # High-DPI dual-needle Bourdon tube pressure gauge
-    │   ├── ClinicalClipboard.ts   # Tactile clipboard with dual metal clips and forms
-    │   ├── MechanicalTumblerBank.ts # 3-digit brass tumbler code wheel with ratchet audio
-    │   ├── PatchMatrix.ts         # Dual-tier telephone PBX switchboard jack matrix
-    │   ├── ReelTapeTransport.ts   # Reel-to-reel tape transport with mechanical odometer
-    │   ├── RotaryDial.ts          # Authentic spring-back mechanical rotary telephone dial
-    │   ├── SightGlassManometer.ts # Vertical medical glass tube manometer with meniscus
-    │   └── StripChartRecorder.ts  # Rolling galvanometer paper chart with jitter needle
-    └── screens/               # Decoupled Component-Scoped MVC Diegetic Screens
-        ├── DiegeticScreenBase.ts       # Abstract lifecycle, focus trapping, and ESC management
-        ├── FacilityMapScreen.ts        # Top-down SVG blueprint, fog of war & non-linear transit
-        ├── FacilityMapScreen.spec.ts   # Vitest unit tests for blueprint discovery & status
-        ├── AssetManifestScreen.ts      # FORM 104-INV specimen ledger & evidence case
-        ├── AssetManifestScreen.spec.ts # Vitest unit tests for asset manifest tray progression
-        ├── StaffRosterScreen.ts        # FORM 108-STAFF clinical personnel directory
-        ├── StaffRosterScreen.spec.ts   # Vitest unit tests for personnel dossier modal
-        ├── ClinicalClipboardScreen.ts  # FORM 101-104 clinical intake clipboard overlay
-        ├── TektronixCrtScreen.ts       # Act I Oscilloscope harmonic calibration
-        ├── DispensaryCartScreen.ts     # Act II 2-Step Shutter & Sedative Infusion console
-        ├── HydraulicManifoldScreen.ts  # Act III Siphon hydrostatic pressure valves
-        ├── MicroficheViewerScreen.ts   # Act V Optical microfilm directory
-        ├── WiretapTapeDeckScreen.ts    # Act VI Reel-to-reel deck & carriage clock controls
-        ├── GalvanometerGridScreen.ts   # Act VII Resistor bridge network
-        ├── SwitchboardMirrorScreen.ts  # Act VIII Patch cord jack routing
-        ├── PuzzleInvariants.spec.ts    # Vitest unit tests for puzzle math invariants
-        └── binaural/                   # Act IV MVC Component Structure
-            ├── BinauralTemplate.ts        # HTML Template View
-            ├── BinauralAudio.ts           # WebAudio synthesis layer
-            ├── ChladniRenderer.ts         # Canvas 2D physics layer
-            └── BinauralSynthesizerScreen.ts # Controller glue logic
+├── ui/
+│   ├── UIManager.ts           # Global HUD overlays, subtitles, settings modal, and reticle prompts
+│   ├── ScreenManager.ts       # Transitions between 3D Canvas, Orientation, and Overlays
+│   ├── Dev3DEditorPanel.ts    # In-game inspector for live prop transform adjustments
+│   ├── Dev3DEditorLore.spec.ts # Vitest unit tests for dev panel lore invariants
+│   ├── CameraDisengageHUD.spec.ts # Vitest unit tests for camera disengage HUD
+│   ├── components/            # Tactile Brutalist physical instrumentation widgets
+│   │   ├── BourdonGauge.ts        # High-DPI dual-needle Bourdon tube pressure gauge
+│   │   ├── ClinicalClipboard.ts   # Tactile clipboard with dual metal clips and forms
+│   │   ├── MechanicalTumblerBank.ts # 3-digit brass tumbler code wheel with ratchet audio
+│   │   ├── PatchMatrix.ts         # Dual-tier telephone PBX switchboard jack matrix
+│   │   ├── ReelTapeTransport.ts   # Reel-to-reel tape transport with mechanical odometer
+│   │   ├── RotaryDial.ts          # Authentic spring-back mechanical rotary telephone dial
+│   │   ├── SightGlassManometer.ts # Vertical medical glass tube manometer with meniscus
+│   │   └── StripChartRecorder.ts  # Rolling galvanometer paper chart with jitter needle
+│   └── screens/               # Decoupled Component-Scoped MVC Diegetic Screens
+│       ├── DiegeticScreenBase.ts       # Abstract lifecycle, focus trapping, and ESC management
+│       ├── FacilityMapScreen.ts        # Top-down SVG blueprint, fog of war & non-linear transit
+│       ├── FacilityMapScreen.spec.ts   # Vitest unit tests for blueprint discovery & status
+│       ├── AssetManifestScreen.ts      # FORM 104-INV specimen ledger & evidence case
+│       ├── AssetManifestScreen.spec.ts # Vitest unit tests for asset manifest tray progression
+│       ├── StaffRosterScreen.ts        # FORM 108-STAFF clinical personnel directory
+│       ├── StaffRosterScreen.spec.ts   # Vitest unit tests for personnel dossier modal
+│       ├── ClinicalClipboardScreen.ts  # FORM 101-104 clinical intake clipboard overlay
+│       ├── TektronixCrtScreen.ts       # Act I Oscilloscope harmonic calibration
+│       ├── DispensaryCartScreen.ts     # Act II 2-Step Shutter & Sedative Infusion console
+│       ├── HydraulicManifoldScreen.ts  # Act III Siphon hydrostatic pressure valves
+│       ├── MicroficheViewerScreen.ts   # Act V Optical microfilm directory
+│       ├── WiretapTapeDeckScreen.ts    # Act VI Reel-to-reel deck & carriage clock controls
+│       ├── GalvanometerGridScreen.ts   # Act VII Resistor bridge network
+│       ├── SwitchboardMirrorScreen.ts  # Act VIII Patch cord jack routing
+│       ├── PuzzleInvariants.spec.ts    # Vitest unit tests for puzzle math invariants
+│       └── binaural/                   # Act IV MVC Component Structure
+│           ├── BinauralTemplate.ts        # HTML Template View
+│           ├── BinauralAudio.ts           # WebAudio synthesis layer
+│           ├── ChladniRenderer.ts         # Canvas 2D physics layer
+│           └── BinauralSynthesizerScreen.ts # Controller glue logic
+└── utils/
+    ├── assetPath.ts           # Base URL normalization for GitHub Pages assets
+    └── exportToGLB.ts         # Runtime GLB exporter utility
 ```
 
 ---
@@ -128,10 +135,10 @@ Execute commands from the repository root:
 # Typecheck
 npm run typecheck
 
-# Unit tests (71 tests across 11 suites covering save, math invariants, components, screens, and HUD)
+# Unit tests (89 tests across 13 suites covering save, math invariants, components, screens, audio, and HUD)
 npm run test:unit
 
-# Fast unified regression test (Unit + Typecheck + Build + 27 E2E suites in ~68s)
+# Fast unified regression test (Unit + Typecheck + Build + 28 E2E suites in ~75s)
 npm run test:fast
 
 # Interactive 3D Raycasting & Camera Disengage HUD Audit (12 browser assertions)
@@ -142,9 +149,6 @@ npm run test:save
 
 # Full automated integration pipeline (smoke test)
 npm run test
-
-# Run legacy concurrent test matrix (27 concurrent Playwright suites)
-npm run test:all
 
 # Recompile master documentation (Markdown & HTML)
 npm run docs:build
@@ -192,6 +196,6 @@ Developer Mode provides comprehensive 3D scene inspection, gizmo transformations
 ### Save System Debugging
 In the browser DevTools Console, inspect persisted state via:
 ```javascript
-JSON.parse(localStorage.getItem('the_vault_save_record'))
+JSON.parse(localStorage.getItem('the_cure_save_record')) || JSON.parse(localStorage.getItem('the_vault_save_record'))
 ```
 To bypass save hydration and force a clean Act I test environment, append `?test=1` to the URL.
